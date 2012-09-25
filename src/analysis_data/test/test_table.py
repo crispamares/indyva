@@ -4,17 +4,32 @@ Created on Sep 23, 2012
 @author: crispamares
 '''
 import unittest
-from table import Table
+from table import Table, Row2
 
 class TestTable(unittest.TestCase):
 
     def setUp(self):
         self.table = Table(dict(col1=[1,2,3], col2=[4,5,6], col3=['a', 'b', 'c'])) 
 
-    def test_rows(self):
-        row = self.table.rows([0,2])
-        #self.assertEqual(str(row), "[[1, 4, 'a'], [3, 6, 'c']]", 'Error Table.rows %s' % row)
+    def test_wrap(self):
+        r = Row2()
+        r.index
 
+    def test_row(self):
+        row = self.table.row(1)
+        #self.assertEqual(str(row), "{'col2': 5, 'col3': 'b', 'col1': 2}")
+        self.assertEqual(len(row), 3)
+        self.assertListEqual(list(row), [2, 5, 'b'])
+        self.assertListEqual([i for i in row], [2, 5, 'b'])
+        self.assertListEqual(row.keys(), ['col1', 'col2', 'col3'])
+        
+
+    def test_rows(self):
+        rows = self.table.rows([0,2])
+        self.assertEqual(list(rows[1]), [3, 6, 'c'])
+
+    def test_col(self):
+        self.assertListEqual(self.table.col('col1'), [1,2,3])
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
