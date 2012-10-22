@@ -1,6 +1,14 @@
 import pandas as pn
 import pymongo
 
+
+def create_data_source(type, params):
+    ''' Factory of data sources '''
+    if type == 'csv':
+        return CSVDataSource(**params) 
+    if type == 'mongo':
+        return MongoDataSource(**params) 
+
 class CSVDataSource(object):
     def __init__(self, file_name, config={}):
         '''
@@ -27,7 +35,7 @@ class MongoDataSource(object):
         @param database: String name of the database
         @param collection: String name of the collection
         @param find: Dictionary The argument to the find() method.
-        @param columns: Dicttionay The columns argument in the find() method
+        @param columns: Dictionary The columns argument in the find() method
         '''
         self.database = database
         self.collection = collection
@@ -47,7 +55,7 @@ class MongoDataSource(object):
     def load(self):
         '''
         This method loads the content of the file and returns a DataFrame.
-        Reimplement this method if the data is not in a table
+        Reimplement this method if the data is not in tabular format
         @return: pandas.DataFrame
         '''
         query_result = list(self._query())

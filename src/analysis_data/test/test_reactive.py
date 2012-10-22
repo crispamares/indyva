@@ -4,7 +4,7 @@ Created on Sep 23, 2012
 @author: crispamares
 '''
 import unittest
-from reactive import cached_property, ReactiveVariable, Observable
+from analysis_data.reactive import cached_property, ReactiveVariable, Observable
 
 
 class fooA(object):

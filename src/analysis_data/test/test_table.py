@@ -4,7 +4,7 @@ Created on Sep 23, 2012
 @author: crispamares
 '''
 import unittest
-from table import Table, restrict_methods
+from analysis_data.table import Table, restrict_methods
 import numpy as np
 import pandas
 

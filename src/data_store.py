@@ -1,6 +1,0 @@
-
-
-class DataStore(object):
-    pass
-
-

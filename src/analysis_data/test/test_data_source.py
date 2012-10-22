@@ -4,7 +4,8 @@ Created on Sep 29, 2012
 @author: crispamares
 '''
 import unittest
-from data_source import CSVDataSource, MongoDataSource
+from analysis_data.data_source import CSVDataSource, MongoDataSource
+import os
 
 class Test(unittest.TestCase):
 
@@ -18,7 +19,7 @@ class Test(unittest.TestCase):
 
 
     def test_csv(self):
-        file_name = 'rsc/census.csv'
+        file_name = os.path.join(os.path.dirname(__file__) ,'rsc/census.csv')
         source = CSVDataSource(file_name)
         df = source.load()
         self.assertEqual(df.shape, (51, 22))

@@ -4,7 +4,7 @@ Created on Sep 28, 2012
 @author: crispamares
 '''
 import unittest
-from selection import Selection
+from analysis_data.selection import Selection
 import pandas as pn
 
 class Test(unittest.TestCase):
