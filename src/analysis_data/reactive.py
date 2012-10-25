@@ -1,150 +1,118 @@
-
 import weakref
-import exceptions
-import threading   # for lock
 
-class RecursionError(exceptions.RuntimeError):
-    pass
-
-class _subscription(object):
-    """A subscription is returned as a result of subscribing to an 
-       observable. When the subscription object is finalized, the 
-       subscription is cancelled.  This class is used to facilitate 
-       subscription cancellation."""
-
-    def __init__(self, subscriber, observed):
-        self.subscriber = subscriber
-        self.observed = weakref.ref(observed)
-
-    def __del__(self):
-        obsrvd = self.observed()
-        if (self.subscriber and obsrvd):
-            obsrvd._cancel(self.subscriber)
-
-
-class _obwan(object):
-    '''Half-hidden class.  Only 'observable should construct these.
-    Calls to subscribe, cancel get invoked through the observable.
-    _obwan objects reside in class instances containing observables.'''
-
-    def __init__(self):
-        self.subscribers = []
-        self._value = None
-        self._changeLock = threading.Lock()
+class Change(object):
+    def __init__(self, name, type, object, old_value):
+        '''
+        @param name: String, the name of the property changed
+        @param type: String, ['new' | 'updated' |'deleted' | 'reconfigured']
+        @param object: Object, the object that notifies the change  Done with weakref
+        @param old_value: Object, the value before the change
+        '''
+        self.__refs = weakref.WeakValueDictionary()
         
-    def __call__(self):
-        """returns the current value, the one last set"""
-        return self._value
+        self.__refs['name'] = name
+        self.__refs['type'] = type
+        self.__refs['object'] = object
+        self.__refs['old_value'] = old_value
 
-    def _notifySubscribers(self, value):
-        for (f,exceptionHdlr) in self._callbacks():
-            try:
-                f(value)
-            except Exception, ex:
-                if exceptionHdlr and not exceptionHdlr(ex): 
-                    raise            # reraise if not handled
+    def get_name(self):
+        return self.__refs['name']
+    def get_type(self):
+        return self.__refs['type']
+    def get_object(self):
+        return self.__refs['object']
+    def get_old_value(self):
+        return self.__refs['old_value']
+    def set_name(self, value):
+        self.__refs['name'] = value
+    def set_type(self, value):
+        self.__refs['type'] = value
+    def set_object(self, value):
+        self.__refs['object'] = value
+    def set_old_value(self, value):
+        self.__refs['old_value'] = value
 
-    def setvalu(self, value):
-        """Notify the subcribers only when the value changes."""
-        if self._value != value:
-            if self._changeLock.acquire(0):     # non-blocking
-                self._value = value
-                try:
-                    self._notifySubscribers(value)
-                finally:
-                    self._changeLock.release()
-            else:
-                raise RecursionError("Attempted recursion into observable's set method.")
-
-    def subscribe(self, obsv, exceptionInfo = None):
-        observer = obsv.setvalu if isinstance(obsv, _obwan) else obsv
-        ob_info =(observer, exceptionInfo)
-        self.subscribers.append(ob_info)
-        return _subscription(ob_info, self)
-
-    def _callbacks(self):
-        scribers = []
-        scribers.extend(self.subscribers)
-        return scribers
-
-    def _cancel(self, wref):
-        self.subscribers.remove(wref)
-
-
-class Observable(object):
-    """An observable implemented as a descriptor. Subscribe to an observable 
-    via calling  xxx.observable.subscribe(callback)"""
-    def __init__(self, nam):
-        self.xname = "__"+nam
-        self.obwan = _obwan
-
-    def __set__(self,inst, value ):
-        """set gets the instances associated variable and calls 
-        its setvalu method, which notifies subribers"""
-        if inst and not hasattr(inst, self.xname):
-            setattr(inst, self.xname, self.obwan())
-        ow = getattr(inst, self.xname)
-        ow.setvalu(value)
-
-    def __get__(self, inst, klass):
-        """get gets the instances associated variable returns it"""
-        if inst and not hasattr(inst, self.xname):
-            setattr(inst, self.xname, self.obwan())
-        return getattr(inst, self.xname)
-
-
-class cached_property(object):
-    '''A read-only @property that is only evaluated once. The value is cached
-    on the object itself rather than the function or class; this should prevent
-    memory leakage.'''
-    def __init__(self, fget, doc=None):
-        self.fget = fget
-        self.__doc__ = doc or fget.__doc__
-        self.__name__ = fget.__name__
-        self.__module__ = fget.__module__
-
-    def __get__(self, obj, cls):
-        if obj is None:
-            return self
-        obj.__dict__[self.__name__] = result = self.fget(obj)
-        return result
-
+    name = property(get_name, set_name, doc="String, the name of the property changed")
+    type = property(get_type, set_type, doc= "String, ['new' | 'updated' |'deleted' | 'reconfigured']")
+    object = property(get_object, set_object, doc= "object: Object, the object that notifies the change")
+    old_value = property(get_old_value, set_old_value, doc= "Object, the value before the change")
         
+
+class Subscription(object):
+    def __init__(self, channel):
+        self._channel = channel
+        self._callbacks = []
+        self._connected = False
+    @property
+    def channel(self):
+        return self._channel
     
-class observable_property(property):
-    def __init__(self, *args):
-        property.__init__(self, *args)
+    def on_event(self, callback):
+        if self._connected:
+            self._callbacks.append(callback)
+        else:
+            raise Exception('This subscription is already disconnected')
+        
+    def unsubscribe(self):
+        Notifier.unsubscribe(self)
     
-    def __get__(self, obj, cls):
-        return self.fget(obj)
+class Notifier(object):
+    __channels = {}
     
-    def __set__(self, obj, value):
-        if value != self.fget(obj):
-            self.fset(obj, value)
-            for callback in obj.callbacks:
-                callback()
+    @classmethod
+    def subscribe(cls, channel):
+        subscription = Subscription(channel)
+        subscription._connected = True
+        cls.__channels.get(channel, []).append(subscription)
+        return subscription
 
+    @classmethod
+    def unsubscribe(cls, subscription):
+        cls.__channels[subscription.channel].remove(subscription)
+        subscription._connected = False
+        
+    @classmethod
+    def publish(cls, channel, message):
+        subscriptions = cls.__channels.get(channel, [])
+        for subscription in subscriptions:
+            for callback in subscription._callbacks:
+                cls._send(callback,message, channel)  
+        return len(subscriptions)
+        
+    @classmethod
+    def _send(cls, callback, message, channel):
+        '''This method should be reimplemented in other to use other message system
+        This implementation is Synchronous but ideally will be Asynchronous
+        '''
+        callback(message, channel)  
+        
+class Reactive( type ):
+    def __new__( cls, name, bases, classdict ):
 
+        def notifySetAttr( func ):
+            ''' to be applied exclusively on __setattr__ '''
+            def wrapper( *args, **kwargs ):
+                instance, attr, new_value = args[0], args[1], args[2]
+                old_value = None
+                if hasattr( instance, attr ):
+                    old_value = getattr( instance, attr )
+                ret = func( *args, **kwargs )
+                # TODO: Implement deleted and reconfigured
+                if not old_value:
+                    instance.notify( attr, 'new', old_value )
+                elif old_value != new_value:
+                    instance.notify( attr, "updated", old_value )
+                return ret
+            return wrapper
 
-class ReactiveVariable(object):
-    def __init__(self, obj, name, value=None):
-        self.name = name
-        obj._values = obj.__dict__.get('_values', {})
-        obj._values[name] = value
-        obj._callbacks = obj.__dict__.get('_callbacks', {})
-        obj._callbacks[name] = []
+        def notify( self, attribute, type, old_value ):
+            ''' notify the change '''
+            Notifier.publish(self.channel+'/'+attribute, Change(attribute, type, self, old_value))
 
-    def __get__(self, obj, cls):
-        return obj._values[self.name]
-    
-    def __set__(self, obj, value):
-        if value != obj._values[self.name]:
-            obj._values[self.name] = value
-            for callback in obj._callbacks[self.name]:
-                callback()
-
-
-#@derived(cosaA, cosaB, cosaC)
-#@property
-#def paco():
-#    pass
+        ## add new functions to class dict
+        classdict['notify'] = notify
+        classdict['channel'] = 'common'
+        aType = type.__new__( cls, name, bases, classdict )
+        ## decorate setattr to trace down every update of value
+        aType.__setattr__ = notifySetAttr( aType.__setattr__ )
+        return aType 
