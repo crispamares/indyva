@@ -12,7 +12,7 @@ class Test(unittest.TestCase):
         
         def __init__(self, attr_a):
             self.attr_a = None
-            self.channel = 'Achannel'
+            self._channel = 'Achannel'
 
     def setUp(self):
         pass
@@ -21,12 +21,16 @@ class Test(unittest.TestCase):
 
 
     def testReactive(self):
+        def myprint(change, channel):
+            print '*** Event in %s, change type is %s' %(channel, change.type)
+            
         s = Notifier.subscribe('Achannel/attr_a')
-        print s
+        s.on_event(myprint)
+        
         a = self.A('paco')
         a.attr_a = 'pepe'
         
-
+        print 'last thing'
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testReactive']
