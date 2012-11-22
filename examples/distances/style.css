@@ -1,0 +1,29 @@
+form.options {float: right}
+
+#grouping, #placeOnTop, #interpolate {
+  display: none;
+}
+
+g.bars rect{
+  stroke: white;
+  fill: steelblue;
+}
+
+g.circles circle{
+  fill: white;
+  stroke: steelblue;
+}
+
+g.lines path{
+  fill: none;
+  stroke: steelblue;
+}
+
+g.Layer1 path, g.Layer1 circle{stroke: #1f77b4;}
+g.Layer2 path, g.Layer2 circle{stroke: #ff7f0e;}
+g.Layer3 path, g.Layer3 circle{stroke: #2ca02c;}
+g.Layer4 path, g.Layer4 circle{stroke: #d62728;}
+g.Layer5 path, g.Layer5 circle{stroke: #9467bd;}
+g.Layer6 path, g.Layer6 circle{stroke: #8c564b;}
+
+

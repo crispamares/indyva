@@ -32,6 +32,7 @@ class Subscription(object):
         
     def unsubscribe(self):
         Notifier.unsubscribe(self)
+
     
 class Notifier(object):
     __channels = {}
@@ -71,10 +72,9 @@ class Notifier(object):
         This implementation is Synchronous but ideally will be Asynchronous
         '''
         callback(message, channel)  
-        
-        
-    
-        
+
+
+
 class Reactive( type ):
     def __new__( cls, name, bases, classdict ):
 

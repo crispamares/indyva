@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;" charset="utf-8">
+<link rel="stylesheet" href="/lib/iwm/lib/bootstrap-v2/css/bootstrap.min.css">
+<link rel="stylesheet" href="style.css">
+<style type="text/css">
+body {padding-top: 50px};
+</style>
+
+<script type="text/javascript" src="/lib/iwm/lib/d3/d3.v2.js"></script>
+<script type="text/javascript" src="/lib/miso.ds.deps.min.0.1.2.js"></script>
+<script type="text/javascript" src="/lib/iwm/lib/backbone/test/vendor/jquery-1.7.1.js"></script>
+<script type="text/javascript" src="/lib/iwm/lib/backbone/backbone.js"></script>
+
+
+<script type="text/javascript" src="/lib/iwm/lib/bootstrap-v2/js/bootstrap.min.js"></script>
+
+<title>MorExAn</title>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+	<a class="brand" href="#">
+	  MorExAn Distances
+	</a>
+
+	<ul class="nav">
+	  <li ><a href="#histogram"> histogram </a></li>
+	  <li ><a href="#conectogram"> conectogram</a></li>
+	</ul>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="row-fluid">
+    <div class="span12" id="content">
+      <form class="options form-inline">
+
+	<span id="interpolate">
+	  <label for="basis" type="checkbox"> Interpolate:
+	  </label>
+	  <input type="checkbox" name="id" id="basis"></input>
+	</span>
+
+
+	<span id="placeOnTop">
+	  <label for="place" type="checkbox"> Place on top:
+	  </label>
+	  <input type="checkbox" name="id" id="place"></input>
+	</span>
+
+	<span id="grouping">
+	  <label for="groupby">
+	    Grouped by:
+	  </label>
+	  <select  class="input-small" name="id" id="groupby">
+	  </select>
+	</span>
+      </form>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span12" id="distances-div"></div>
+  </div>
+
+  
+  <footer>
+    <hr/>
+<!--    <p>&copy; Cajal Blue Brain 2012</p> -->
+    
+  </footer>
+</div>
+
+</body>
+
+<script type="text/template" id="distances-div">
+  <div class="chart_container"></div> 
+</script>
+
+<script type="text/template" id="grouping">
+  <% _.each(columns, function(column) { %>
+  <option value="<%= column.name %>"><%= column.name %></option>
+  <% }); %>
+</script>
+
+
+
+<script type="text/javascript" src="histogram.js"></script>
+<script type="text/javascript" src="histLines.js"></script>
+<script type="text/javascript" src="conectogram.js"></script>
+<script type="text/javascript" src="distances.js"></script>
+
+
+
+
+</html>
