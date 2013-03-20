@@ -18,6 +18,7 @@ _dirty = False
 
 
 def _save_config():
+    print 'exit', _dirty
     if _dirty:
         with open(CONFIG_FILE, 'w') as f:
             json.dump(_config, f)
@@ -37,7 +38,7 @@ def declare_config_variable(name, default):
     otherwise the default value is returned and a new field is created in the 
     config file 
     '''
-    global _config
+    global _config, _dirty
     if _config == None:
         _config = _load_config()
     if not _config.has_key(name):
