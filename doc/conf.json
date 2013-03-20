@@ -1,0 +1,1 @@
+{"mongo_port": 27017, "database": "scinfo", "directory_collection": "directory", "mongo_host": "localhost"}
