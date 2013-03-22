@@ -7,9 +7,13 @@ Created on 20/03/2013
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 import types
+from copy import copy
 
 DataSetTypes = type("DataSetTypes", (), 
                     dict(TABLE='TABLE', NETWORK='NETWORK', TREE='TREE'))
+AttributeTypes = type("AttributeTypes", (), 
+                      dict(CATEGORICAL='CATEGORICAL', 
+                           ORDINAL='ORDINAL',QUANTITATIVE='QUANTITATIVE'))
 
 
 class DataSetScheme:
@@ -31,8 +35,8 @@ class DataSetScheme:
     def as_dict(self):
         ''' Returns a serial representation of the schema. Use the output of
         this method as the input of a serializer like json
-        @return: dict''' 
-        return dict(self._scheme)
+        @return: OrderedDict''' 
+        return copy(self._scheme)
     
     @abstractmethod
     def is_spatial(self):
@@ -62,7 +66,7 @@ class TableScheme(DataSetScheme):
     '''The TableScheme describes the schema of a Table Dataset.
     Adds a field called attributes which is an ordered dict of AttributeSchemes'''
     def __init__(self, attributes, index):
-        super(DataSetScheme, self).__init__(index)
+        super(TableScheme, self).__init__(index)
         
         self._scheme['dataset_type'] = DataSetTypes.TABLE
         self._scheme['attributes'] = OrderedDict(attributes)
@@ -83,14 +87,29 @@ def negation(f):
     return wrapper
     
 class AttributeScheme(object):
-    def __init__(self):
+    '''The AttributeScheme describes the schema of any Attribute in any item '''
+    def __init__(self, attribute_type, *args, **kwargs):
+        '''@param attibute_type: One in AttributeTypes
+        @param spatial: bool - The opposite of abstract
+        @param key: bool - The opposite of value 
+        @param shape: tuple - The shape ala numpy if multidimensional. () if Scalar
+        @param continuous: bool - The opposite is discrete'''
         self._scheme = OrderedDict()
-        self._scheme['spatial'] = False         # Vs Abstract
-        self._scheme['key'] = False             # Vs Value
-        self._scheme['shape'] = ()              # Shape of dimensions
-        self._scheme['continuous'] = False      # Vs Discrete
-        self._scheme['multivaluated'] = False   # TODO: Maybe this should be removed
 
+        self._scheme['attribute_type'] = getattr(AttributeTypes, attribute_type)
+        
+        self._scheme['spatial'] = kwargs.get('spatial', False)              # Vs Abstract
+        self._scheme['key'] = kwargs.get('key', False)                      # Vs Value
+        self._scheme['shape'] = kwargs.get('shape', ())                     # Shape of dimensions
+        self._scheme['continuous'] = kwargs.get('continuous', False)        # Vs Discrete
+        self._scheme['multivaluated'] = kwargs.get('multicaluated', False)  # TODO: Maybe this should be removed
+
+    def as_dict(self):
+        ''' Returns a serial representation of the schema. Use the output of
+        this method as the input of a serializer like json
+        @return: OrderedDict''' 
+        return copy(self._scheme)
+    
     def is_spatial(self):
         return self._scheme.get('spatial', False)
 
