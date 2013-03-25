@@ -16,27 +16,27 @@ AttributeTypes = type("AttributeTypes", (),
                            ORDINAL='ORDINAL',QUANTITATIVE='QUANTITATIVE'))
 
 
-class DataSetScheme:
+class DataSetSchema:
     '''
-    A DataSet Scheme is the definition of the related DataSet. Inside the 
-    scheme at least are defined the DataSetType, and Index 
+    A DataSet Schema is the definition of the related DataSet. Inside the 
+    schema at least are defined the DataSetType, and Index 
     '''
     __metaclass__ = ABCMeta
     
     @abstractmethod
     def __init__(self, index):
-        self._scheme = OrderedDict()
-        self._scheme['dataset_type'] = None   
+        self._schema = OrderedDict()
+        self._schema['dataset_type'] = None   
         if type(index) == types.StringTypes:
-            self._scheme['index'] = tuple([index])
+            self._schema['index'] = tuple([index])
         else:
-            self._scheme['index'] = tuple(index)
+            self._schema['index'] = tuple(index)
     
     def as_dict(self):
         ''' Returns a serial representation of the schema. Use the output of
         this method as the input of a serializer like json
         @return: OrderedDict''' 
-        return copy(self._scheme)
+        return copy(self._schema)
     
     @abstractmethod
     def is_spatial(self):
@@ -55,26 +55,26 @@ class DataSetScheme:
     def dataset_type(self): 
         '''The dataset type. Currently the supported types are Table, Network 
         and Tree'''
-        return self._scheme['dataset_type']
+        return self._schema['dataset_type']
         
     @property
     def index(self):
         '''Is a list with the name of the Attributes that are used as index'''
-        return self._scheme['index']
+        return self._schema['index']
     
-class TableScheme(DataSetScheme):
-    '''The TableScheme describes the schema of a Table Dataset.
-    Adds a field called attributes which is an ordered dict of AttributeSchemes'''
+class TableSchema(DataSetSchema):
+    '''The TableSchema describes the schema of a Table Dataset.
+    Adds a field called attributes which is an ordered dict of AttributeSchemas'''
     def __init__(self, attributes, index):
-        super(TableScheme, self).__init__(index)
+        super(TableSchema, self).__init__(index)
         
-        self._scheme['dataset_type'] = DataSetTypes.TABLE
-        self._scheme['attributes'] = OrderedDict(attributes)
+        self._schema['dataset_type'] = DataSetTypes.TABLE
+        self._schema['attributes'] = OrderedDict(attributes)
                 
     @property
     def attributes(self):
-        '''This is an OrededDict with the form - name:AttributeScheme'''
-        return self._scheme['attributes']
+        '''This is an OrededDict with the form - name:AttributeSchema'''
+        return self._schema['attributes']
     
     def is_spatial(self):
         ''' A DataSet is spatial iff one of its components has spatial semantics
@@ -86,45 +86,45 @@ def negation(f):
         return not f(*args, **kwargs)
     return wrapper
     
-class AttributeScheme(object):
-    '''The AttributeScheme describes the schema of any Attribute in any item '''
+class AttributeSchema(object):
+    '''The AttributeSchema describes the schema of any Attribute in any item '''
     def __init__(self, attribute_type, *args, **kwargs):
         '''@param attibute_type: One in AttributeTypes
         @param spatial: bool - The opposite of abstract
         @param key: bool - The opposite of value 
         @param shape: tuple - The shape ala numpy if multidimensional. () if Scalar
         @param continuous: bool - The opposite is discrete'''
-        self._scheme = OrderedDict()
+        self._schema = OrderedDict()
 
-        self._scheme['attribute_type'] = getattr(AttributeTypes, attribute_type)
+        self._schema['attribute_type'] = getattr(AttributeTypes, attribute_type)
         
-        self._scheme['spatial'] = kwargs.get('spatial', False)              # Vs Abstract
-        self._scheme['key'] = kwargs.get('key', False)                      # Vs Value
-        self._scheme['shape'] = kwargs.get('shape', ())                     # Shape of dimensions
-        self._scheme['continuous'] = kwargs.get('continuous', False)        # Vs Discrete
-        self._scheme['multivaluated'] = kwargs.get('multicaluated', False)  # TODO: Maybe this should be removed
+        self._schema['spatial'] = kwargs.get('spatial', False)              # Vs Abstract
+        self._schema['key'] = kwargs.get('key', False)                      # Vs Value
+        self._schema['shape'] = kwargs.get('shape', ())                     # Shape of dimensions
+        self._schema['continuous'] = kwargs.get('continuous', False)        # Vs Discrete
+        self._schema['multivaluated'] = kwargs.get('multicaluated', False)  # TODO: Maybe this should be removed
 
     def as_dict(self):
         ''' Returns a serial representation of the schema. Use the output of
         this method as the input of a serializer like json
         @return: OrderedDict''' 
-        return copy(self._scheme)
+        return copy(self._schema)
     
     def is_spatial(self):
-        return self._scheme.get('spatial', False)
+        return self._schema.get('spatial', False)
 
     def is_key(self):
-        return self._scheme.get('key', False)
+        return self._schema.get('key', False)
 
     def is_multidimensional(self):
         return len(self.shape) > 0
     
     def is_continuous(self):
-        return self._scheme.get('continuous', False)
+        return self._schema.get('continuous', False)
     
     @property
     def shape(self):
-        return self._scheme.get('shape', ())
+        return self._schema.get('shape', ())
 
     is_abstract = negation(is_spatial)    
     is_value = negation(is_key)
