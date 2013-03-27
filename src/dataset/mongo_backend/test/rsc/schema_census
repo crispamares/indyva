@@ -1,0 +1,203 @@
+{
+"attributes" : {
+	"State" :
+	{
+	 "attribute_type": "CATEGORICAL", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Accommodation and food services":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Administrative and support and waste management and remediation services": 
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Agriculture, forestry, fishing and hunting":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Arts, entertainment, and recreation":
+		{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Construction":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	}, 
+	"Educational services":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Finance and insurance":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Health care and social assistance":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Industries not classified":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Information":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},	
+	"Management of companies and enterprises":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Manufacturing":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Mining, quarrying, and oil and gas extraction":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Other services (except public administration)":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Professional, scientific, and technical services":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Real estate and rental and leasing":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},	
+	"Retail trade":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Total for all sectors":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Transportation and warehousing":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Utilities":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	},
+	"Wholesale trade":
+	{
+	 "attribute_type": "QUANTITATIVE", 
+	 "spatial": false, 
+	 "key": false, 
+	 "shape": [], 
+	 "continuous": false, 
+	 "multivaluated": false
+	}
+},
+"index": "State"	
+}
