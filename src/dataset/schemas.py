@@ -102,7 +102,7 @@ class AttributeSchema(object):
         self._schema['key'] = kwargs.get('key', False)                      # Vs Value
         self._schema['shape'] = kwargs.get('shape', ())                     # Shape of dimensions
         self._schema['continuous'] = kwargs.get('continuous', False)        # Vs Discrete
-        self._schema['multivaluated'] = kwargs.get('multicaluated', False)  # TODO: Maybe this should be removed
+        self._schema['multivaluated'] = kwargs.get('multivaluated', False)  # TODO: Maybe this should be removed
 
     def as_dict(self):
         ''' Returns a serial representation of the schema. Use the output of

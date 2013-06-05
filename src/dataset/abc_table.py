@@ -19,6 +19,7 @@ class ITable:
     def __init__(self, data, name='unnamed', schema=None):
         '''
         @param data: Tabular data. Supported forms are: dict, DataFrame
+        @param name: The name of the table
         @param schema: column types and semantics. Supported forms are: dict or
             TableSchema
         '''
