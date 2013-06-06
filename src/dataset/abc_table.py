@@ -42,6 +42,30 @@ class ITable:
     @property
     def name(self):
         return self._name
+    
+    @abstractmethod
+    def to_dict(self):
+        pass
+    
+    @abstractmethod
+    def to_DataFrame(self):
+        pass
+    
+    @abstractmethod
+    def find(self, spec=None, attributes=None, skip=0, limit=0, sort=None):
+        '''
+        @return: TableView
         
-    def find(self, args):
-        pass # TODO: Not implemented
+        @param spec: a dict object specifying elements which
+        must be present for a row to be included in the
+        result set
+        @param attributes: a list of attributes names that should be
+        returned in the result set (keys will always be
+        included), or a dict specifying the attributes to return
+        @param skip: the number of rows to omit (from
+        the start of the result set) when returning the results
+        @param limit: the maximum number of results to
+        return
+        @param sort: Takes a list of (attribute, direction) pairs. 
+        '''
+        pass

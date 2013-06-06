@@ -9,6 +9,7 @@ from collections import OrderedDict
 import types
 from copy import copy
 
+
 DataSetTypes = type("DataSetTypes", (), 
                     dict(TABLE='TABLE', NETWORK='NETWORK', TREE='TREE'))
 AttributeTypes = type("AttributeTypes", (), 
@@ -32,7 +33,7 @@ class DataSetSchema:
         else:
             self._schema['index'] = tuple(index)
     
-    def as_dict(self):
+    def to_dict(self):
         ''' Returns a serial representation of the schema. Use the output of
         this method as the input of a serializer like json
         @return: OrderedDict''' 
@@ -104,7 +105,7 @@ class AttributeSchema(object):
         self._schema['continuous'] = kwargs.get('continuous', False)        # Vs Discrete
         self._schema['multivaluated'] = kwargs.get('multivaluated', False)  # TODO: Maybe this should be removed
 
-    def as_dict(self):
+    def to_dict(self):
         ''' Returns a serial representation of the schema. Use the output of
         this method as the input of a serializer like json
         @return: OrderedDict''' 
