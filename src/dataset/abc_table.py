@@ -43,3 +43,5 @@ class ITable:
     def name(self):
         return self._name
         
+    def find(self, args):
+        pass # TODO: Not implemented
