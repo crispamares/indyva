@@ -5,7 +5,7 @@ Created on 06/06/2013
 @author: jmorales
 '''
 import unittest
-from .. import hub 
+from .. import bus
 
 class Test(unittest.TestCase):
     class A(object):
@@ -18,7 +18,7 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         self.a = self.A()
-        self.bus = hub.Hub()
+        self.bus = bus.Bus()
 
     def testSimpleTopic(self):
         self.bus.subscribe("topicA", self.a.sumAB)

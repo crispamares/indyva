@@ -15,12 +15,17 @@ class Hub(object):
     def __init__(self):
         self._subscriptions = {}
 
-    def _subscribe(self, topic, destination, only_once):
+    def _subscribe(self, topic, destination, only_once=False, group_id=None):
         ''' TODO: publish new subscriptions and new topics through meta topic'''
         if not self._subscriptions.has_key(topic):
             self._subscriptions[topic] = {}
         topic_destinations = self._subscriptions[topic]
-        topic_destinations[destination] = only_once
+        
+        subscription_info = {}
+        if only_once: subscription_info['only_once'] = True
+        if group_id is not None: subscription_info['group_id'] = group_id 
+        
+        topic_destinations[destination] = subscription_info
               
     def subscribe(self, topic, destination):
         self._subscribe(topic, destination, only_once=False)
@@ -38,19 +43,28 @@ class Hub(object):
         '''
         self._subscriptions.pop(topic, None) 
         
+    def _unsibscribe_by_group_id(self, group_id):
+        for topic, destinations in self._subscriptions.items(): 
+            for destination, subscription_info in destinations.items():
+                if subscription_info.get('group_id', None) == group_id:
+                    self.unsubscribe(topic, destination)
+        
     def publish(self, topic, msg):
         ''' TODO: publish No one subscribe through meta topic'''
         destinations = self._subscriptions.get(topic, {})
-        for destination, only_once in destinations.items():
+        for destination, subscription_info in destinations.items():
             self._send_msg(topic, destination, msg)
-            if only_once:
+            if subscription_info.get('only_once', False):
                 self.unsubscribe(topic, destination)
         
     def _send_msg(self, topic, destination, msg):
         destination(topic, msg)
 
-_instance = None
+
+def _singleton():
+    hub = Hub()
+    while True:
+        yield hub
+        
 def get_instance():
-    if _instance is None:
-        _instance = Hub()
-    return _instance
+    return _singleton().next()
