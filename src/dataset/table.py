@@ -8,9 +8,20 @@ from mongo_backend.table import MongoTable
 
 class Table(ITable):
     _backend = MongoTable
+
+    def __init__(self, name='unnamed', schema=None):
+        self._backend = self._backend(name, schema)
+        ITable.__init__(self, name, schema)
+
+    get_data = TableView.get_data
     
-    def _prepare_data(self, data):
-        self._backend._prepare_data(data)
+    def data(self, data):
+        ''' SetUp the data  
+        @param data: Tabular data. Supported forms are: dict, DataFrame
+        @return: self
+        '''
+        self._backend.data(data)
+        return self
 
     to_dict = TableView.to_dict
     to_DataFrame = TableView.to_DataFrame
@@ -33,12 +44,13 @@ class Table(ITable):
 class TableView(ITableView):
     _backend = MongoTable
 
-    def to_dict(self):
-        pass
+    def __init__(self, parent, find_args):
+        self._backend = self._backend()
+        ITableView.__init__(self, parent, find_args)
 
-    def to_DataFrame(self):
-        pass
-
+    def get_data(self, outtype='rows'):
+        pass 
+    
     def find(self, *args, **kwargs):
         return TableView(parent=self, **kwargs)
 

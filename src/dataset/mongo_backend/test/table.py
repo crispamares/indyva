@@ -26,14 +26,14 @@ class Test(unittest.TestCase):
         for i in range(len(self.df)):
             data.append(self.df.ix[i].to_dict())
            
-        MongoTable(data, 'census', self.schema)
+        MongoTable('census', self.schema).data(data)
 
     def testCreationAsDataFrame(self):
         data = self.df
-        MongoTable(data, 'census', self.schema)
+        MongoTable('census', self.schema).data(data)
         
     def testCreationWithoutSchema(self):
-        self.assertRaises(exceptions.NotImplementedError, lambda: MongoTable(self.df, 'census'))
+        self.assertRaises(exceptions.NotImplementedError, lambda: MongoTable('census'))
         
 
 

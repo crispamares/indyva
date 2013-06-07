@@ -7,11 +7,11 @@ Created on 20/03/2013
 
 import schemas
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 import exceptions
 from copy import copy
 
-class ITableView:
+class ITableView(object):
     
     __metaclass__ = ABCMeta
 
@@ -25,14 +25,6 @@ class ITableView:
     @property
     def find_args(self):
         return self._find_args
-    
-    @abstractmethod
-    def to_dict(self):
-        pass
-    
-    @abstractmethod
-    def to_DataFrame(self):
-        pass
     
     @abstractmethod
     def find(self, spec=None, attributes=None, skip=0, limit=0, sort=None):
@@ -54,6 +46,10 @@ class ITableView:
         pass
     
     @abstractmethod
+    def get_data(self, outtype='rows'):
+        pass 
+    
+    @abstractmethod
     def find_one(self):
         pass
     
@@ -67,9 +63,8 @@ class ITable(ITableView):
     '''
     __metaclass__ = ABCMeta
     
-    def __init__(self, data, name='unnamed', schema=None):
+    def __init__(self, name='unnamed', schema=None):
         '''
-        @param data: Tabular data. Supported forms are: dict, DataFrame
         @param name: The name of the table
         @param schema: column types and semantics. Supported forms are: dict or
             TableSchema
@@ -83,12 +78,14 @@ class ITable(ITableView):
             self._schema = schemas.TableSchema(schema['attributes'], schema['index'])
         elif isinstance(schema, schemas.TableSchema):
             self._schema = schema 
-            
-        self._prepare_data(data)
-        
-        ITableView.__init__(self, parent=None, find_args=None)
-        
-    @abstractmethod
-    def _prepare_data(self, data):
-        pass
 
+        ITableView.__init__(self, parent=None, find_args=None)
+    
+    @abstractmethod
+    def data(self, data):
+        ''' SetUp the data  
+        @param data: Tabular data. Supported forms are: dict, DataFrame
+        @return: self
+        '''
+        pass   
+        

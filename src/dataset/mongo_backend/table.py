@@ -15,9 +15,12 @@ class MongoTable(ITable):
     def __init__(self, *args, **kargs):
         self.connection = Connection()
         self._col = None
-        super(MongoTable, self).__init__(*args, **kargs)
+        ITable.__init__(self, *args, **kargs)
 
-    def _prepare_data(self, data):
+    def get_data(self , outtype='rows'):
+        return list(self.find({}))
+
+    def data(self, data):
         db = self.connection.db
         db.drop_collection(self.name)
         self._col = db[self.name]
@@ -30,13 +33,8 @@ class MongoTable(ITable):
             rows = data
         
         self._col.insert(rows)
-        
-    def to_dict(self):
-        pass
-
-    def to_DataFrame(self):
-        pass
-
+        return self
+    
     def find(self, spec=None, attributes=None, skip=0, limit=0, sort=None):
         return self._col.find(spec=spec, fields=attributes, skip=skip, limit=limit, sort=sort)
         
