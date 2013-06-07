@@ -3,7 +3,7 @@ Created on 26/03/2013
 
 @author: crispamares
 '''
-from abc_table import ITable
+from abc_table import ITable, ITableView
 from mongo_backend.table import MongoTable
 
 class Table(ITable):
@@ -12,12 +12,38 @@ class Table(ITable):
     def _prepare_data(self, data):
         self._backend._prepare_data(data)
 
+    to_dict = TableView.to_dict
+    to_DataFrame = TableView.to_DataFrame
+    find = TableView.find
+    find_one = TableView.find_one
+    count = TableView.count
+    
+    def insert(self):
+        pass
+    def update(self):
+        pass
+    def remove(self):
+        pass
+    def add_column(self):
+        pass
+    def add_derived_column(self):
+        pass
+        
+
+class TableView(ITableView):
+    _backend = MongoTable
+
     def to_dict(self):
-        self._backend.to_dict()
+        pass
 
     def to_DataFrame(self):
-        self._backend.to_DataFrame()
+        pass
 
-    def find(self, spec=None, attributes=None, skip=0, limit=0, sort=None):
-        self._backend.find(spec, attributes, skip, limit, sort)
+    def find(self, *args, **kwargs):
+        return TableView(parent=self, **kwargs)
 
+    def find_one(self):
+        pass
+    
+    def count(self):
+        pass

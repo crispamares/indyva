@@ -32,13 +32,19 @@ class MongoTable(ITable):
         self._col.insert(rows)
         
     def to_dict(self):
-        self._backend.to_dict()
+        pass
 
     def to_DataFrame(self):
-        self._backend.to_DataFrame()
+        pass
 
     def find(self, spec=None, attributes=None, skip=0, limit=0, sort=None):
-        self._backend.find(spec, attributes, skip, limit, sort)
+        return self._col.find(spec=spec, fields=attributes, skip=skip, limit=limit, sort=sort)
         
+    def find_one(self):
+        pass
+    
+    def count(self):
+        pass
+
         
 

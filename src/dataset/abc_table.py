@@ -9,39 +9,22 @@ import schemas
 
 from abc import ABCMeta, abstractmethod
 import exceptions
+from copy import copy
 
-class ITable:
-    '''
-    This class is a DataSet Type, an abstraction of Tabluar Data
-    '''
-    __metaclass__ = ABCMeta
+class ITableView:
     
-    def __init__(self, data, name='unnamed', schema=None):
-        '''
-        @param data: Tabular data. Supported forms are: dict, DataFrame
-        @param name: The name of the table
-        @param schema: column types and semantics. Supported forms are: dict or
-            TableSchema
-        '''
-        self._name = name
-        
-        if schema is None:
-            raise exceptions.NotImplementedError("Schema infer is not yet implemented") 
-        
-        if isinstance(schema, dict):
-            self._schema = schemas.TableSchema(schema['attributes'], schema['index'])
-        elif isinstance(schema, schemas.TableSchema):
-            self._schema = schema 
-            
-        self._prepare_data(data)
-        
-    @abstractmethod
-    def _prepare_data(self, data):
-        pass
+    __metaclass__ = ABCMeta
 
+    def __init__(self, parent, find_args):
+        self._find_args =  [] if find_args is None else copy(parent.find_args).append(find_args)
+        
     @property
     def name(self):
         return self._name
+    
+    @property
+    def find_args(self):
+        return self._find_args
     
     @abstractmethod
     def to_dict(self):
@@ -69,3 +52,43 @@ class ITable:
         @param sort: Takes a list of (attribute, direction) pairs. 
         '''
         pass
+    
+    @abstractmethod
+    def find_one(self):
+        pass
+    
+    @abstractmethod
+    def count(self):
+        pass
+    
+class ITable(ITableView):
+    '''
+    This class is a DataSet Type, an abstraction of Tabluar Data
+    '''
+    __metaclass__ = ABCMeta
+    
+    def __init__(self, data, name='unnamed', schema=None):
+        '''
+        @param data: Tabular data. Supported forms are: dict, DataFrame
+        @param name: The name of the table
+        @param schema: column types and semantics. Supported forms are: dict or
+            TableSchema
+        '''
+        self._name = name
+        
+        if schema is None:
+            raise exceptions.NotImplementedError("Schema infer is not yet implemented") 
+        
+        if isinstance(schema, dict):
+            self._schema = schemas.TableSchema(schema['attributes'], schema['index'])
+        elif isinstance(schema, schemas.TableSchema):
+            self._schema = schema 
+            
+        self._prepare_data(data)
+        
+        ITableView.__init__(self, parent=None, find_args=None)
+        
+    @abstractmethod
+    def _prepare_data(self, data):
+        pass
+
