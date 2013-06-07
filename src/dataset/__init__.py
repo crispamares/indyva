@@ -1,4 +1,8 @@
 import types
+import os
 
-Directions = type("DataSetTypes", (), 
-                    dict(ASCENDING='ASCENDING', DESCENDING='DESCENDING'))
+ASCENDING  =  1
+DESCENDING = -1
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+RSC_DIR = os.path.join(ROOT,'rsc')

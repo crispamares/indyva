@@ -3,6 +3,7 @@ from ..abc_table import ITable
 from .connection import Connection
 
 import pandas as pn
+import exceptions
 
 ''' The mongo backend stores each analysis as a different database. And 
 each dataset as a different collection.
@@ -17,8 +18,20 @@ class MongoTable(ITable):
         self._col = None
         ITable.__init__(self, *args, **kargs)
 
+    def _serialize_data(self, cursor, outtype):
+        if outtype == 'rows':
+            return list(cursor)
+        raise exceptions.NotImplementedError()
+
     def get_data(self , outtype='rows'):
-        return list(self.find({}))
+        return self._serialize_data(self.find(), outtype)
+
+    def get_view_data(self, view_args=[{}], outtype='rows'):
+        if isinstance(view_args, dict):
+            view_args = [view_args]
+        if len(view_args) > 1: raise exceptions.NotImplementedError()
+        # TODO: translate view_args to aggregate syntax 
+        return self._serialize_data(self.find(**view_args[0]), outtype)
 
     def data(self, data):
         db = self.connection.db
@@ -35,11 +48,11 @@ class MongoTable(ITable):
         self._col.insert(rows)
         return self
     
-    def find(self, spec=None, attributes=None, skip=0, limit=0, sort=None):
-        return self._col.find(spec=spec, fields=attributes, skip=skip, limit=limit, sort=sort)
+    def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
+        return self._col.find(query, fields=projection, skip=skip, limit=limit, sort=sort)
         
-    def find_one(self):
-        pass
+    def find_one(self, query=None, projection=None, skip=0, limit=0, sort=None):
+        return self._col.find_one(query, fields=projection, skip=skip, limit=limit, sort=sort)
     
     def count(self):
         pass

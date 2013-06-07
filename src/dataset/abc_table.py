@@ -7,7 +7,7 @@ Created on 20/03/2013
 
 import schemas
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 import exceptions
 from copy import copy
 
@@ -15,28 +15,28 @@ class ITableView(object):
     
     __metaclass__ = ABCMeta
 
-    def __init__(self, parent, find_args):
-        self._find_args =  [] if find_args is None else copy(parent.find_args).append(find_args)
+    def __init__(self, parent, view_args):
+        self._view_args =  [{}] if view_args is None else copy(parent.view_args).append(view_args)
         
     @property
     def name(self):
         return self._name
     
     @property
-    def find_args(self):
-        return self._find_args
+    def view_args(self):
+        return self._view_args
     
     @abstractmethod
-    def find(self, spec=None, attributes=None, skip=0, limit=0, sort=None):
+    def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
         '''
         @return: TableView
         
-        @param spec: a dict object specifying elements which
+        @param query: a dict object specifying elements which
         must be present for a row to be included in the
         result set
-        @param attributes: a list of attributes names that should be
+        @param projection: a list of projection names that should be
         returned in the result set (keys will always be
-        included), or a dict specifying the attributes to return
+        included), or a dict specifying the projection to return
         @param skip: the number of rows to omit (from
         the start of the result set) when returning the results
         @param limit: the maximum number of results to
@@ -79,7 +79,7 @@ class ITable(ITableView):
         elif isinstance(schema, schemas.TableSchema):
             self._schema = schema 
 
-        ITableView.__init__(self, parent=None, find_args=None)
+        ITableView.__init__(self, parent=None, view_args=None)
     
     @abstractmethod
     def data(self, data):
