@@ -14,6 +14,10 @@ The database used as analysis namespace is setted in the connection module
 class MongoTable(ITable):
     
     def __init__(self, *args, **kargs):
+        ''' The MongoTable is an operational database. This means that event when there is a 
+        collection in the DB with the same name, the user has to be provided data to use.
+        Note: This convention might be changed only for performance reasons.
+        '''
         self.connection = Connection()
         self._col = None
         ITable.__init__(self, *args, **kargs)
@@ -54,8 +58,8 @@ class MongoTable(ITable):
     def find_one(self, query=None, projection=None, skip=0, limit=0, sort=None):
         return self._col.find_one(query, fields=projection, skip=skip, limit=limit, sort=sort)
     
-    def count(self):
-        pass
+    def count(self, view_args):
+        return self.find(**view_args[0]).count()
 
         
 

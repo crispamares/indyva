@@ -5,7 +5,7 @@ Created on 07/06/2013
 @author: jmorales
 '''
 import unittest
-from dataset.table import Table 
+from dataset.table import Table, TableView
 import pandas as pn
 import json
 from collections import OrderedDict
@@ -37,8 +37,26 @@ class Test(unittest.TestCase):
         
     def testGetData(self):
         table = Table('census', self.schema).data(self.df)
-        print table.get_data()
         self.assertEqual(len(table.get_data()), len(self.df))
+
+    def testFindOne(self):
+        table = Table('census', self.schema).data(self.df)
+        result = table.find_one({'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        self.assertIsInstance(result, dict)
+        self.assertIn(result['State'], ['DC','NY'])
+
+    def testFind(self):
+        table = Table('census', self.schema).data(self.df)
+        view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        self.assertIsInstance(view, TableView)
+        for result in view.get_data():
+            self.assertIn(result['State'], ['DC','NY'])
+
+    def testCount(self):
+        table = Table('census', self.schema).data(self.df)
+        self.assertEqual(table.count(), 51)
+        view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        self.assertEqual(view.count(), 2)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testConstructor']

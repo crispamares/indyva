@@ -10,31 +10,32 @@ class TableView(ITableView):
     _backend = MongoTable
 
     def __init__(self, parent, view_args):
-        self._backend = parent._backend
+        if parent is not None:
+            self._backend = parent._backend
         ITableView.__init__(self, parent, view_args)
 
     def get_data(self, outtype='list'):
-        self._backend.get_view_data(view_args=self.view_args, outtype='list')
+        return self._backend.get_view_data(view_args=self.view_args, outtype='rows')
     
-    def find(self, *args, **kwargs):
-        return TableView(parent=self, **kwargs)
+    def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
+        view_args = dict(query=query, projection=projection, skip=skip, limit=limit, sort=sort)
+        return TableView(parent=self, view_args=view_args)
 
-    def find_one(self):
-        pass
+    def find_one(self, *args, **kwargs):
+        return self._backend.find_one(*args, **kwargs)
     
     def count(self):
-        pass
+        return self._backend.count(self.view_args)
 
 
-class Table(ITable):
+class Table(ITable, TableView):
     _backend = MongoTable
 
     def __init__(self, name='unnamed', schema=None):
         self._backend = self._backend(name, schema)
         ITable.__init__(self, name, schema)
-
-    get_data = TableView.get_data
-    
+        TableView.__init__(self, None, None)
+        
     def data(self, data):
         ''' SetUp the data  
         @param data: Tabular data. Supported forms are: dict, DataFrame
@@ -42,10 +43,6 @@ class Table(ITable):
         '''
         self._backend.data(data)
         return self
-
-    find = TableView.find
-    find_one = TableView.find_one
-    count = TableView.count
     
     def insert(self):
         pass

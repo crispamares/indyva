@@ -15,8 +15,18 @@ class ITableView(object):
     
     __metaclass__ = ABCMeta
 
-    def __init__(self, parent, view_args):
-        self._view_args =  [{}] if view_args is None else copy(parent.view_args).append(view_args)
+    def __init__(self, parent, view_args):        
+        self._view_args =  [{}] if view_args is None else self._merge_args(parent.view_args, view_args)   
+        
+    def _merge_args(self, parent_args, new_args):
+        if len(parent_args) == 1:
+            view_args = copy(parent_args) if len(parent_args[0]) != 0 else []
+            view_args.append(new_args)
+        else:
+            view_args = copy(parent_args)
+            if len(new_args) == 0:
+                view_args.append(new_args)
+        return view_args
         
     @property
     def name(self):
