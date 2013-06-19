@@ -44,10 +44,12 @@ class Table(ITable, TableView):
         self._backend.data(data)
         return self
     
-    def insert(self):
-        pass
+    def insert(self, row_or_rows):
+        self._backend.insert(row_or_rows)
+        
     def update(self):
         pass
+    
     def remove(self):
         pass
     def add_column(self):

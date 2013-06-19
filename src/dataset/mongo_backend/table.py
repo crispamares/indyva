@@ -61,5 +61,6 @@ class MongoTable(ITable):
     def count(self, view_args):
         return self.find(**view_args[0]).count()
 
-        
+    def insert(self, row_or_rows):
+        self._col.insert(row_or_rows)
 
