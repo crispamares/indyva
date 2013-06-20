@@ -47,11 +47,12 @@ class Table(ITable, TableView):
     def insert(self, row_or_rows):
         self._backend.insert(row_or_rows)
         
-    def update(self):
-        pass
+    def update(self, query=None, update=None, multi=True, upsert=False):
+        self._backend.update(query, update, multi, upsert)
     
-    def remove(self):
-        pass
+    def remove(self, query):
+        self._backend.remove(query)
+        
     def add_column(self):
         pass
     def add_derived_column(self):
