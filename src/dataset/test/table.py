@@ -57,7 +57,30 @@ class Test(unittest.TestCase):
         self.assertEqual(table.count(), 51)
         view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
         self.assertEqual(view.count(), 2)
+        
+    def testInsert(self):
+        table = Table('census', self.schema).data(self.df)
+        c1 = table.count()
+        table.insert({'life_meanning':42})
+        self.assertEqual(table.count() - c1, 1)
+        view = table.find({'life_meanning': {'$exists':True}})
+        self.assertEqual(view.count(), 1)
+        self.assertEqual( table.find_one({'life_meanning': {'$exists':True}})['life_meanning'], 42)
+        
+    def testUpdate(self):
+        table = Table('census', self.schema).data(self.df)
+        val = table.find_one({'State': 'DC'}, {'Information':True})['Information']
+        val -= 2000
+        table.update({'State': 'DC'}, {'$set': {'Information':val}})
+        self.assertEqual(table.find_one({'State': 'DC'}, {'Information':True})['Information'], val)
 
+    def testRemove(self):
+        table = Table('census', self.schema).data(self.df)
+        query = {'State': 'DC'}
+        c1 = table.find(query).count()
+        table.remove(query)
+        self.assertGreater(c1, table.find(query).count())
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testConstructor']
     unittest.main()

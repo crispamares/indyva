@@ -70,6 +70,7 @@ class MongoTable(ITable):
         self._col.update(query, update, multi, upsert)
 
     def remove(self, query):
-        res = self._col.remove(query)
+        # TODO Check compatibility 2.2 and 2.4 with safe argument
+        res = self._col.remove(query, safe=True)
         return res['n']
     
