@@ -66,7 +66,7 @@ class MongoTable(ITable):
         self._col.insert(row_or_rows)
 
     def update(self, query=None, update=None, multi=True, upsert=False):
-        # TODO: ¿should I return nay feedback?
+        # TODO: ¿should I return may feedback?
         self._col.update(query, update, multi, upsert)
 
     def remove(self, query):
