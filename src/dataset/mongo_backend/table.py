@@ -62,11 +62,11 @@ class MongoTable(ITable):
         return self.find(**view_args[0]).count()
 
     def insert(self, row_or_rows):
-        # TODO: ¿should I return the _ids?
+        # TODO: should I return the _ids?
         self._col.insert(row_or_rows)
 
     def update(self, query=None, update=None, multi=True, upsert=False):
-        # TODO: ¿should I return may feedback?
+        # TODO: should I return may feedback?
         self._col.update(query, update, multi, upsert)
 
     def remove(self, query):
