@@ -81,7 +81,17 @@ class TableSchema(DataSetSchema):
         ''' A DataSet is spatial iff one of its components has spatial semantics
         @return: bool'''
         return any( (a.is_spatial() for a in self.attributes) )
-
+    
+    def add_attribute(self, name, attribute_schema):
+        ''' Add a new attribute to the schema of the table
+        @param name: str must be unique in the schema of the table
+        @param attribute_schema: AttributeSchema
+        '''
+        if self._schema['attributes'].has_key(name):
+            raise ValueError('Name must be unique in the schema')
+        self._schema['attributes'][name] = attribute_schema
+         
+        
 def negation(f):
     def wrapper(*args, **kwargs):
         return not f(*args, **kwargs)

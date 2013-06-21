@@ -53,7 +53,12 @@ class Table(ITable, TableView):
     def remove(self, query):
         self._backend.remove(query)
         
-    def add_column(self):
-        pass
+    def add_column(self, name, attribute_schema):
+        ''' Add a new column schema to the table
+        @param name: str Two columns with the same name are not allowed 
+        @param attribute_schema: AttributeSchema
+        '''
+        self._schema.add_attribute(name, attribute_schema)
+    
     def add_derived_column(self):
         pass

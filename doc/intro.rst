@@ -16,4 +16,13 @@ Data_store
 .. automodule:: analysis_data.data_store
    :members: 
 
+Dataset
+--------
+.. automodule:: dataset
+   :members: 
+
+Table
+^^^^^
+.. automodule:: dataset.table
+   :members: 
 
