@@ -90,7 +90,7 @@ def negation(f):
 class AttributeSchema(object):
     '''The AttributeSchema describes the schema of any Attribute in any item '''
     def __init__(self, attribute_type, *args, **kwargs):
-        '''@param attibute_type: One in AttributeTypes
+        '''@param atribute_type: One in AttributeTypes
         @param spatial: bool - The opposite of abstract
         @param key: bool - The opposite of value 
         @param shape: tuple - The shape ala numpy if multidimensional. () if Scalar
