@@ -55,10 +55,23 @@ class Table(ITable, TableView):
         
     def add_column(self, name, attribute_schema):
         ''' Add a new column schema to the table
-        @param name: str Two columns with the same name are not allowed 
+        @param name: str The name of the new column. Two columns with the same 
+        name are not allowed 
         @param attribute_schema: AttributeSchema
         '''
         self._schema.add_attribute(name, attribute_schema)
     
-    def add_derived_column(self):
+    def add_derived_column(self, name, attribute_schema, inputs, function):
+        '''
+        @param name: str The name of the new column. Two columns with the same 
+        name are not allowed 
+        @param attribute_schema: AttributeSchema
+        @param inputs: list with the names of the attributes that will be the 
+        inputs for the function that computes the derived value. Allways that
+        those inputs change the derived column values are recomputed
+        @function: dict or RemoteFunction This code will be executed once per row
+        Returns the derived value. The dict statement use the core grammar and has
+        access to the inputs with $name_of_input. The RemoteFunction will be 
+        invoked with a dict of inputs {name_of_input:value}      
+        '''
         pass
