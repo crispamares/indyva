@@ -21,7 +21,6 @@ class Bus(object):
         '''
         self._prefix = prefix
         self._hub = hub.get_instance()
-        print self._hub
         self._bus_id = uuid.uuid4()
         
     def __del__(self):

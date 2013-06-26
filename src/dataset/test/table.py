@@ -14,12 +14,17 @@ import exceptions
 
 class Test(unittest.TestCase):
 
+    def callback(self, topic, msg):
+        print topic, msg
+        self.callback_executed = True
+
     def setUp(self):
         self.df = pn.read_csv(RSC_DIR+'/census.csv')
         with open(RSC_DIR+'/schema_census') as f:
             schema = json.loads(f.read())
         
         self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
+        self.callback_executed = False
         
     def testCreationAsList(self):
         data = []
@@ -67,6 +72,13 @@ class Test(unittest.TestCase):
         self.assertEqual(view.count(), 1)
         self.assertEqual( table.find_one({'life_meanning': {'$exists':True}})['life_meanning'], 42)
         
+    def testAddEvent(self):
+        table = Table('census', self.schema).data(self.df)
+        table.subscribe_once('add', self.callback)
+        self.callback_executed = False
+        table.insert({'life_meanning':42})
+        self.assertTrue(self.callback_executed)
+        
     def testUpdate(self):
         table = Table('census', self.schema).data(self.df)
         val = table.find_one({'State': 'DC'}, {'Information':True})['Information']
@@ -74,12 +86,31 @@ class Test(unittest.TestCase):
         table.update({'State': 'DC'}, {'$set': {'Information':val}})
         self.assertEqual(table.find_one({'State': 'DC'}, {'Information':True})['Information'], val)
 
+    def testUpdateEvent(self):
+        table = Table('census', self.schema).data(self.df)
+        table.subscribe_once('update', self.callback)
+        self.callback_executed = False
+        table.update({'State': 'DC'}, {'$set': {'Information':2000}})
+        self.assertTrue(self.callback_executed)
+        
     def testRemove(self):
         table = Table('census', self.schema).data(self.df)
         query = {'State': 'DC'}
         c1 = table.find(query).count()
         table.remove(query)
         self.assertGreater(c1, table.find(query).count())
+    
+    def testRemoveEvent(self):
+        table = Table('census', self.schema).data(self.df)
+        query = {'State': 'DC'}
+        table.subscribe_once('remove', self.callback)
+        self.callback_executed = False
+        table.remove(query)
+        self.assertTrue(self.callback_executed)
+        
+        
+        
+        
         
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testConstructor']

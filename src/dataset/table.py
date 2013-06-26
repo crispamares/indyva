@@ -4,16 +4,25 @@ Created on 26/03/2013
 @author: crispamares
 '''
 from abc_table import ITable, ITableView
+from epubsub.abc_publisher import IPublisher 
+from epubsub.bus import Bus
+
 from mongo_backend.table import MongoTable
 
-class TableView(ITableView):
+class TableView(ITableView, IPublisher):
     _backend = MongoTable
 
     def __init__(self, parent, view_args):
         if parent is not None:
             self._backend = parent._backend
-        ITableView.__init__(self, parent, view_args)
+            bus = parent._bus
+        else:
+            bus = Bus(prefix= self.name+'.')
 
+        topics = ['add', 'update', 'remove']
+        IPublisher.__init__(self, bus, topics)
+        ITableView.__init__(self, parent, view_args)
+        
     def get_data(self, outtype='list'):
         return self._backend.get_view_data(view_args=self.view_args, outtype='rows')
     
@@ -45,13 +54,22 @@ class Table(ITable, TableView):
         return self
     
     def insert(self, row_or_rows):
+        #TODO: Improve the message
         self._backend.insert(row_or_rows)
-        
+        msg = {'n_rows_added':len(row_or_rows)}
+        self._bus.publish('add', msg)
+                
     def update(self, query=None, update=None, multi=True, upsert=False):
+        #TODO: Improve the message
         self._backend.update(query, update, multi, upsert)
-    
+        msg = {'n_updated':None}
+        self._bus.publish('update', msg)
+        
     def remove(self, query):
+        #TODO: Improve the message
         self._backend.remove(query)
+        msg = {'n_removed':None}
+        self._bus.publish('remove', msg)
         
     def add_column(self, name, attribute_schema):
         ''' Add a new column schema to the table
