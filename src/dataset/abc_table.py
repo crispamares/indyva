@@ -71,6 +71,10 @@ class ITableView(object):
     def column_count(self):
         pass
     
+    @abstractmethod    
+    def column_names(self):
+        pass
+    
 class ITable(ITableView):
     '''
     This class is a DataSet Type, an abstraction of Tabluar Data

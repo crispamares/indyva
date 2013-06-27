@@ -65,7 +65,13 @@ class MongoTable(ITable):
         keys_set = set()
         for row in self.find(**view_args[0]):
             keys_set.update(row.keys())
-        return len(keys_set)
+        return len(keys_set.intersection(self._schema.attributes.keys()))
+
+    def column_names(self, view_args):
+        keys_set = set()
+        for row in self.find(**view_args[0]):
+            keys_set.update(row.keys())
+        return list(keys_set.intersection(self._schema.attributes.keys()))
 
     def insert(self, row_or_rows):
         # TODO: should I return the _ids?

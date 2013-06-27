@@ -41,6 +41,10 @@ class TableView(ITableView, IPublisher):
 
     def column_count(self):
         return self._backend.column_count(self.view_args)
+    
+    def column_names(self):
+        return self._backend.column_names(self.view_args)
+    
 
 class Table(ITable, TableView):
     _backend = MongoTable
