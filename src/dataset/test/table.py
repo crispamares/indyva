@@ -57,19 +57,25 @@ class Test(unittest.TestCase):
         for result in view.get_data():
             self.assertIn(result['State'], ['DC','NY'])
 
-    def testCount(self):
+    def testRowCount(self):
         table = Table('census', self.schema).data(self.df)
-        self.assertEqual(table.count(), 51)
+        self.assertEqual(table.row_count(), 51)
         view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
-        self.assertEqual(view.count(), 2)
-        
+        self.assertEqual(view.row_count(), 2)
+
+    def testColumnCount(self):
+        table = Table('census', self.schema).data(self.df)
+        self.assertEqual(table.column_count(), 22)
+        view = table.find({}, {'Information':True})
+        self.assertEqual(view.column_count(), 1)
+                
     def testInsert(self):
         table = Table('census', self.schema).data(self.df)
-        c1 = table.count()
+        c1 = table.row_count()
         table.insert({'life_meanning':42})
-        self.assertEqual(table.count() - c1, 1)
+        self.assertEqual(table.row_count() - c1, 1)
         view = table.find({'life_meanning': {'$exists':True}})
-        self.assertEqual(view.count(), 1)
+        self.assertEqual(view.row_count(), 1)
         self.assertEqual( table.find_one({'life_meanning': {'$exists':True}})['life_meanning'], 42)
         
     def testAddEvent(self):
@@ -96,9 +102,9 @@ class Test(unittest.TestCase):
     def testRemove(self):
         table = Table('census', self.schema).data(self.df)
         query = {'State': 'DC'}
-        c1 = table.find(query).count()
+        c1 = table.find(query).row_count()
         table.remove(query)
-        self.assertGreater(c1, table.find(query).count())
+        self.assertGreater(c1, table.find(query).row_count())
     
     def testRemoveEvent(self):
         table = Table('census', self.schema).data(self.df)

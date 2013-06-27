@@ -13,8 +13,10 @@ class TableView(ITableView, IPublisher):
     _backend = MongoTable
 
     def __init__(self, parent, view_args):
+        print 'parent', parent
         if parent is not None:
             self._backend = parent._backend
+            self._schema = parent._schema
             bus = parent._bus
         else:
             bus = Bus(prefix= self.name+'.')
@@ -28,14 +30,17 @@ class TableView(ITableView, IPublisher):
     
     def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
         view_args = dict(query=query, projection=projection, skip=skip, limit=limit, sort=sort)
+        print 'self', self
         return TableView(parent=self, view_args=view_args)
 
     def find_one(self, *args, **kwargs):
         return self._backend.find_one(*args, **kwargs)
     
-    def count(self):
-        return self._backend.count(self.view_args)
+    def row_count(self):
+        return self._backend.row_count(self.view_args)
 
+    def column_count(self):
+        return self._backend.column_count(self.view_args)
 
 class Table(ITable, TableView):
     _backend = MongoTable

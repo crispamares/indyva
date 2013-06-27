@@ -58,8 +58,14 @@ class MongoTable(ITable):
     def find_one(self, query=None, projection=None, skip=0, limit=0, sort=None):
         return self._col.find_one(query, fields=projection, skip=skip, limit=limit, sort=sort)
     
-    def count(self, view_args):
+    def row_count(self, view_args):
         return self.find(**view_args[0]).count()
+    
+    def column_count(self, view_args):
+        keys_set = set()
+        for row in self.find(**view_args[0]):
+            keys_set.update(row.keys())
+        return len(keys_set)
 
     def insert(self, row_or_rows):
         # TODO: should I return the _ids?

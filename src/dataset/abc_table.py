@@ -64,7 +64,11 @@ class ITableView(object):
         pass
     
     @abstractmethod
-    def count(self):
+    def row_count(self):
+        pass
+    
+    @abstractmethod
+    def column_count(self):
         pass
     
 class ITable(ITableView):
