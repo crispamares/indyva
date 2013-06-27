@@ -12,6 +12,7 @@ class TDataTableModel(QtCore.QAbstractTableModel):
     def setTable(self, table):
         self._table = table
         self._data = self._table.get_data()
+        self._col_names =  self._table.column_names()
         
         self.rcount = None
         self.ccount = None
@@ -21,12 +22,12 @@ class TDataTableModel(QtCore.QAbstractTableModel):
         return self.rcount if not parent.isValid() else 0
 
     def columnCount(self, parent):
-        self.ccount = self.ccount if self.ccount is not None else self._table.column_count() - 1
+        self.ccount = self.ccount if self.ccount is not None else self._table.column_count()
         return self.ccount if not parent.isValid() else 0
 
     def data(self, index, role):
         row = self._data[ index.row() ]
-        return row[ self._table._schema.attributes.keys()[ index.column() ] ]
+        return row[ self._col_names[ index.column() ] ]
 
 class TabularView(QtGui.QTableView):
     '''
