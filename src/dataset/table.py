@@ -19,7 +19,7 @@ class TableView(ITableView, IPublisher):
             self._schema = parent._schema
             bus = parent._bus
         else:
-            bus = Bus(prefix= self.name+'.')
+            bus = Bus(prefix= 'ds.'+self.name+'.')
 
         topics = ['add', 'update', 'remove']
         IPublisher.__init__(self, bus, topics)
