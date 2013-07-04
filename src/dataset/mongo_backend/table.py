@@ -4,6 +4,7 @@ from .connection import Connection
 
 import pandas as pn
 import exceptions
+from types import DictType
 
 ''' The mongo backend stores each analysis as a different database. And 
 each dataset as a different collection.
@@ -53,9 +54,13 @@ class MongoTable(ITable):
         return self
     
     def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
+        projection = projection if isinstance(projection, DictType) else {} 
+        projection.update({'_id':False})
         return self._col.find(query, fields=projection, skip=skip, limit=limit, sort=sort)
         
     def find_one(self, query=None, projection=None, skip=0, limit=0, sort=None):
+        projection = projection if isinstance(projection, DictType) else {} 
+        projection.update({'_id':False})
         return self._col.find_one(query, fields=projection, skip=skip, limit=limit, sort=sort)
     
     def row_count(self, view_args):
