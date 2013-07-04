@@ -25,7 +25,7 @@ class DynFilter(IPublisher):
         self._conditions = OrderedDict()
         self._computed_sieve = None
         
-        topics = ['filter']
+        topics = ['change']
         bus = Bus(prefix= 'f.'+self._name+'.')
         IPublisher.__init__(self, bus, topics)
         
@@ -71,14 +71,14 @@ class DynFilter(IPublisher):
         self._computed_sieve = None
         
     def _compute_sieve(self):
-        sieve = {}
-        for c in self._conditions:
-            sieve.update(c['sieve'])
+        sieve = set()
+        for c in self._conditions.values():
+            sieve = sieve.union(c['sieve'])
         return sieve
     
     @property
     def sieve(self):
         '''The sieve resulting of the accumulation of every condition'''
         if self._computed_sieve is None:
-            self._compute_sieve()
+            self._computed_sieve = self._compute_sieve()
         return self._computed_sieve

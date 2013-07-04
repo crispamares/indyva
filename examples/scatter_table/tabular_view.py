@@ -40,9 +40,18 @@ class TabularView(QtGui.QTableView):
         '''
         QtGui.QTableView.__init__(self, parent)
         self.table = None
+        self.dynfilter = None
         
     def set_table(self, table):
         self.table = table
+        
+    def set_dynfilter(self, dynfilter):
+        self.dynfilter = dynfilter
+        self.dynfilter.subscribre('change', self.on_filter_change)
+        
+    def on_filter_change(self, msg):
+        print msg
+        self.render_table()
         
     def render_table(self):
         model = TDataTableModel()
