@@ -68,6 +68,10 @@ class Test(unittest.TestCase):
         self.assertEqual(table.column_count(), 22)
         view = table.find({}, {'Information':True})
         self.assertEqual(view.column_count(), 1)
+        
+    def testIndex(self):
+        table = Table('census', self.schema).data(self.df)
+        self.assertEqual(table.index, 'State')
                 
     def testInsert(self):
         table = Table('census', self.schema).data(self.df)

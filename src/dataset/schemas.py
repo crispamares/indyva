@@ -27,9 +27,9 @@ class DataSetSchema:
     @abstractmethod
     def __init__(self, index):
         self._schema = OrderedDict()
-        self._schema['dataset_type'] = None   
-        if type(index) == types.StringTypes:
-            self._schema['index'] = tuple([index])
+        self._schema['dataset_type'] = None 
+        if isinstance(index, types.StringTypes):
+            self._schema['index'] = index
         else:
             self._schema['index'] = tuple(index)
     
@@ -60,7 +60,8 @@ class DataSetSchema:
         
     @property
     def index(self):
-        '''Is a list with the name of the Attributes that are used as index'''
+        '''Is a string or a tuple with the name of the Attributes that are used 
+        as index'''
         return self._schema['index']
     
 class TableSchema(DataSetSchema):

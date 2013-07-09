@@ -56,7 +56,7 @@ class TabularView(QtGui.QTableView):
     def render_table(self):
         model = TDataTableModel()
         if self.dynfilter is not None:
-            filtered_table = self.table.find(self.dynfilter.query('State'))
+            filtered_table = self.table.find(self.dynfilter.query(self.table.index))
             model.setTable(filtered_table)
         else:
             model.setTable(self.table)

@@ -33,6 +33,10 @@ class ITableView(object):
         return self._name
     
     @property
+    def index(self):
+        return self._schema.index
+    
+    @property
     def view_args(self):
         return self._view_args
     
@@ -74,7 +78,9 @@ class ITableView(object):
     @abstractmethod    
     def column_names(self):
         pass
-    
+
+
+
 class ITable(ITableView):
     '''
     This class is a DataSet Type, an abstraction of Tabluar Data
