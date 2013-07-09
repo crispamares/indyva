@@ -25,7 +25,7 @@ class DynFilter(IPublisher):
         self._conditions = OrderedDict()
         self._computed_sieve = None
         
-        topics = ['change']
+        topics = ['change', 'remove']
         bus = Bus(prefix= 'f.'+self._name+'.')
         IPublisher.__init__(self, bus, topics)
         
@@ -43,6 +43,8 @@ class DynFilter(IPublisher):
         self._conditions[name] = dict(sieve=sieve, query=query)
         self._dirty()
         
+        self._bus.publish('change', name)
+        
     def set_condition(self, name, sieve, query=None):
         ''' 
         @param name: The key of the condition. 
@@ -53,6 +55,8 @@ class DynFilter(IPublisher):
         '''
         self._conditions[name] = dict(sieve=sieve, query=query)
         self._dirty()
+        
+        self._bus.publish('change', name)
         
     def remove_condition(self, name):
         ''' 
@@ -67,18 +71,38 @@ class DynFilter(IPublisher):
         del self._conditions[name]
         self._dirty()
         
+        self._bus.publish('remove', name)
+
+    def is_empty(self):
+        return len(self._conditions) == 0
+    
+    @property
+    def sieve(self):
+        '''The sieve resulting of the accumulation of every condition.
+        A sieve is a set of indices or None if there are no conditions'''
+        if self._computed_sieve is None:
+            self._computed_sieve = self._compute_sieve()
+        return self._computed_sieve
+
+    def query(self, index):
+        '''The query resulting of the accumulation of every condition.
+        @param index: A string or list of strings'''
+        if self.is_empty():
+            return {}
+        if self._computed_sieve is None:
+            self._computed_sieve = self._compute_sieve()
+        if isinstance(index, list):
+            NotImplementedError('Multi Index is not supported yet')
+        return { index : {'$in': list(self._computed_sieve)} }
+        
     def _dirty(self):
         self._computed_sieve = None
         
     def _compute_sieve(self):
+        if self.is_empty():
+            return None
         sieve = set()
         for c in self._conditions.values():
             sieve = sieve.union(c['sieve'])
         return sieve
     
-    @property
-    def sieve(self):
-        '''The sieve resulting of the accumulation of every condition'''
-        if self._computed_sieve is None:
-            self._computed_sieve = self._compute_sieve()
-        return self._computed_sieve
