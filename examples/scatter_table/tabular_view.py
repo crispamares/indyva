@@ -47,14 +47,18 @@ class TabularView(QtGui.QTableView):
         
     def set_dynfilter(self, dynfilter):
         self.dynfilter = dynfilter
-        self.dynfilter.subscribre('change', self.on_filter_change)
-        
-    def on_filter_change(self, msg):
-        print msg
+        self.dynfilter.subscribe('change', self.on_filter_change)
+
+    def on_filter_change(self, topic, msg):
+        print 'topic: {0}, msg: {1}'.format(topic, msg)
         self.render_table()
         
     def render_table(self):
         model = TDataTableModel()
-        model.setTable(self.table)
+        if self.dynfilter is not None:
+            filtered_table = self.table.find(self.dynfilter.query('State'))
+            model.setTable(filtered_table)
+        else:
+            model.setTable(self.table)
         self.setModel(model)
 
