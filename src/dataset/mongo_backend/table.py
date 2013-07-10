@@ -37,7 +37,7 @@ class MongoTable(ITable):
     def get_view_data(self, view_args=[{}], outtype='rows'):
         if isinstance(view_args, dict):
             view_args = [view_args]
-        if len(view_args) > 1: raise exceptions.NotImplementedError()
+        if len(view_args) > 1: raise exceptions.NotImplementedError(view_args)
         # TODO: translate view_args to aggregate syntax 
         return self._serialize_data(self.find(**view_args[0]), outtype)
 
