@@ -26,6 +26,8 @@ class TDataTableModel(QtCore.QAbstractTableModel):
         return self.ccount if not parent.isValid() else 0
 
     def data(self, index, role):
+        if role != QtCore.Qt.DisplayRole: 
+            return None  # No checkboxes
         row = self._data[ index.row() ]
         return row[ self._col_names[ index.column() ] ]
     
