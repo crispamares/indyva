@@ -25,7 +25,7 @@ class TableView(ITableView, IPublisher):
         ITableView.__init__(self, parent, view_args)
         
     def get_data(self, outtype='rows'):
-        return self._backend.get_view_data(view_args=self.view_args, outtype='rows')
+        return self._backend.get_view_data(view_args=self.view_args, outtype=outtype)
     
     def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
         view_args = dict(query=query, projection=projection, skip=skip, limit=limit, sort=sort)

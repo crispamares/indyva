@@ -26,6 +26,9 @@ class MongoTable(ITable):
     def _serialize_data(self, cursor, outtype):
         if outtype == 'rows':
             return list(cursor)
+        if outtype == 'c_list':
+            df = pn.DataFrame(list(cursor))
+            return df.to_dict('list')
         raise exceptions.NotImplementedError()
 
     def get_data(self , outtype='rows'):
