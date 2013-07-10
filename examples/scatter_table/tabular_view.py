@@ -11,8 +11,13 @@ from dataset.table import TableView
 class TDataTableModel(QtCore.QAbstractTableModel):
     def setTable(self, table):
         self._table = table
-        self._data = self._table.get_data()
+        self._data = self._table.get_data('c_list')
         self._col_names =  self._table.column_names()
+        
+        # The following fails because multiple view_args is not already implemented 
+        #self.data_index = table.find({}, {table.index : True}).get_data('c_list')[table.index]
+        
+        self.data_index = self._data[table.index]
         
         self.rcount = None
         self.ccount = None
@@ -28,8 +33,9 @@ class TDataTableModel(QtCore.QAbstractTableModel):
     def data(self, index, role):
         if role != QtCore.Qt.DisplayRole: 
             return None  # No checkboxes
-        row = self._data[ index.row() ]
-        return row[ self._col_names[ index.column() ] ]
+        col = self._data[self._col_names[ index.column() ] ]
+        #row = self._data[ index.row() ]
+        return col[ index.row() ]# [ self._col_names[ index.column() ] ]
     
 
 class TabularView(QtGui.QTableView):
@@ -44,50 +50,47 @@ class TabularView(QtGui.QTableView):
         QtGui.QTableView.__init__(self, parent)
         self.table = None
         self.dynfilter = None
-        self.dynselect = None
-        self._data_index = None
+        self.highlight = None
 
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.MultiSelection)
         
     def set_table(self, table):
         self.table = table
-        projection = {table.index : True}
-        self._data_index = table.find({}, projection).get_data('c_list')[table.index]
 
     def set_dynfilter(self, dynfilter):
         self.dynfilter = dynfilter
         self.dynfilter.subscribe('change', self.on_filter_change)
         
-    def set_dynselect(self, dynselect):
-        self.dynselect = dynselect
-        self.dynselect.subscribe('change', self.on_select_change)
+    def set_highlight(self, dynselect):
+        self.highlight = dynselect
+        self.highlight.subscribe('change', self.on_hightlight_change)
 
     def on_filter_change(self, topic, msg):
         print 'topic: {0}, msg: {1}'.format(topic, msg)
         self.render_table()
     
-    def on_select_change(self, topic, msg):
+    def on_hightlight_change(self, topic, msg):
         print 'topic: {0}, msg: {1}'.format(topic, msg)
         self.render_table()
         
     def render_table(self):
         model = TDataTableModel()
         if self.dynfilter is not None:
-            query = self.dynfilter.query(self.table.index)
-            filtered_table = self.table.find(query)
+            query, projection = self.dynfilter.query(self.table.index)
+            filtered_table = self.table.find(query, projection)
             model.setTable(filtered_table)
         else:
             model.setTable(self.table)
         
         self.setModel(model)
         
-        if self.dynselect is not None:
-            reference = self.dynselect.ref
+        if self.highlight is not None:
+            reference = self.highlight.ref
             selection_model = self.selectionModel()
             selection_model.clearSelection()
-            for item in reference:
-                self.selectRow(self._data_index.index(item))
+            existing_ref = set(reference).intersection(model.data_index)
+            for item in existing_ref:
+                self.selectRow(model.data_index.index(item))
                 
-        
 

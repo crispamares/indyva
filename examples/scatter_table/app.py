@@ -63,6 +63,18 @@ def setUpData():
 def getDF():
     return pn.read_csv(RSC_DIR+'/census.csv')
 
+def test_dselect_and_dfilter(tv):
+    from dynamics.dselect import DynSelect
+    d = DynSelect('sel1')
+    tv.set_highlight(d)
+    d.set_condition('horizontal2', ['RI','SD', 'NY', 'VT'])
+
+    from dynamics.dfilter import  DynFilter
+    f = DynFilter('filt1')
+    tv.set_dynfilter(f)
+    f.set_item_condition('horizontal', ['DC','NY'])
+    f.set_attr_condition('vertical', {'State': True, 'Information':True})
+   
 def main():
     app = QtGui.QApplication(sys.argv)
     
@@ -85,6 +97,7 @@ def main():
     ipwin.namespace['tv'] = tv
     ipwin.namespace['table'] = tv.table
     ipwin.namespace['getDF'] = getDF
+    ipwin.namespace['test_dselect_and_dfilter'] = test_dselect_and_dfilter
     
     ipwin.ipkernel.start()
     
