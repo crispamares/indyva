@@ -28,6 +28,7 @@ class TDataTableModel(QtCore.QAbstractTableModel):
     def data(self, index, role):
         row = self._data[ index.row() ]
         return row[ self._col_names[ index.column() ] ]
+    
 
 class TabularView(QtGui.QTableView):
     '''
@@ -41,15 +42,30 @@ class TabularView(QtGui.QTableView):
         QtGui.QTableView.__init__(self, parent)
         self.table = None
         self.dynfilter = None
+        self.dynselect = None
+        self._data_index = None
+
+        self.setSelectionBehavior(self.SelectRows)
+        self.setSelectionMode(self.MultiSelection)
         
     def set_table(self, table):
         self.table = table
-        
+        projection = {table.index : True}
+        self._data_index = table.find({}, projection).get_data('c_list')[table.index]
+
     def set_dynfilter(self, dynfilter):
         self.dynfilter = dynfilter
         self.dynfilter.subscribe('change', self.on_filter_change)
+        
+    def set_dynselect(self, dynselect):
+        self.dynselect = dynselect
+        self.dynselect.subscribe('change', self.on_select_change)
 
     def on_filter_change(self, topic, msg):
+        print 'topic: {0}, msg: {1}'.format(topic, msg)
+        self.render_table()
+    
+    def on_select_change(self, topic, msg):
         print 'topic: {0}, msg: {1}'.format(topic, msg)
         self.render_table()
         
@@ -61,5 +77,15 @@ class TabularView(QtGui.QTableView):
             model.setTable(filtered_table)
         else:
             model.setTable(self.table)
+        
         self.setModel(model)
+        
+        if self.dynselect is not None:
+            reference = self.dynselect.ref
+            selection_model = self.selectionModel()
+            selection_model.clearSelection()
+            for item in reference:
+                self.selectRow(self._data_index.index(item))
+                
+        
 
