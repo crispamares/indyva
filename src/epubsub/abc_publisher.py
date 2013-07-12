@@ -5,10 +5,27 @@ Created on Jun 26, 2013
 '''
 from bus import Bus
 from abc import ABCMeta
+from functools import wraps
 
 '''@@var TESTDESCRIPTION: If True every subscription is asserted to be
 the list of topics'''
 TESTSUBSCRIPTION = True
+
+
+
+
+def pub_result(topic):
+    '''Decorator that publish '''
+    def wrap(func):
+        @wraps(func)
+        def publisher(self, *args, **kwargs):
+            result = func (self, *args, **kwargs)
+            self._bus.publish(topic, result)
+            return result
+        return publisher
+    return wrap
+
+
 
 class IPublisher(object):
     '''
