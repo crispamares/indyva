@@ -15,6 +15,9 @@ DEFERRING = True
         
         
 def defer(queue_name):
+    '''Decorator that defers the execution of the given function. The function
+    will be appended to the given queue of the event loop so the moment of the
+    execution will depend on the state of those queues'''
     def wrap(func):
         queue = Loop.get_queue(queue_name)
         @wraps(func)
@@ -25,6 +28,7 @@ def defer(queue_name):
 
 
 when_render = defer('render')
+when_idle = defer('idle')
 
 
 class Loop(object):
@@ -34,7 +38,9 @@ class Loop(object):
 
     _queues = {}
     _render = deque()
+    _idle = deque()
     _queues['render'] = _render
+    _queues['idle'] = _idle
 
     @classmethod
     def get_queue(cls, name):
@@ -53,6 +59,11 @@ class Loop(object):
         while True:
             
             cls.exec_queue(cls._render)
+            
+            # The idle queue only executes one function per cycle
+            if len(cls._idle):
+                func, args, kwargs = cls._idle.pop()
+                func(*args, **kwargs)
             
             time.sleep(FREQ)
             
