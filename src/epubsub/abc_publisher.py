@@ -15,13 +15,26 @@ TESTSUBSCRIPTION = True
 
 
 def pub_result(topic):
-    '''Decorator that publish '''
+    '''Decorator that publish the result of the decorated function as the msg
+    of the given topic
+    
+    This decorator also adds a kw argument 'pub_options' to the interface of 
+    the decorated function. This argument is a dict that configures how the 
+    result is emitted.
+    * Configurable options:
+       - silent: if pub_options['silent'] == True then no msg will be emitted  
+    '''
     def wrap(func):
         @wraps(func)
         def publisher(self, *args, **kwargs):
+            pub_options = kwargs.pop('pub_options', {})
+            
             result = func (self, *args, **kwargs)
-            self._bus.publish(topic, result)
+
+            if not pub_options.get('silent', False):
+                self._bus.publish(topic, result)
             return result
+        
         return publisher
     return wrap
 
