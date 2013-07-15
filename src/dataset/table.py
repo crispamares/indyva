@@ -4,7 +4,7 @@ Created on 26/03/2013
 @author: crispamares
 '''
 from abc_table import ITable, ITableView
-from epubsub.abc_publisher import IPublisher 
+from epubsub.abc_publisher import IPublisher, pub_result
 from epubsub.bus import Bus
 
 from mongo_backend.table import MongoTable
@@ -59,24 +59,28 @@ class Table(ITable, TableView):
         '''
         self._backend.data(data)
         return self
-    
+
+    @pub_result('add')    
     def insert(self, row_or_rows):
         #TODO: Improve the message
         self._backend.insert(row_or_rows)
         msg = {'n_rows_added':len(row_or_rows)}
-        self._bus.publish('add', msg)
-                
+        return msg
+
+    @pub_result('update')
     def update(self, query=None, update=None, multi=True, upsert=False):
         #TODO: Improve the message
         self._backend.update(query, update, multi, upsert)
         msg = {'n_updated':None}
-        self._bus.publish('update', msg)
-        
+        return msg
+
+    @pub_result('remove')
     def remove(self, query):
         #TODO: Improve the message
         self._backend.remove(query)
         msg = {'n_removed':None}
-        self._bus.publish('remove', msg)
+        return msg
+        
         
     def add_column(self, name, attribute_schema):
         ''' Add a new column schema to the table
