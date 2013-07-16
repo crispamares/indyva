@@ -82,15 +82,37 @@ class MongoTable(ITable):
         return list(keys_set.intersection(self._schema.attributes.keys()))
 
     def insert(self, row_or_rows):
-        # TODO: should I return the _ids?
+        reference = []
+        rows = row_or_rows if isinstance(row_or_rows, list) else [row_or_rows]
+        attributes = set()
+        
+        for row in rows:
+            attributes.update(row.keys())
+            reference.append(row[self.index])
+            
         self._col.insert(row_or_rows)
+        return {'items':reference, 'attributes': list(attributes)}
 
     def update(self, query=None, update=None, multi=True, upsert=False):
-        # TODO: should I return may feedback?
+        reference = []
+        if multi:
+            for row in self.find(query, {self.index: True}):
+                reference.append(row[self.index])
+        else:
+            row = self.find_one(query, {self.index: True})
+            reference.append(row[self.index])
+        attributes = update.get('$set', update).keys()
+          
         self._col.update(query, update, multi, upsert)
+        return {'items':reference, 'attributes': attributes}
 
     def remove(self, query):
+        reference = []
+        attributes = set()
+        for row in self.find(query):
+            attributes.update(row.keys())
+            reference.append(row[self.index])
         # TODO Check compatibility 2.2 and 2.4 with safe argument
-        res = self._col.remove(query, safe=True)
-        return res['n']
+        self._col.remove(query, safe=True)
+        return {'items':reference, 'attributes': list(attributes)}
     

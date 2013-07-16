@@ -69,6 +69,12 @@ class Test(unittest.TestCase):
         view = table.find({}, {'Information':True})
         self.assertEqual(view.column_count(), 1)
         
+    def testColumnNames(self):
+        table = Table('census', self.schema).data(self.df)
+        self.assertEqual(len(table.column_names()), 22)
+        view = table.find({}, {'Information':True})
+        self.assertEqual(view.column_names(), ['Information'])
+        
     def testCheckIndex(self):
         table = Table('census', self.schema).data(self.df)
         with self.assertRaises(ValueError):
@@ -84,8 +90,14 @@ class Test(unittest.TestCase):
         c1 = table.row_count()
         table.insert({'State': 'ES', 'life_meaning':42})
         self.assertEqual(table.row_count() - c1, 1)
+
+        c2 = table.row_count()
+        table.insert([{'State': 'ES', 'life_meaning':42},
+                      {'State': 'ES2', 'life_meaning':42},])
+        self.assertEqual(table.row_count() - c2, 2)
+        
         view = table.find({'life_meaning': {'$exists':True}})
-        self.assertEqual(view.row_count(), 1)
+        self.assertEqual(view.row_count(), 3)
         self.assertEqual( table.find_one({'life_meaning': {'$exists':True}})['life_meaning'], 42)
         
     def testAddEvent(self):

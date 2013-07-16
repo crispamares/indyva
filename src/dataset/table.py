@@ -71,22 +71,18 @@ class Table(ITable, TableView):
     @pub_result('add')
     def insert(self, row_or_rows):
         self._check_index(row_or_rows)
-        self._backend.insert(row_or_rows)
-        msg = {'n_rows_added':len(row_or_rows)}
+        msg = self._backend.insert(row_or_rows)
         return msg
 
     @pub_result('update')
     def update(self, query=None, update=None, multi=True, upsert=False):
         #TODO: Improve the message
-        self._backend.update(query, update, multi, upsert)
-        msg = {'n_updated':None}
+        msg = self._backend.update(query, update, multi, upsert)
         return msg
 
     @pub_result('remove')
     def remove(self, query):
-        #TODO: Improve the message
-        self._backend.remove(query)
-        msg = {'n_removed':None}
+        msg = self._backend.remove(query)
         return msg
         
         
