@@ -69,6 +69,12 @@ class Test(unittest.TestCase):
         view = table.find({}, {'Information':True})
         self.assertEqual(view.column_count(), 1)
         
+    def testCheckIndex(self):
+        table = Table('census', self.schema).data(self.df)
+        with self.assertRaises(ValueError):
+            table._check_index({'life_meaning':42})
+        table._check_index({'State': 'ES', 'life_meaning':42})
+        
     def testIndex(self):
         table = Table('census', self.schema).data(self.df)
         self.assertEqual(table.index, 'State')
@@ -76,17 +82,17 @@ class Test(unittest.TestCase):
     def testInsert(self):
         table = Table('census', self.schema).data(self.df)
         c1 = table.row_count()
-        table.insert({'life_meanning':42})
+        table.insert({'State': 'ES', 'life_meaning':42})
         self.assertEqual(table.row_count() - c1, 1)
-        view = table.find({'life_meanning': {'$exists':True}})
+        view = table.find({'life_meaning': {'$exists':True}})
         self.assertEqual(view.row_count(), 1)
-        self.assertEqual( table.find_one({'life_meanning': {'$exists':True}})['life_meanning'], 42)
+        self.assertEqual( table.find_one({'life_meaning': {'$exists':True}})['life_meaning'], 42)
         
     def testAddEvent(self):
         table = Table('census', self.schema).data(self.df)
         table.subscribe_once('add', self.callback)
         self.callback_executed = False
-        table.insert({'life_meanning':42})
+        table.insert({'State': 'ES', 'life_meaning':42})
         self.assertTrue(self.callback_executed)
         
     def testUpdate(self):

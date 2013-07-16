@@ -52,6 +52,14 @@ class Table(ITable, TableView):
         ITable.__init__(self, name, schema)
         TableView.__init__(self, None, None)
         
+    def _check_index(self, row_or_rows):
+        '''Raise a ValueError if any row does not have valid index keys'''
+        rows = row_or_rows if isinstance(row_or_rows, list) else [row_or_rows]
+        indices = self.index if isinstance(self.index, tuple) else tuple([self.index])
+        for row in rows:
+            if not all([row.has_key(i) for i in indices]):
+                raise ValueError('Every row needs valid index: {0}'.format(indices))
+        
     def data(self, data):
         ''' SetUp the data  
         @param data: Tabular data. Supported forms are: dict, DataFrame
@@ -60,9 +68,9 @@ class Table(ITable, TableView):
         self._backend.data(data)
         return self
 
-    @pub_result('add')    
+    @pub_result('add')
     def insert(self, row_or_rows):
-        #TODO: Improve the message
+        self._check_index(row_or_rows)
         self._backend.insert(row_or_rows)
         msg = {'n_rows_added':len(row_or_rows)}
         return msg
