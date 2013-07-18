@@ -29,6 +29,7 @@ def defer(queue_name):
 
 when_render = defer('render')
 when_idle = defer('idle')
+when_message = defer('message')
 
 
 class Loop(object):
@@ -39,8 +40,10 @@ class Loop(object):
     _queues = {}
     _render = deque()
     _idle = deque()
+    _message = deque()
     _queues['render'] = _render
     _queues['idle'] = _idle
+    _queues['message'] = _message
 
     @classmethod
     def get_queue(cls, name):
@@ -48,16 +51,17 @@ class Loop(object):
     
     @classmethod
     def exec_queue(cls, queue):
-        freezed_render = copy(queue)
+        freezed_queue = copy(queue)
         queue.clear()
-        while len(freezed_render):
-            func, args, kwargs = freezed_render.pop()
+        while len(freezed_queue):
+            func, args, kwargs = freezed_queue.pop()
             func(*args, **kwargs)
             
     @classmethod
     def run(cls):
         while True:
             
+            cls.exec_queue(cls._message)
             cls.exec_queue(cls._render)
             
             # The idle queue only executes one function per cycle
