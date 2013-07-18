@@ -65,6 +65,7 @@ def _singleton():
     hub = Hub()
     while True:
         yield hub
-        
+
+__singleton = _singleton()
 def get_instance():
-    return _singleton().next()
+    return __singleton.next()    
