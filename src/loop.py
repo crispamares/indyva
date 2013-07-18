@@ -10,7 +10,7 @@ from functools import wraps
 from collections import deque
 from copy import copy
 
-FREQ = 0.001
+FREQ = 0.00001
 DEFERRING = True
         
         
