@@ -20,7 +20,7 @@ class Front(object):
         
     def register(self, name, service):
         if self._services.has_key(name):
-            raise ValueError('There is a service registered with the same name: ' % name)
+            raise ValueError('There is a service registered with the same name: {0}'.format(name) )
         self._services[name] = service
         return '{0}.{1}'.format(FRONTPREFIX, name)
     
@@ -34,13 +34,17 @@ class Front(object):
         response = service.__getattribute__(request['rpc'])(**request['args'])
         return response
     
+    def __getattr__(self, name):
+        return self._services[name]
+    
 def _singleton():
     front = Front()
     while True:
         yield front
         
+__singleton = _singleton()
 def get_instance():
-    return _singleton().next()    
+    return __singleton.next()    
     
     
 class IService(object):
@@ -49,6 +53,8 @@ class IService(object):
     def __init__(self, name):
         front = get_instance()
         front.register(name, self)
+
+        
     
     
     
