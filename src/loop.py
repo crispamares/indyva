@@ -9,6 +9,7 @@ import time
 from functools import wraps
 from collections import deque
 from copy import copy
+import signal
 
 FREQ = 0.00001
 DEFERRING = True
@@ -45,6 +46,9 @@ class Loop(object):
     _queues['idle'] = _idle
     _queues['message'] = _message
 
+    _interrupted = False
+
+
     @classmethod
     def get_queue(cls, name):
         return cls._queues[name]
@@ -56,10 +60,16 @@ class Loop(object):
         while len(freezed_queue):
             func, args, kwargs = freezed_queue.pop()
             func(*args, **kwargs)
-            
+
+    @classmethod 
+    def _signal_handler(cls, signum, frame):
+        cls._interrupted = True
+
     @classmethod
     def run(cls):
+        signal.signal(signal.SIGINT, cls._signal_handler)
         while True:
+            if cls._interrupted: break
             
             cls.exec_queue(cls._message)
             cls.exec_queue(cls._render)

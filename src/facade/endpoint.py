@@ -9,6 +9,7 @@ import front
 from loop import when_message
 import json
 
+
 ENDPOINTDIR = 'tcp://127.0.0.1:10111'
 
 class Endpoint(object):
@@ -28,19 +29,23 @@ class Endpoint(object):
         self.socket = self.ctx.socket(zmq.REP)
         self.socket.bind(ENDPOINTDIR)
         self._stopped = True
-        
+        self._interrupted = False
+
     @when_message
     def recive(self):
-        event = self.socket.poll(1)
-        if event:
-            json_msg = self.socket.recv()
-            msg = json.loads(json_msg)
-            response = self.front.call(msg['content'])
-            json_response = json.dumps(response)
-            self.socket.send(json_response)
+        try:
+            event = self.socket.poll(1)
+            if event:
+                json_msg = self.socket.recv()
+                msg = json.loads(json_msg)
+                response = self.front.call(msg['content'])
+                json_response = json.dumps(response)
+                self.socket.send(json_response)
+        except zmq.ZMQError:  #eg: SIGINT
+            pass
         if not self._stopped:
             self.recive()
-    
+            
     def fast_recive(self):
         while True:
             json_msg = self.socket.recv()
