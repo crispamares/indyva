@@ -9,6 +9,8 @@ import front
 from loop import when_message
 import json
 
+ENDPOINTDIR = 'tcp://127.0.0.1:10111'
+
 class Endpoint(object):
     '''
     This class exposes the Front to remote clients over ZeroMQ transport layer
@@ -24,8 +26,7 @@ class Endpoint(object):
         self.ctx = zmq.Context()
         
         self.socket = self.ctx.socket(zmq.REP)
-        self.socket.bind('tcp://127.0.0.1:10111')
-        #self.socket.bind('ipc:///tmp/1')
+        self.socket.bind(ENDPOINTDIR)
         self._stopped = True
         
     @when_message

@@ -69,7 +69,9 @@ class Loop(object):
                 func, args, kwargs = cls._idle.pop()
                 func(*args, **kwargs)
             
-            time.sleep(FREQ)
+            # The message queue works with polling so sleeping is not necessary
+            if len(cls._message) == 0:
+                time.sleep(FREQ)
             
 
 if __name__ == '__main__':

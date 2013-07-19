@@ -22,7 +22,6 @@ def main():
     ctx = zmq.Context()
     socket = ctx.socket(zmq.REQ)
     socket.connect('tcp://127.0.0.1:10111')
-    #socket.connect('ipc:///tmp/1')
     
     t0 = timeit.time.time()
     for i in range(10000):
@@ -39,9 +38,15 @@ import json
 from __main__ import call_echo
 ctx = zmq.Context()
 socket = ctx.socket(zmq.REQ)
-socket.connect('tcp://127.0.0.1:10111')'''
+socket.connect('tcp://127.0.0.1:10111')
+m = 'hello'*1000
+'''
+    n = 10000
 
-    print(timeit.repeat("call_echo(socket, 'hello')", setup=setup, number=10000))
+    r = timeit.repeat("call_echo(socket, m)", setup=setup, number=n)
+    print 'time per msg:', [ t/n for t in r]
+    print 'total time (%d) messages:'%n, r
+    print 'messages per second:', [ n/t for t in r]
 
 def compute_overhead():
     pass
