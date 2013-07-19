@@ -10,7 +10,7 @@ import json
 import timeit
 
 def call_echo(socket, m):
-    content = {'service': 'echoer', 'rpc': 'echo', 'args':{'a': m}}
+    content = {'service': '_builtin', 'rpc': 'echo', 'args': [m]}
     msg = {'content': content}
     json_msg = json.dumps(msg)
     #print 'sent:', json_msg

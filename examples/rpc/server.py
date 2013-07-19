@@ -8,15 +8,9 @@ Created on 18/07/2013
 import loop
 from facade import endpoint, front
 
-class Echoer(front.IService):
-    def echo(self, a):
-        return a
-    
-    
 def main():
     print 'running'
     e = endpoint.Endpoint()
-    Echoer('echoer')
     e.run()
     
     l = loop.Loop

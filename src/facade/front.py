@@ -12,11 +12,12 @@ class Front(object):
     
     The Front replies to requests. A request is a dict with:
       - 'rpc' : str of the form 'r.name_of_service.name_of_method'
-      - 'args' : dict like in kwargs
+      - 'args' : list like in *args or dict like in **kwargs
     '''
 
     def __init__(self):
         self._services = {}
+        self.register('_builtin', BuiltinService())
         
     def register(self, name, service):
         if self._services.has_key(name):
@@ -31,7 +32,10 @@ class Front(object):
     def call(self, request):
         service_name = request['service']
         service = self._services[service_name]
-        response = service.__getattribute__(request['rpc'])(**request['args'])
+        if isinstance(request['args'], dict):
+            response = service.__getattribute__(request['rpc'])(**request['args'])
+        else:
+            response = service.__getattribute__(request['rpc'])(*request['args'])
         return response
     
     def __getattr__(self, name):
@@ -54,7 +58,8 @@ class IService(object):
         front = get_instance()
         front.register(name, self)
 
-        
-    
+class BuiltinService(object):
+    def echo(self, a):
+        return a
     
     
