@@ -19,7 +19,7 @@ class TableView(ITableView, IPublisher):
             bus = parent._bus
         else:
             bus = Bus(prefix= 'ds.'+self.name+'.')
-
+        #TODO: Create a name for the view
         topics = ['add', 'update', 'remove']
         IPublisher.__init__(self, bus, topics)
         ITableView.__init__(self, parent, view_args)
@@ -42,6 +42,9 @@ class TableView(ITableView, IPublisher):
     
     def column_names(self):
         return self._backend.column_names(self.view_args)
+    
+    def for_json(self):
+        return self.name
     
 
 class Table(ITable, TableView):

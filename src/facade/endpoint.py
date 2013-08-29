@@ -12,6 +12,14 @@ import json
 
 ENDPOINTDIR = 'tcp://127.0.0.1:10111'
 
+
+def json_magic(o):
+    try:
+        return o.for_json()
+    except AttributeError, e:
+        print e
+        raise TypeError('{0} is not JSON serializable'.format(o))
+
 class Endpoint(object):
     '''
     This class exposes the Front to remote clients over ZeroMQ transport layer
@@ -39,7 +47,7 @@ class Endpoint(object):
                 json_msg = self.socket.recv()
                 msg = json.loads(json_msg)
                 response = self.front.call(msg['content'])
-                json_response = json.dumps(response)
+                json_response = json.dumps(response, default=json_magic)
                 self.socket.send(json_response)
         except zmq.ZMQError:  #eg: SIGINT
             pass
@@ -51,12 +59,12 @@ class Endpoint(object):
             json_msg = self.socket.recv()
             msg = json.loads(json_msg)
             response = self.front.call(msg['content'])
-            json_response = json.dumps(response)
+            json_response = json.dumps(response, default=json_magic)
             self.socket.send(json_response)
             if self._stopped:
                 break
             
-    def run(self):
+    def run(self):  
         self._stopped = False
         self.recive()
     
