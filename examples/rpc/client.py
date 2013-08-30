@@ -23,12 +23,42 @@ def call(socket, content):
     json_msg = json.dumps(msg)
     socket.send(json_msg)
     return socket.recv()
+
+
+from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from external.tinyrpc.transports.zmq import ZmqClientTransport
+from external.tinyrpc import RPCClient, RPCProxy
     
 def main():
+    
     ctx = zmq.Context()
-    socket = ctx.socket(zmq.REQ)
-    socket.connect('tcp://127.0.0.1:10111')
+    
+    rpc_client = RPCClient(
+                           JSONRPCProtocol(),
+                           ZmqClientTransport.create(ctx, 'tcp://127.0.0.1:10111')
+    )
+    
+    remote_server = rpc_client.get_proxy()
+    schema, data = _get_data()
+    
+    result = rpc_client.call('TableSrv.new_table', args=['table1', data, schema], kwargs=None)
+    print 'Client result:', result
+    
+    table_service = RPCProxy(rpc_client, prefix='TableSrv.')
+    result = table_service.new_table('table2', data, schema)
+    print 'Proxy result:', result
+    
+    result = table_service.find('table2', {'$or':[{'State': 'NY'},{'State': 'DC'}]})
+    print 'Proxy result:', result
+    
+    result = remote_server.echo('Hello, World!')
+    print "Server answered:", result
+        
+    #remote_server.tables_container.new_table()
+    
 
+
+def _get_data():
     from dataset import RSC_DIR
     import pandas as pn 
 
@@ -39,6 +69,14 @@ def main():
     with open(RSC_DIR+'/schema_census') as f:
         schema = json.loads(f.read())
     schema = dict(attributes = schema['attributes'], index = schema['index'])
+    return schema, data
+
+def main_old():
+    ctx = zmq.Context()
+    socket = ctx.socket(zmq.REQ)
+    socket.connect('tcp://127.0.0.1:10111')
+
+    schema, data = _get_data()
     
     t0 = timeit.time.time()
     #for i in range(100):
