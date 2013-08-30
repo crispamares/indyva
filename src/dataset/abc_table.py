@@ -15,6 +15,8 @@ class ITableView(object):
     
     __metaclass__ = ABCMeta
 
+    _id_counter = 0
+
     def __init__(self, parent, view_args):        
         self._view_args =  [{}] if view_args is None else self._merge_args(parent.view_args, view_args)   
         
@@ -27,6 +29,11 @@ class ITableView(object):
             if len(new_args) == 0:
                 view_args.append(new_args)
         return view_args
+        
+    def _new_name(self, prefix=''):
+        cls = self.__class__
+        cls._id_counter += 1
+        return prefix+'.v{0}'.format(cls._id_counter)
         
     @property
     def name(self):
