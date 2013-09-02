@@ -9,34 +9,35 @@ import zmq
 import json
 import timeit
 
-def call_echo(socket, m):
-    content = {'service': '_builtin', 'rpc': 'echo', 'args': [m]}
-    msg = {'content': content}
-    json_msg = json.dumps(msg)
-    #print 'sent:', json_msg
-    socket.send(json_msg)
-    response = socket.recv()
-    #print 'response:', response
+from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from external.tinyrpc.transports.zmq import ZmqClientTransport
+from external.tinyrpc import RPCClient, RPCProxy
 
-def call(socket, content):
-    msg = {'content': content}
+
+def raw_call(socket, method, params):
+    ''' This is the call that other languages has to implement '''
+           
+    msg = {'jsonrpc': JSONRPCProtocol.JSON_RPC_VERSION,
+           'id': 1,  # This should not be a constant, but a unique id
+           'method': method,
+           'params':params
+       }
     json_msg = json.dumps(msg)
     socket.send(json_msg)
     return socket.recv()
 
 
-from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from external.tinyrpc.transports.zmq import ZmqClientTransport
-from external.tinyrpc import RPCClient, RPCProxy
     
 def main():
     
     ctx = zmq.Context()
-    
-    rpc_client = RPCClient(
-                           JSONRPCProtocol(),
-                           ZmqClientTransport.create(ctx, 'tcp://127.0.0.1:10111')
-    )
+    transport = ZmqClientTransport.create(ctx, 'tcp://127.0.0.1:10111')
+    rpc_client = RPCClient(JSONRPCProtocol(), transport)
+
+    res = raw_call(transport.socket, 'echo', {'s':'Ping'})
+    print 'Raw call result:', res
+    res = raw_call(transport.socket, 'echo', ['Pong'])
+    print 'Raw call result:', res
     
     remote_server = rpc_client.get_proxy()
     schema, data = _get_data()
@@ -44,11 +45,15 @@ def main():
     result = rpc_client.call('TableSrv.new_table', args=['table1', data, schema], kwargs=None)
     print 'Client result:', result
     
-    table_service = RPCProxy(rpc_client, prefix='TableSrv.')
+    #table_service = RPCProxy(rpc_client, prefix='TableSrv.')
+    table_service = rpc_client.get_proxy(prefix='TableSrv.')
     result = table_service.new_table('table2', data, schema)
     print 'Proxy result:', result
     
     result = table_service.find('table2', {'$or':[{'State': 'NY'},{'State': 'DC'}]})
+    print 'Proxy result:', result
+    
+    result = table_service.get_data(result)
     print 'Proxy result:', result
     
     result = remote_server.echo('Hello, World!')
@@ -71,36 +76,27 @@ def _get_data():
     schema = dict(attributes = schema['attributes'], index = schema['index'])
     return schema, data
 
-def main_old():
-    ctx = zmq.Context()
-    socket = ctx.socket(zmq.REQ)
-    socket.connect('tcp://127.0.0.1:10111')
-
-    schema, data = _get_data()
-    
-    t0 = timeit.time.time()
-    #for i in range(100):
-        #call_echo(socket, 'hello')
-    call(socket, {'service': 'TableSrv', 'rpc': 'new_table', 'args': ['table1', schema, data]})
-    print call(socket, {'service': 'table1', 'rpc': 'find', 'args': [{}]})
-    call(socket, {'service': 'TableSrv', 'rpc': 'del_table', 'args': ['table1']})
-    t1 = timeit.time.time()
-    print 'time: ', t1 - t0
     
 def get_times():
     print 'measuring time...'
     setup = '''
+from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from external.tinyrpc.transports.zmq import ZmqClientTransport
+from external.tinyrpc import RPCClient
+
 import zmq
 import json
-from __main__ import call_echo
-ctx = zmq.Context()
-socket = ctx.socket(zmq.REQ)
-socket.connect('tcp://127.0.0.1:10111')
-m = 'hello'*1000
-'''
-    n = 10000
+from __main__ import raw_call
 
-    r = timeit.repeat("call_echo(socket, m)", setup=setup, number=n)
+ctx = zmq.Context()
+transport = ZmqClientTransport.create(ctx, 'tcp://127.0.0.1:10111')
+rpc_client = RPCClient(JSONRPCProtocol(), transport)
+
+m = 'hello'*1
+'''
+    n = 1000
+
+    r = timeit.repeat("raw_call(transport.socket, 'echo', [m])", setup=setup, number=n)
     print 'time per msg:', [ t/n for t in r]
     print 'total time (%d) messages:'%n, r
     print 'messages per second:', [ n/t for t in r]
@@ -109,5 +105,5 @@ def compute_overhead():
     pass
 
 if __name__ == '__main__':
-    main()
-    #get_times()
+    #main()
+    get_times()

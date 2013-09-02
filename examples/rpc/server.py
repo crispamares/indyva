@@ -9,6 +9,8 @@ import loop
 from facade import endpoint, front
 from dataset import table_service
 
+#import time
+
 import zmq
 
 from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
@@ -37,7 +39,7 @@ def main():
     dispatcher.add_subdispatch(table_srv_dispatcher, service.name+'.')
     
     @dispatcher.public
-    def echo(s):
+    def echo(s):        
         return s
 
     print 'running'    
