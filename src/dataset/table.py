@@ -17,9 +17,10 @@ class TableView(ITableView, IPublisher):
             self._backend = parent._backend
             self._schema = parent._schema
             bus = parent._bus
+            self._name = self._new_name(parent.name) # New name for the created ViewTable
         else:
             bus = Bus(prefix= 'ds.'+self.name+'.')
-        #TODO: Create a name for the view
+        
         topics = ['add', 'update', 'remove']
         IPublisher.__init__(self, bus, topics)
         ITableView.__init__(self, parent, view_args)
