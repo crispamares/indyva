@@ -86,10 +86,15 @@ class TableSchema(DataSetSchema):
     def add_attribute(self, name, attribute_schema):
         ''' Add a new attribute to the schema of the table
         @param name: str must be unique in the schema of the table
-        @param attribute_schema: AttributeSchema
+        @param attribute_schema: AttributeSchema, AttributeType or kwargs 
+            of AttributeSchema's __init__ .            
         '''
         if self._schema['attributes'].has_key(name):
             raise ValueError('Name must be unique in the schema')
+        if isinstance(attribute_schema, types.StringTypes):
+            attribute_schema = AttributeSchema(attribute_schema)
+        if isinstance(attribute_schema, dict):
+            attribute_schema = AttributeSchema(**attribute_schema)
         self._schema['attributes'][name] = attribute_schema
          
         
