@@ -5,12 +5,13 @@ Created on 03/09/2013
 @author: jmorales
 '''
 import sys
-
 from collections import OrderedDict
 
 from PyQt4 import QtGui, Qt
-import time
+
 from row_viz import RowViz
+import data_adquisition
+
 
 __version__ = '0.1'
 
