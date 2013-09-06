@@ -15,13 +15,16 @@ The database used as analysis namespace is setted in the connection module
 class MongoTable(ITable):
     
     def __init__(self, *args, **kargs):
-        ''' The MongoTable is an operational database. This means that event when there is a 
+        ''' The MongoTable is an operational database. This means that even when there is a 
         collection in the DB with the same name, the user has to be provided data to use.
         Note: This convention might be changed only for performance reasons.
         '''
         self.connection = Connection()
-        self._col = None
         ITable.__init__(self, *args, **kargs)
+
+        db = self.connection.db
+        db.drop_collection(self.name)
+        self._col = db[self.name]
 
     def _serialize_data(self, cursor, outtype):
         if outtype == 'rows':
@@ -42,10 +45,6 @@ class MongoTable(ITable):
         return self._serialize_data(self.find(**view_args[0]), outtype)
 
     def data(self, data):
-        db = self.connection.db
-        db.drop_collection(self.name)
-        self._col = db[self.name]
-        
         rows = []
         if isinstance(data, pn.DataFrame):
             for i in range(len(data)):
