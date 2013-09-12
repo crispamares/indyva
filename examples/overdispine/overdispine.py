@@ -78,16 +78,15 @@ def main():
     main_window.add_plot('lpaco1', QtGui.QLabel('paco label', main_window))
     main_window.add_plot('lpaco3', QtGui.QLabel('paco label 3', main_window))
     main_window.add_plot('lpaco2', QtGui.QLabel('paco label 2', main_window))
-    for i in range(70):
+    for i in range(10):
         r = RowViz()
-        main_window.add_plot('paco{}'.format(i), r.get_plot())
+        main_window.add_plot('paco{}'.format(i), r)
+        r.render()
     main_window.render_plots()
 
     
     #main_window.scroll.widget().resize(300, 300)
-    
 
-    print r.get_plot()
     app.exec_()
     
 
