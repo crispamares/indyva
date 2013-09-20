@@ -65,6 +65,9 @@ class MongoTable(ITable):
         projection.update({'_id':False})
         return self._col.find_one(query, fields=projection, skip=skip, limit=limit, sort=sort)
     
+    def distinct(self, column, view_args):
+        return self.find(**view_args[0]).distinct(column)
+    
     def row_count(self, view_args):
         return self.find(**view_args[0]).count()
     

@@ -35,6 +35,9 @@ class TableView(ITableView, IPublisher):
     def find_one(self, *args, **kwargs):
         return self._backend.find_one(*args, **kwargs)
     
+    def distinct(self, column):
+        return self._backend.distinct(column, self.view_args)
+    
     def row_count(self):
         return self._backend.row_count(self.view_args)
 

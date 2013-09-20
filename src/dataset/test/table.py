@@ -57,6 +57,17 @@ class Test(unittest.TestCase):
         for result in view.get_data():
             self.assertIn(result['State'], ['DC','NY'])
 
+    def testDistinct(self):
+        table = Table('census', self.schema).data(self.df)
+        table.insert({'State': 'DC', 'life_meaning':42})
+        view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        self.assertIsInstance(view, TableView)
+        distincts = view.distinct('State')
+        self.assertEqual(len(distincts), 2)
+        for result in distincts:
+            self.assertIn(result, ['DC','NY'])
+
+
     def testRowCount(self):
         table = Table('census', self.schema).data(self.df)
         self.assertEqual(table.row_count(), 51)
