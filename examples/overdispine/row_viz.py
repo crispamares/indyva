@@ -29,17 +29,29 @@ class RowViz(FigureCanvas):
         self.ax_3 = self.figure.add_subplot(143, title='length')
         self.ax_4 = self.figure.add_subplot(144, title='angle')
 
-        self.spines = None
+        self._spines = None
         self.dendrite_id = ''
+        self.need_draw = False
 
     def mousePressEvent( self, event ):
         print "Click"
         
+    @property
+    def spines(self):
+        return self._spines
+    
+    @spines.setter
+    def spines(self, spines):
+        self._spines = spines
+        self.need_draw = True
+        
     def update_view(self):
         if self.spines is None:
             raise Exception('No spines assigned before painting')
+        if not self.need_draw:
+            return
         
-        print self.dendrite_id
+        print 'update-view', self.dendrite_id
         self.figure.suptitle(self.dendrite_id)        
         
         try:
@@ -48,19 +60,18 @@ class RowViz(FigureCanvas):
             self.ax_3.hist(self.spines['length'])
             self.ax_4.hist(self.spines['angle'])
         except Exception, e:
-            QtGui.QMessageBox.warning(None, 'Painting ' + self.dendrite_id,
-                                           str(e) )
-        
-        self.figure.tight_layout()
-        
-    def update(self):
-        self.figure.tight_layout()
-        FigureCanvas.update(self)
+            #QtGui.QMessageBox.warning(None, 'Painting ' + self.dendrite_id, str(e) )
+            print 'Error', e
+        #self.figure.tight_layout()
 
-class ListView(object):
+        self.need_draw = False
+        
+
+class VizListView(object):
     
-    def __init__(self, table=None):
+    def __init__(self, table=None, dfilter=None):
         self.table = table
+        self.dfilter = dfilter
         self.plots = OrderedDict()
 
         self.scroll = QtGui.QScrollArea()
@@ -80,7 +91,7 @@ class ListView(object):
     def add_plot(self, name, plot):
         self.plots[name] = plot
         plot.setObjectName('_plot_'+name)
-
+        
     def remove_plot(self, name):
         self.plots.pop(name)
         
@@ -91,27 +102,48 @@ class ListView(object):
             if child is None:
                 plot = self.plots[name]
                 self.v_layout.insertWidget(i, plot)
-                if isinstance(plot, RowViz): plot.update_view()
+
         # remove plots
         children_plots = { str(o.objectName()).replace('_plot_', '') : o 
                           for o in self.viz_area.children() 
                           if str(o.objectName()).startswith('_plot_')}
         plots_to_remove = set(children_plots.keys()).difference(self.plots.keys())
-        
+        print 'REALLY plots to remove', plots_to_remove
         for plot in plots_to_remove:
             self.v_layout.removeWidget(children_plots[plot])
             children_plots[plot].deleteLater()
         
-        self.scroll.adjustSize()
+        # Update plots
+        for plot in self.plots.values():
+            plot.update_view()
+        
+        print 'finshing update'
+        #self.scroll.adjustSize()
+        self.viz_area.update()
+        print 'finished update'
         
     
     def update_view(self):
         if self.table is None:
             raise Exception('No table assigned before painting')
-            
-        dendrites = sorted(self.table.distinct('dendrite_id'))
+        query = {}
+        if self.dfilter is not None:
+            query, _ = self.dfilter.query('spine_id')
+        print query 
+        dendrites = sorted(self.table.find(query).distinct('dendrite_id'))        
+        #
+        plots_to_remove = set(self.plots.keys()).difference(dendrites)
+        print 'plots-to-remove', plots_to_remove
+        for name in plots_to_remove:
+            print 'removing', name
+            self.remove_plot(name)
         
         for dendrite in dendrites:
+            if self.plots.has_key(dendrite):
+                print 'Yet ploted', dendrite
+                continue
+
+            #print 'ADDING', dendrite
             v_spines = self.table.find({'dendrite_id':dendrite},
                                        {'unroll_pos':True,
                                         'size':True,
