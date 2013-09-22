@@ -12,7 +12,7 @@ from sieve import ItemSieve, AttrSieve
 
 class DynFilter(IPublisher):
     '''
-    This class maintain the state of the Select Interactive Dynamic
+    This class maintain the state of the Filter Interactive Dynamic
     '''
 
     def __init__(self, name):
@@ -46,6 +46,7 @@ class DynFilter(IPublisher):
         self._attr_sieve.add_condition(projection, name)
         self._bus.publish('change', name)
         
+        
     def set_item_condition(self, name, reference, query=None):
         ''' 
         @param name: The key of the condition. 
@@ -78,6 +79,19 @@ class DynFilter(IPublisher):
         '''
         self._attr_sieve.remove_condition(name)
         self._bus.publish('remove', name)
+
+    def has_item_condition(self, name):
+        ''' 
+        @param name: The key of the condition. 
+        '''
+        return self._item_sieve.has_condition(name)
+
+    def has_attr_condition(self, name):
+        ''' 
+        @param name: The key of the condition. 
+        '''
+        return self._attr_sieve.has_condition(name)
+        
 
     def is_empty(self):
         return self._item_sieve.is_empty() and self._attr_sieve.is_empty()
