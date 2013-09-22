@@ -42,11 +42,17 @@ class ItemSieve(object):
         ''' 
         @param name: The key of the condition. 
         '''
-        if self._conditions.has_key(name):
+        if not self._conditions.has_key(name):
             raise ValueError("There is no condition with the name given")
         del self._conditions[name]
         self._dirty()
 
+    def has_condition(self, name):
+        ''' 
+        @param name: The key of the condition. 
+        '''
+        return self._conditions.has_key(name) 
+    
     def is_empty(self):
         return len(self._conditions) == 0    
 
@@ -73,8 +79,6 @@ class ItemSieve(object):
         self._computed_reference = None
         
     def _compute_reference(self):
-        if self.is_empty():
-            return None
         reference = set()
         for c in self._conditions.values():
             reference = reference.union(c['reference'])
@@ -115,6 +119,12 @@ class AttrSieve(object):
             raise ValueError("There is no condition with the given name")
         del self._conditions[name]
         self._dirty()
+
+    def has_condition(self, name):
+        ''' 
+        @param name: The key of the condition. 
+        '''
+        return self._conditions.has_key(name) 
 
     def is_empty(self):
         return len(self._conditions) == 0    
