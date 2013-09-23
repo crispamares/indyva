@@ -19,6 +19,8 @@ class RowViz(FigureCanvas):
         '''
         Constructor
         '''
+        self.dselect = None
+        
         FigureCanvas.__init__(self, Figure((8,3)))
         self.setMinimumHeight(220)
         self.setSizePolicy(Qt.QSizePolicy.Preferred, Qt.QSizePolicy.Preferred)
@@ -35,6 +37,8 @@ class RowViz(FigureCanvas):
 
     def mousePressEvent( self, event ):
         print "Click"
+        raise NotImplementedError
+        self.dselect.add_condition()
         
     @property
     def spines(self):
@@ -57,8 +61,8 @@ class RowViz(FigureCanvas):
         try:
             #self.ax_1.hist([1,1,1,1,3,3,3,4,5,7,7,7,7])
             self.ax_2.hist(self.spines['size'])
-            #self.ax_3.hist(self.spines['length'])
-            #self.ax_4.hist(self.spines['angle'])
+            self.ax_3.hist(self.spines['length'])
+            self.ax_4.hist(self.spines['angle'])
         except Exception, e:
             #QtGui.QMessageBox.warning(None, 'Painting ' + self.dendrite_id, str(e) )
             print 'Error', e
@@ -69,9 +73,10 @@ class RowViz(FigureCanvas):
 
 class VizListView(object):
     
-    def __init__(self, table=None, dfilter=None):
+    def __init__(self, table=None, dfilter=None, dselect=None):
         self.table = table
         self.dfilter = dfilter
+        self.dselect = dselect
         self.plots = OrderedDict()
 
         self.scroll = QtGui.QScrollArea()
@@ -91,6 +96,14 @@ class VizListView(object):
     def add_plot(self, name, plot):
         self.plots[name] = plot
         plot.setObjectName('_plot_'+name)
+        self.v_layout.addWidget(plot)
+        plot.update_view()
+        
+    def show_plot(self, name):
+        self.plots[name].setVisible(True)
+        
+    def hide_plot(self, name):
+        self.plots[name].hide()
         
     def remove_plot(self, name):
         self.plots.pop(name)
@@ -102,6 +115,7 @@ class VizListView(object):
             if child is None:
                 plot = self.plots[name]
                 self.v_layout.insertWidget(i, plot)
+                plot.update_view()
 
         # remove plots
         children_plots = { str(o.objectName()).replace('_plot_', '') : o 
@@ -110,12 +124,13 @@ class VizListView(object):
         plots_to_remove = set(children_plots.keys()).difference(self.plots.keys())
         print 'REALLY plots to remove', plots_to_remove
         for plot in plots_to_remove:
-            self.v_layout.removeWidget(children_plots[plot])
-            children_plots[plot].deleteLater()
+            #self.v_layout.removeWidget(children_plots[plot])
+            #children_plots[plot].deleteLater()
+            children_plots[plot].hide()
         
         # Update plots
-        for plot in self.plots.values():
-            plot.update_view()
+        #for plot in self.plots.values():
+        #    plot.update_view()
         
         print 'finshing update'
         #self.scroll.adjustSize()
@@ -136,10 +151,12 @@ class VizListView(object):
         print 'plots-to-remove', plots_to_remove
         for name in plots_to_remove:
             print 'removing', name
-            self.remove_plot(name)
+            self.hide_plot(name)
         
         for dendrite in dendrites:
             if self.plots.has_key(dendrite):
+                if not self.plots[dendrite].isVisible():
+                    self.show_plot(dendrite)
                 print 'Yet ploted', dendrite
                 continue
 
@@ -153,8 +170,9 @@ class VizListView(object):
             
             plot = RowViz()
             plot.spines = spines
+            plot.dselect = self.dselect
             plot.dendrite_id = dendrite
             self.add_plot(dendrite, plot)
-        
-        self.render_plots()
+        print 'FINISH'
+        #self.render_plots()
     

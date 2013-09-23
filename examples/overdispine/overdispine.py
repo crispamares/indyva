@@ -11,6 +11,7 @@ from row_viz import VizListView
 import data_adquisition
 from filters_ui import CategoricalFilterView, CategoricalFilterItemModel
 from dynamics.dfilter import DynFilter
+from dynamics.dselect import DynSelect
 
 
 __version__ = '0.1'
@@ -51,9 +52,13 @@ def main():
     dfilter.subscribe('change', lambda t,m : view.update_view())
     dfilter.subscribe('remove', lambda t,m : view.update_view())
 
+
+
+    dselect = DynSelect('s_dendrites', 'OR')
     
     view.table = table
     view.dfilter = dfilter
+    view.dselect = dselect
     view.update_view()
     
     
