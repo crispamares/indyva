@@ -9,10 +9,12 @@ import uuid
 
 
 class ItemSieve(object):
-    def __init__(self):
+    def __init__(self, setop='AND'):
+        '''@param setop: The set operation. AND or OR'''
         self._conditions = OrderedDict()
         self._computed_reference = None
-
+        self.setop = setop
+        
     def add_condition(self, reference, query = None, name=None):
         ''' 
         @param reference: Reference is mandatory
@@ -24,7 +26,7 @@ class ItemSieve(object):
         name = name if name is None else str(uuid.uuid4())
         if self._conditions.has_key(name):
             raise ValueError("Already exists a condition with the name given")
-        self._conditions[name] = dict(reference=reference, query=query)
+        self._conditions[name] = dict(reference=set(reference), query=query)
         self._dirty()
 
     def set_condition(self, name, reference, query=None):
@@ -35,7 +37,7 @@ class ItemSieve(object):
           Providing an explicit condition is useful for recomputing the 
           reference if the dataset changes 
         '''
-        self._conditions[name] = dict(reference=reference, query=query)
+        self._conditions[name] = dict(reference=set(reference), query=query)
         self._dirty()   
     
     def remove_condition(self, name):
@@ -79,9 +81,12 @@ class ItemSieve(object):
         self._computed_reference = None
         
     def _compute_reference(self):
-        reference = set()
-        for c in self._conditions.values():
-            reference = reference.union(c['reference'])
+        references = [v['reference'] for v in self._conditions.values()]
+        print self._conditions.values()
+        if self.setop == 'AND':
+            reference = set.intersection(*references)
+        if self.setop == 'OR':
+            reference = set.union(*references)
         return reference
 
 
