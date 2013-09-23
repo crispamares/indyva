@@ -57,8 +57,8 @@ class RowViz(FigureCanvas):
         try:
             #self.ax_1.hist([1,1,1,1,3,3,3,4,5,7,7,7,7])
             self.ax_2.hist(self.spines['size'])
-            self.ax_3.hist(self.spines['length'])
-            self.ax_4.hist(self.spines['angle'])
+            #self.ax_3.hist(self.spines['length'])
+            #self.ax_4.hist(self.spines['angle'])
         except Exception, e:
             #QtGui.QMessageBox.warning(None, 'Painting ' + self.dendrite_id, str(e) )
             print 'Error', e
@@ -129,7 +129,7 @@ class VizListView(object):
         query = {}
         if self.dfilter is not None:
             query, _ = self.dfilter.query('spine_id')
-        print query 
+        
         dendrites = sorted(self.table.find(query).distinct('dendrite_id'))        
         #
         plots_to_remove = set(self.plots.keys()).difference(dendrites)
