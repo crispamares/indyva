@@ -5,7 +5,7 @@ Created on 03/09/2013
 @author: jmorales
 '''
 import sys
-from PyQt4 import QtGui, Qt
+from PyQt4 import QtGui, Qt, QtSvg
 
 from row_viz import VizListView
 import data_adquisition
@@ -52,9 +52,7 @@ def main():
     dfilter.subscribe('change', lambda t,m : view.update_view())
     dfilter.subscribe('remove', lambda t,m : view.update_view())
 
-
-
-    dselect = DynSelect('s_dendrites', 'OR')
+    dselect = DynSelect('s_dendrites')
     
     view.table = table
     view.dfilter = dfilter

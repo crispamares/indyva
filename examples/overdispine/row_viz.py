@@ -4,11 +4,85 @@ Created on 04/09/2013
 
 @author: jmorales
 '''
-from PyQt4 import Qt, QtGui
+from PyQt4 import Qt, QtGui, QtSvg, QtCore
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from collections import OrderedDict
 
+import StringIO
+
+
+class RowSVGViz(QtSvg.QSvgWidget):
+
+    def __init__(self, *args, **kwargs):
+        '''
+        Constructor
+        '''
+        self.dselect = None
+        
+        QtSvg.QSvgWidget.__init__(self, *args)
+        self.setMinimumHeight(220)
+        self.setSizePolicy(Qt.QSizePolicy.Preferred, Qt.QSizePolicy.Preferred)
+        
+        self.figure = plt.figure(figsize=(8,3))
+
+        self.ax_1 = self.figure.add_subplot(141, title='points')
+        self.ax_2 = self.figure.add_subplot(142, title='size')
+        self.ax_3 = self.figure.add_subplot(143, title='length')
+        self.ax_4 = self.figure.add_subplot(144, title='angle')
+
+        self._spines = None
+        self.dendrite_id = ''
+        self.need_draw = False
+
+    def mousePressEvent( self, event ):
+        print "Click"
+        raise NotImplementedError
+        self.dselect.add_condition()
+        
+    @property
+    def spines(self):
+        return self._spines
+    
+    @spines.setter
+    def spines(self, spines):
+        self._spines = spines
+        self.need_draw = True
+        
+    def update_view(self):
+        if self.spines is None:
+            raise Exception('No spines assigned before painting')
+        if not self.need_draw:
+            return
+        
+        print 'update-view', self.dendrite_id
+        self.figure.suptitle(self.dendrite_id)        
+        
+        try:
+            #self.ax_1.hist([1,1,1,1,3,3,3,4,5,7,7,7,7])
+            self.ax_2.hist(self.spines['size'])
+            self.ax_3.hist(self.spines['length'])
+            self.ax_4.hist(self.spines['angle'])
+        except Exception, e:
+            #QtGui.QMessageBox.warning(None, 'Painting ' + self.dendrite_id, str(e) )
+            print 'Error', e
+        self.figure.tight_layout()
+
+        #imgdata = StringIO.StringIO()
+        #self.figure.savefig('/tmp/{0}.svg'.format(self.dendrite_id), format='svg')
+        #imgdata.seek(0)  # rewind the data
+        #self.load('/tmp/{0}.svg'.format(self.dendrite_id))
+        
+        imgdata = StringIO.StringIO()
+        self.figure.savefig(imgdata, format='svg')
+        imgdata.seek(0)  # rewind the data
+        svg = imgdata.read()
+        self.load(QtCore.QByteArray( svg ))
+        
+        self.need_draw = False
 
 
 class RowViz(FigureCanvas):
@@ -168,7 +242,7 @@ class VizListView(object):
                                         'angle':True})
             spines = v_spines.get_data('c_list')
             
-            plot = RowViz()
+            plot = RowSVGViz()
             plot.spines = spines
             plot.dselect = self.dselect
             plot.dendrite_id = dendrite
