@@ -27,7 +27,7 @@ class RowSVGViz(QtSvg.QSvgWidget):
         self.setMinimumHeight(220)
         self.setSizePolicy(Qt.QSizePolicy.Preferred, Qt.QSizePolicy.Preferred)
         
-        self.figure = plt.figure(figsize=(8,3))
+        self.figure = plt.figure(figsize=(16,3))
 
         self.ax_1 = self.figure.add_subplot(141, title='points')
         self.ax_2 = self.figure.add_subplot(142, title='size')
@@ -70,11 +70,6 @@ class RowSVGViz(QtSvg.QSvgWidget):
             #QtGui.QMessageBox.warning(None, 'Painting ' + self.dendrite_id, str(e) )
             print 'Error', e
         self.figure.tight_layout()
-
-        #imgdata = StringIO.StringIO()
-        #self.figure.savefig('/tmp/{0}.svg'.format(self.dendrite_id), format='svg')
-        #imgdata.seek(0)  # rewind the data
-        #self.load('/tmp/{0}.svg'.format(self.dendrite_id))
         
         imgdata = StringIO.StringIO()
         self.figure.savefig(imgdata, format='svg')
