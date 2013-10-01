@@ -68,6 +68,9 @@ class MongoTable(ITable):
     def distinct(self, column, view_args):
         return self.find(**view_args[0]).distinct(column)
     
+    def index_domain(self, view_args):
+        return self.find(**view_args[0]).distinct(self.index)
+
     def row_count(self, view_args):
         return self.find(**view_args[0]).count()
     

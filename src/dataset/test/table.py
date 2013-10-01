@@ -67,6 +67,15 @@ class Test(unittest.TestCase):
         for result in distincts:
             self.assertIn(result, ['DC','NY'])
 
+    def testIndexDomain(self):
+        table = Table('census', self.schema).data(self.df)
+        table.insert({'State': 'DC', 'life_meaning':42})
+        view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        self.assertIsInstance(view, TableView)
+        distincts = view.index_domain()
+        self.assertEqual(len(distincts), 2)
+        for result in distincts:
+            self.assertIn(result, ['DC','NY'])
 
     def testRowCount(self):
         table = Table('census', self.schema).data(self.df)

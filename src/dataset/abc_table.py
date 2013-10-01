@@ -75,6 +75,14 @@ class ITableView(object):
         pass
     
     @abstractmethod
+    def distinct(self, column):
+        pass
+    
+    @abstractmethod
+    def index_domain(self):
+        pass
+    
+    @abstractmethod
     def row_count(self):
         pass
     
