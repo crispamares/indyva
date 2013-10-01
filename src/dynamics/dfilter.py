@@ -13,6 +13,9 @@ from sieve import ItemSieve, AttrSieve
 class DynFilter(IPublisher):
     '''
     This class maintain the state of the Filter Interactive Dynamic
+    
+    All references from each conditions are aggregated with Intersection set 
+    operation 
     '''
 
     def __init__(self, name):

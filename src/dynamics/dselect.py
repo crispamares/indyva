@@ -13,6 +13,8 @@ from sieve import ItemSieve
 class DynSelect(IPublisher):
     '''
     This class maintain the state of the Select Interactive Dynamic
+    
+    All references from each conditions are aggregated with Union set operation 
     '''
 
     def __init__(self, name):
@@ -20,7 +22,7 @@ class DynSelect(IPublisher):
         @param name: unique name
         '''
         self._name = name
-        self._item_sieve = ItemSieve()
+        self._item_sieve = ItemSieve(setop='OR')
         
         topics = ['change', 'remove']
         bus = Bus(prefix= 'f.'+self._name+'.')
