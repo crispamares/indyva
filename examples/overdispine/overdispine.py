@@ -38,23 +38,24 @@ class MainWindow(QtGui.QMainWindow):
 def main():
     app = QtGui.QApplication(sys.argv)
     
-    table = data_adquisition.create_table()
-        
+    spines_table = data_adquisition.create_spines_table()
+    
+    
     main_window = MainWindow()
     main_window.show()
 
     view = main_window.list_view
 
     dfilter = DynFilter('f_dendrites')
-    main_window.add_filter(table, 'dendrite_id', dfilter)
-    main_window.add_filter(table, 'dendrite_type', dfilter)
-    #main_window.add_filter(table, 'section', dfilter)
+    main_window.add_filter(spines_table, 'dendrite_id', dfilter)
+    main_window.add_filter(spines_table, 'dendrite_type', dfilter)
+    #main_window.add_filter(spines_table, 'section', dfilter)
     dfilter.subscribe('change', lambda t,m : view.update_view())
     dfilter.subscribe('remove', lambda t,m : view.update_view())
 
     dselect = DynSelect('s_dendrites')
     
-    view.table = table
+    view.table = spines_table
     view.dfilter = dfilter
     view.dselect = dselect
     view.update_view()

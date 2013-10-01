@@ -99,7 +99,7 @@ if __name__ == '__main__':
     import data_adquisition
     app = QtGui.QApplication([])
     view = CategoricalFilterView('dendrite_id', None)
-    table = data_adquisition.create_table()
+    table = data_adquisition.create_spines_table()
     dfilter = DynFilter('f_dendrites')
     dfilter.subscribe('change', print_dfilter)
     

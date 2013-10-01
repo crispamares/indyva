@@ -31,7 +31,7 @@ def create_schema():
 
     return schema
 
-def create_table():
+def create_spines_table():
     client = pymongo.MongoClient()
     db = client['spinesIP']
     table = Table(name='spines', schema=create_schema())
@@ -40,14 +40,14 @@ def create_table():
         table.insert(d)
     return table
     
-    
+
     
     
 if __name__ == '__main__':
     import time
     
     t0 = time.clock()
-    table = create_table()
+    table = create_spines_table()
     t1 = time.clock()
     print table.row_count(), 'rows'
     print 'Done in ', t1-t0, 'seconds'
