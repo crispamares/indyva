@@ -81,7 +81,7 @@ class AttributeImplicitSieve(ImplicitSieve):
     def projection(self):
         if len(self.index) == 0:
             return {}
-        return { column : (column in self.index) for column in self.domain}
+        return { column : True for column in self.domain if column in self.index}
         
         
 class ItemExplicitSieve(object):
@@ -444,9 +444,6 @@ class ItemSieve(object):
         
     def _compute_reference(self):
         references = [v['reference'] for v in self._conditions.values()]
-        
-        from pympler.asizeof import asizeof
-        print 'SIZE OF REFERENCES:', asizeof(self._conditions.values())
         
         if self.setop == 'AND':
             reference = set.intersection(*references)
