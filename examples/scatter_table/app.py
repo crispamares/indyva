@@ -70,10 +70,10 @@ def test_dselect_and_dfilter(tv):
     d.set_condition('horizontal2', ['RI','SD', 'NY', 'VT'])
 
     from dynamics.dfilter import  DynFilter
-    f = DynFilter('filt1')
+    f = DynFilter('filt1', tv.table)
     tv.set_dynfilter(f)
     f.set_item_condition('horizontal', ['DC','NY'])
-    f.set_attr_condition('vertical', {'State': True, 'Information':True})
+    f.set_attr_condition('vertical', ['State', 'Information'])
    
 def main():
     app = QtGui.QApplication(sys.argv)
@@ -93,6 +93,7 @@ def main():
 
     main_window.show()
     ipwin.show()
+    
     
     ipwin.namespace['tv'] = tv
     ipwin.namespace['table'] = tv.table

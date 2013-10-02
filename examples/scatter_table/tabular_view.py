@@ -77,8 +77,12 @@ class TabularView(QtGui.QTableView):
     def render_table(self):
         model = TDataTableModel()
         if self.dynfilter is not None:
-            query, projection = self.dynfilter.query(self.table.index)
+            query = self.dynfilter.query
+            projection = self.dynfilter.projection
+            print '*** LOOK', projection
             filtered_table = self.table.find(query, projection)
+            if filtered_table.row_count() == 0:
+                return
             model.setTable(filtered_table)
         else:
             model.setTable(self.table)
