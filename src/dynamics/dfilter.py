@@ -8,112 +8,131 @@ Created on 03/07/2013
 from epubsub.abc_publisher import IPublisher
 from epubsub.bus import Bus
 
-from sieve import ItemSieve, AttrSieve
+from sieve import (SieveSet, ItemImplicitSieve, ItemExplicitSieve,
+                    AttributeImplicitSieve, create_item_sieve)
 
 class DynFilter(IPublisher):
     '''
     This class maintain the state of the Filter Interactive Dynamic
     
     All references from each conditions are aggregated with Intersection set 
-    operation 
+    operation (a.k.a. AND)
     '''
 
-    def __init__(self, name):
+    def __init__(self, name, data):
         '''
         @param name: unique name
+        @param data: the dataset that is going to suffer the filters 
         '''
         self._name = name
-        self._item_sieve = ItemSieve()
-        self._attr_sieve = AttrSieve()
-        
+        self._data = data
+        self._sieves = SieveSet()
+
         topics = ['change', 'remove']
         bus = Bus(prefix= 'f.'+self._name+'.')
         IPublisher.__init__(self, bus, topics)
         
-    def add_item_condition(self, reference, query = None, name=None):
-        ''' 
-        @param reference: Reference is mandatory
-        @param query: If the condition is explicit then a query is needed.
-          Providing an explicit condition is useful for recomputing the 
-          reference if the dataset changes 
+    def add_condition(self, condition, name=None):
+        '''Every condition has to share the same data as this dynamic otherwise
+         a ValueError is raised
+         
+        @param condition: A condition could be either an ImplicitSieve or an 
+        ExplicitSieve.  
         @param name: If not provided a uuid is generated 
         '''
-        self._item_sieve.add_condition(reference, query, name)
+        if condition.data != self._data:
+            raise ValueError("Condition has {0} dataset, {1} expected"
+                             .format(condition.data.name, self._data.name))
+        self._sieves.add_condition(condition, name)
         self._bus.publish('change', name)
-
-    def add_attr_condition(self, projection, name=None):
+            
+    def add_item_condition(self, reference=None, query = None, name=None):
         ''' 
-        @param projection: Projection is mandatory
+        You can create an implicit (by giving the reference) or explicit (by 
+        giving the query) condition 
+        @param reference: Reference is a list of item keys
+        @param query: Providing an explicit condition is useful for recomputing
+         the reference if the dataset changes 
         @param name: If not provided a uuid is generated 
         '''
-        self._attr_sieve.add_condition(projection, name)
-        self._bus.publish('change', name)
-        
-        
-    def set_item_condition(self, name, reference, query=None):
-        ''' 
-        @param name: The key of the condition. 
-        @param reference: Reference is mandatory
-        @param query: If the condition is explicit then a query is needed.
-          Providing an explicit condition is useful for recomputing the 
-          reference if the dataset changes 
-        '''
-        self._item_sieve.set_condition(name, reference, query)       
+        condition = create_item_sieve(self._data, reference, query)
+        self._sieves.add_condition(condition, name)
         self._bus.publish('change', name)
 
-    def set_attr_condition(self, name, projection):
+    def add_attr_condition(self, attr_reference, name=None):
         ''' 
-        @param name: The key of the condition. 
-        @param projection: Projection is mandatory
+        @param attr_reference: is a list of attribute names
+        @param name: If not provided a uuid is generated 
         '''
-        self._attr_sieve.set_condition(name, projection)       
+        condition = AttributeImplicitSieve(self._data, attr_reference)
+        self._sieves.add_condition(condition, name)
         self._bus.publish('change', name)
         
-    def remove_item_condition(self, name):
+        
+    def set_item_condition(self, name, reference=None, query=None):
+        ''' 
+        @param name: The key of the condition. 
+        @param reference: Reference is a list of item keys
+        @param query: Providing an explicit condition is useful for recomputing
+         the reference if the dataset changes 
+        '''
+        condition = create_item_sieve(self._data, reference, query)
+        self._sieves.set_condition(name, condition)
+        self._bus.publish('change', name)
+
+    def set_attr_condition(self, name, attr_reference):
+        ''' 
+        @param name: The key of the condition. 
+        @param attr_reference: is a list of attribute names
+        '''
+        condition = AttributeImplicitSieve(self._data, attr_reference)
+        self._sieves.set_condition(name, condition)       
+        self._bus.publish('change', name)
+        
+    def remove_condition(self, name):
         ''' 
         @param name: The key of the condition. 
         '''
-        self._item_sieve.remove_condition(name)
+        self._sieves.remove_condition(name)
         self._bus.publish('remove', name)
 
-    def remove_attr_condition(self, name):
+    def has_condition(self, name):
         ''' 
         @param name: The key of the condition. 
         '''
-        self._attr_sieve.remove_condition(name)
-        self._bus.publish('remove', name)
-
-    def has_item_condition(self, name):
-        ''' 
-        @param name: The key of the condition. 
-        '''
-        return self._item_sieve.has_condition(name)
-
-    def has_attr_condition(self, name):
-        ''' 
-        @param name: The key of the condition. 
-        '''
-        return self._attr_sieve.has_condition(name)
+        return self._sieves.has_condition(name)
         
-
     def is_empty(self):
-        return self._item_sieve.is_empty() and self._attr_sieve.is_empty()
+        return self._sieves.is_empty() 
     
     @property
-    def ref(self):
+    def reference(self):
         '''The reference resulting of the accumulation of every item condition.
-        A reference is a set of indices or None if there are no item conditions'''
-        return self._item_sieve.ref
+        A reference is a set of indices or None if there are no item conditions
+        '''
+        return self._sieves.reference
 
     @property
     def projection(self):
-        '''The projection resulting of the accumulation of every condition.
-        A projection is a dict of { 'attr_name' -> Bool } or None if there are no conditions'''
-        return self._attr_sieve.projection
+        '''The projection resulting of the accumulation of every attribute 
+        condition.
+        A projection is a dict of { 'attr_name' -> Bool } or None if there are 
+        no conditions'''
+        return self._sieves.projection
     
-    def query(self, index):
-        '''The query resulting of the accumulation of both item and attr conditions.
-        @param index: A string or list of strings
-        @return: (query, projection)'''
-        return self._item_sieve.query(index) , self._attr_sieve.projection
+    @property
+    def query(self):
+        '''The query resulting of the accumulation of item conditions.
+        '''
+        return self._sieves.query
+    
+    @property
+    def view_args(self):
+        '''The view_args, that groups the query and the projection 
+        @return: dict(query=>query, projection=>projection)
+        '''
+        return dict(query = self.query, projection= self.projection) 
+    
+
+
             

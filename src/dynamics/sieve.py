@@ -6,9 +6,6 @@ Created on 10/07/2013
 '''
 from collections import OrderedDict
 import uuid
-from copy import copy
-import sys
-
 
 class ImplicitSieve(object):
 
@@ -53,7 +50,7 @@ class ImplicitSieve(object):
         return self.domain == other.domain and self._index == other.index
     
     def __repr__(self):
-        return str(self.index)
+        return 'Sieve: ' + str(self.index)
 
 
 
@@ -82,6 +79,8 @@ class AttributeImplicitSieve(ImplicitSieve):
         return self._domain
     @property
     def projection(self):
+        if len(self.index) == 0:
+            return {}
         return { column : (column in self.index) for column in self.domain}
         
         
@@ -136,8 +135,24 @@ class ItemExplicitSieve(object):
         return self.data is other.data and self.query == other.query
     
     def __repr__(self):
-        return str(self.query)
+        return 'Sieve: ' + str(self.query)
 
+
+def create_item_sieve(data, reference=None, query=None, *args):
+    '''
+    Both reference and query must not be provided at the same time
+    
+    @param data: DataSet of the sieve
+    @param reference: A list of item keys
+    @param query: An explicit query
+    '''
+    if reference is None and query is not None:
+        raise ValueError('Both reference and query params provided')
+    if reference is not None:
+        sieve = ItemImplicitSieve(data, reference)
+    if query is not None:
+        sieve = ItemExplicitSieve(data, query)
+    return sieve
 
 class SieveSet(object):
     def __init__(self, setop='AND'):
@@ -148,6 +163,7 @@ class SieveSet(object):
         self._computed_reference = None
         self._computed_projection = None
         
+        self._setop = setop
         self._data = None # The data every sieve has to be referred
 
     def add_condition(self, condition, name=None):
@@ -162,11 +178,8 @@ class SieveSet(object):
         name = name if name is None else str(uuid.uuid4())
         if self.has_condition(name):
             raise ValueError("Already exists a condition with the name given")
-        if self._data is None:
-            self._data = condition.data
-        elif condition.data != self._data:
-            raise ValueError("Sieves in this SieveSet has {0} data not {1}"
-                             .format(self._data.name, condition.data.name))
+
+        self._check_data(condition.data)
 
         if isinstance(condition, AttributeImplicitSieve):
             self._attribute_conditions[name] = condition
@@ -182,6 +195,8 @@ class SieveSet(object):
         @param condition: A condition could be either an ImplicitSieve or an 
         ExplicitSieve. 
         '''
+        self._check_data(condition.data)
+        print condition
         if isinstance(condition, AttributeImplicitSieve):
             self._attribute_conditions[name] = condition
         elif isinstance(condition, ItemImplicitSieve):
@@ -196,9 +211,9 @@ class SieveSet(object):
         '''
         if name in self._item_implicit_conditions:
             self._item_implicit_conditions.pop(name)
-        if name in self._item_explicit_conditions:
+        elif name in self._item_explicit_conditions:
             self._item_explicit_conditions.pop(name)
-        if name in self._attribute_conditions:
+        elif name in self._attribute_conditions:
             self._attribute_conditions.pop(name)
         else:
             raise ValueError("There is no condition with the name given")
@@ -248,37 +263,65 @@ class SieveSet(object):
 
         return self._computed_reference.query
         
+    def _check_data(self, data):
+        if self._data is None:
+            self._data = data
+        elif data != self._data:
+            raise ValueError("Sieves in this SieveSet has {0} dataset not {1}"
+                             .format(self._data.name, data.name))
+
+
+        
     def _dirty(self):
         self._computed_reference = None
         self._computed_projection = None
         
     def _arggregate(self, a, b):
-        if self.setop == 'AND':
+        if self._setop == 'AND':
             a.intersect(b)
-        if self.setop == 'OR':
+        if self._setop == 'OR':
             a.union(b)
-        
-    def _compute_reference(self):
-        explicit_ref = ItemExplicitSieve(self._data)
-        for c in self._item_explicit_conditions.values():
-            self._arggregate(explicit_ref, c)
 
-        if len(self._item_implicit_conditions) > 0:
-            implicit_ref = ItemImplicitSieve(self._data)
-            for c in self._item_implicit_conditions.values():
-                self._arggregate(implicit_ref, c)
-                
-            self._arggregate(explicit_ref, implicit_ref.query)
-                
-        return explicit_ref
+
+    def _compute_reference(self):
+        explicit_conditions = self._item_explicit_conditions.values()
+        implicit_conditions = self._item_implicit_conditions.values()
+        aggregated_sieve = None
+         
+        explicit_sieve = None
+        if len(explicit_conditions) > 0:
+            explicit_sieve = explicit_conditions[0]
+            for c in explicit_conditions[1:]:
+                self._arggregate(explicit_sieve, c.query)
+
+        implicit_sieve = None
+        if len(implicit_conditions) > 0:
+            implicit_sieve = implicit_conditions[0]
+            for c in implicit_conditions[1:]:
+                self._arggregate(implicit_sieve, c.index)
+        
+        if explicit_sieve and implicit_sieve:        
+            self._arggregate(explicit_sieve, implicit_sieve.query)
+            aggregated_sieve = explicit_sieve
+        elif explicit_sieve:
+            aggregated_sieve = explicit_sieve
+        elif implicit_sieve:
+            aggregated_sieve = implicit_sieve
+
+        return aggregated_sieve
 
     def _compute_projection(self):
-        if len(self._attribute_conditions) > 0:
-            implicit_ref = ItemImplicitSieve(self._data)
-            for c in self._item_implicit_conditions.values():
-                self._arggregate(implicit_ref, c)
-        
-        return implicit_ref   
+        attribute_conditions = self._attribute_conditions.values()
+        implicit_sieve = None
+        if len(attribute_conditions) > 0:
+            implicit_sieve = attribute_conditions[0]
+            for c in attribute_conditions[1:]:
+                self._arggregate(implicit_sieve, c.index)
+        else:
+            implicit_sieve = AttributeImplicitSieve(self._data)
+
+                        
+        return implicit_sieve
 
 
 
