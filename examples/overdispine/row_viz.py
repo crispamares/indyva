@@ -212,7 +212,7 @@ class VizListView(object):
             raise Exception('No table assigned before painting')
         query = {}
         if self.dfilter is not None:
-            query, _ = self.dfilter.query('spine_id')
+            query = self.dfilter.query
         
         dendrites = sorted(self.table.find(query).distinct('dendrite_id'))        
         #

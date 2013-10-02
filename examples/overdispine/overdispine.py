@@ -46,7 +46,7 @@ def main():
 
     view = main_window.list_view
 
-    dfilter = DynFilter('f_dendrites')
+    dfilter = DynFilter('f_dendrites', spines_table)
     main_window.add_filter(spines_table, 'dendrite_id', dfilter)
     main_window.add_filter(spines_table, 'dendrite_type', dfilter)
     #main_window.add_filter(spines_table, 'section', dfilter)

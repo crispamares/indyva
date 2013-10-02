@@ -75,8 +75,8 @@ class CategoricalFilterItemModel(QtGui.QStandardItemModel):
                 filtered_categories.append(item._value) 
 
         if ( len(filtered_categories) == self.rowCount()
-             and self._dfilter.has_item_condition(self._column) ):
-            self._dfilter.remove_item_condition(self._column)
+             and self._dfilter.has_condition(self._column) ):
+            self._dfilter.remove_condition(self._column)
         else:
             query = {self._column: {'$in':filtered_categories}}
             # TODO: Get lazzy: The next query execution should be done when required 
@@ -92,15 +92,15 @@ class CategoricalFilterItemModel(QtGui.QStandardItemModel):
     
 if __name__ == '__main__':
     def print_dfilter(topic, msg):
-        print msg
-        print dfilter.ref
-        print dfilter.query('spine_id')
+        #print msg
+        #print dfilter.reference
+        print dfilter.query
         
     import data_adquisition
     app = QtGui.QApplication([])
     view = CategoricalFilterView('dendrite_id', None)
     table = data_adquisition.create_spines_table()
-    dfilter = DynFilter('f_dendrites')
+    dfilter = DynFilter('f_dendrites', table)
     dfilter.subscribe('change', print_dfilter)
     
     model = CategoricalFilterItemModel(table, 'dendrite_id', dfilter)
