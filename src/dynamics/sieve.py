@@ -137,22 +137,46 @@ class ItemExplicitSieve(object):
     def __repr__(self):
         return 'Sieve: ' + str(self.query)
 
-
-def create_item_sieve(data, reference=None, query=None, *args):
-    '''
-    Both reference and query must not be provided at the same time
+class ItemSievesFactory(object):
     
-    @param data: DataSet of the sieve
-    @param reference: A list of item keys
-    @param query: An explicit query
-    '''
-    if reference is None and query is not None:
-        raise ValueError('Both reference and query params provided')
-    if reference is not None:
-        sieve = ItemImplicitSieve(data, reference)
-    if query is not None:
-        sieve = ItemExplicitSieve(data, query)
-    return sieve
+    @staticmethod
+    def from_ref_and_query(data, reference=None, query=None):
+        '''
+        Both reference and query must not be provided at the same time
+        
+        @param data: DataSet of the sieve
+        @param reference: A list of item keys
+        @param query: An explicit query
+        '''
+        if reference is None and query is not None:
+            raise ValueError('Both reference and query params provided')
+        if reference is not None:
+            sieve = ItemImplicitSieve(data, reference)
+        if query is not None:
+            sieve = ItemExplicitSieve(data, query)
+        return sieve
+
+    @staticmethod
+    def from_rqs(data, reference_query_sieve):
+        '''         
+        @param reference_query_sieve: 
+           - Could be a sieve (ImplicitSieve or ExplicitSieve)
+           - Could be a reference (list or set)
+           - Could be a query (dict)   
+        @param name: If not provided a uuid is generated 
+        '''
+        if isinstance(reference_query_sieve, (list, set)):
+            reference = reference_query_sieve
+            sieve = ItemImplicitSieve(data, reference)
+        elif isinstance(reference_query_sieve, dict):
+            query = reference_query_sieve
+            sieve = ItemExplicitSieve(data, query)
+        elif isinstance(reference_query_sieve, (ItemImplicitSieve, ItemExplicitSieve)):
+            sieve = reference_query_sieve
+            if sieve.data != data:
+                raise ValueError("Sieve has '{0}' dataset, {1} expected"
+                                 .format(sieve.data.name, data.name))
+        return sieve
 
 class SieveSet(object):
     def __init__(self, setop='AND'):
@@ -196,7 +220,6 @@ class SieveSet(object):
         ExplicitSieve. 
         '''
         self._check_data(condition.data)
-        print condition
         if isinstance(condition, AttributeImplicitSieve):
             self._attribute_conditions[name] = condition
         elif isinstance(condition, ItemImplicitSieve):

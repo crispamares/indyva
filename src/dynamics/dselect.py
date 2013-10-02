@@ -8,7 +8,7 @@ Created on 03/07/2013
 from epubsub.abc_publisher import IPublisher
 from epubsub.bus import Bus
 
-from sieve import ItemSieve
+from sieve import (SieveSet, ItemSievesFactory)
 
 class DynSelect(IPublisher):
     '''
@@ -17,57 +17,65 @@ class DynSelect(IPublisher):
     All references from each conditions are aggregated with Union set operation 
     '''
 
-    def __init__(self, name):
+    def __init__(self, name, data):
         '''
         @param name: unique name
         '''
         self._name = name
-        self._item_sieve = ItemSieve(setop='OR')
+        self._sieves = SieveSet(setop='OR')
+        self._data = data
         
         topics = ['change', 'remove']
         bus = Bus(prefix= 'f.'+self._name+'.')
         IPublisher.__init__(self, bus, topics)
         
-    def add_condition(self, reference, query = None, name=None):
-        ''' 
-        @param reference: Reference is mandatory
-        @param query: If the condition is explicit then a query is needed.
-          Providing an explicit condition is useful for recomputing the 
-          reference if the dataset changes 
+    def add_condition(self, reference_query_condition, name=None):
+        '''Every condition has to share the same data as this dynamic otherwise
+         a ValueError is raised
+         
+        @param reference_query_condition: 
+           - Could be a reference (list or set)
+           - Could be a query (dict)   
+           - Could be a condition (ImplicitSieve or ExplicitSieve)           
         @param name: If not provided a uuid is generated 
         '''
-        self._item_sieve.add_condition(reference, query, name)
+        condition = ItemSievesFactory.from_rqs(self._data, reference_query_condition)
+        self._sieves.add_condition(condition, name)
         self._bus.publish('change', name)
         
-    def set_condition(self, name, reference, query=None):
-        ''' 
-        @param name: The key of the condition. 
-        @param reference: Reference is mandatory
-        @param query: If the condition is explicit then a query is needed.
-          Providing an explicit condition is useful for recomputing the 
-          reference if the dataset changes 
+    def set_condition(self, name, reference_query_condition):
+        '''Every condition has to share the same data as this dynamic otherwise
+         a ValueError is raised
+         
+        @param name: The key of the condition 
+        @param reference_query_condition: 
+           - Could be a reference (list or set)
+           - Could be a query (dict)   
+           - Could be a condition (ImplicitSieve or ExplicitSieve)           
         '''
-        self._item_sieve.set_condition(name, reference, query)       
+        condition = ItemSievesFactory.from_rqs(self._data, reference_query_condition)
+        self._sieves.set_condition(name, condition)
         self._bus.publish('change', name)
         
     def remove_condition(self, name):
         ''' 
         @param name: The key of the condition. 
         '''
-        self._item_sieve.remove_condition(name)
+        self._sieves.remove_condition(name)
         self._bus.publish('remove', name)
 
     def is_empty(self):
-        return self._item_sieve.is_empty()
+        return self._sieves.is_empty()
     
     @property
-    def ref(self):
+    def reference(self):
         '''The reference resulting of the accumulation of every condition.
-        A reference is a set of indices or None if there are no conditions'''
-        return self._item_sieve.ref
-
-    def query(self, index):
+        A reference is a set of indices or [] if there are no conditions'''
+        return self._sieves.reference
+    
+    @property
+    def query(self):
         '''The query resulting of the accumulation of every condition.
-        @param index: A string or list of strings'''
-        return self._item_sieve.query(index)
+        '''
+        return self._sieves.query
             

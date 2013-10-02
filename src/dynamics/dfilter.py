@@ -8,8 +8,7 @@ Created on 03/07/2013
 from epubsub.abc_publisher import IPublisher
 from epubsub.bus import Bus
 
-from sieve import (SieveSet, ItemImplicitSieve, ItemExplicitSieve,
-                    AttributeImplicitSieve, create_item_sieve)
+from sieve import (SieveSet, AttributeImplicitSieve, ItemSievesFactory)
 
 class DynFilter(IPublisher):
     '''
@@ -45,7 +44,22 @@ class DynFilter(IPublisher):
                              .format(condition.data.name, self._data.name))
         self._sieves.add_condition(condition, name)
         self._bus.publish('change', name)
-            
+
+    def set_condition(self, name, condition):
+        '''Every condition has to share the same data as this dynamic otherwise
+         a ValueError is raised
+        
+        @param name: The key of the condition
+        @param condition: A condition could be either an ImplicitSieve or an 
+        ExplicitSieve.  
+        
+        '''
+        if condition.data != self._data:
+            raise ValueError("Condition has {0} dataset, {1} expected"
+                             .format(condition.data.name, self._data.name))
+        self._sieves.set_condition(name, condition)
+        self._bus.publish('change', name)
+        
     def add_item_condition(self, reference=None, query = None, name=None):
         ''' 
         You can create an implicit (by giving the reference) or explicit (by 
@@ -55,7 +69,7 @@ class DynFilter(IPublisher):
          the reference if the dataset changes 
         @param name: If not provided a uuid is generated 
         '''
-        condition = create_item_sieve(self._data, reference, query)
+        condition = ItemSievesFactory.from_ref_and_query(self._data, reference, query)
         self._sieves.add_condition(condition, name)
         self._bus.publish('change', name)
 
@@ -76,7 +90,7 @@ class DynFilter(IPublisher):
         @param query: Providing an explicit condition is useful for recomputing
          the reference if the dataset changes 
         '''
-        condition = create_item_sieve(self._data, reference, query)
+        condition = ItemSievesFactory.from_ref_and_query(self._data, reference, query)
         self._sieves.set_condition(name, condition)
         self._bus.publish('change', name)
 
