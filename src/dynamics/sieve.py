@@ -7,6 +7,7 @@ Created on 10/07/2013
 from collections import OrderedDict
 import uuid
 from copy import copy
+import sys
 
 
 class ImplicitSieve(object):
@@ -83,6 +84,7 @@ class AttributeImplicitSieve(ImplicitSieve):
     def projection(self):
         return { column : (column in self.index) for column in self.domain}
         
+        
 class ItemExplicitSieve(object):
     def __init__(self, data, query=None):
         self._data = data
@@ -110,6 +112,19 @@ class ItemExplicitSieve(object):
         self.to_implicit()
         return self._implicit_form.index
 
+    def union(self, query):
+        self.query = {'$or': [self._query, query]}
+
+    def substract(self, query):
+        self.query = {'$and': [self._query, {"$nor": [query]}]}
+
+    def toggle(self):
+        self.query = {'$nor': [self._query]}
+
+    def intersect(self, query):
+        self.query = {'$and': [self._query, query]}
+
+
     def to_implicit(self):
         if self._implicit_form is None:
             domain = self._data.index_domain()
@@ -127,10 +142,13 @@ class ItemExplicitSieve(object):
 class SieveSet(object):
     def __init__(self, setop='AND'):
         '''@param setop: The set operation. AND or OR'''
-        self._item_conditions = OrderedDict()
+        self._item_implicit_conditions = OrderedDict()
+        self._item_explicit_conditions = OrderedDict()
         self._attribute_conditions = OrderedDict()
         self._computed_reference = None
         self._computed_projection = None
+        
+        self._data = None # The data every sieve has to be referred
 
     def add_condition(self, condition, name=None):
         ''' 
@@ -144,11 +162,18 @@ class SieveSet(object):
         name = name if name is None else str(uuid.uuid4())
         if self.has_condition(name):
             raise ValueError("Already exists a condition with the name given")
+        if self._data is None:
+            self._data = condition.data
+        elif condition.data != self._data:
+            raise ValueError("Sieves in this SieveSet has {0} data not {1}"
+                             .format(self._data.name, condition.data.name))
 
         if isinstance(condition, AttributeImplicitSieve):
             self._attribute_conditions[name] = condition
-        elif isinstance(condition, (ItemImplicitSieve, ItemExplicitSieve)):
-            self._item_conditions[name] = condition
+        elif isinstance(condition, ItemImplicitSieve):
+            self._item_implicit_conditions[name] = condition
+        elif isinstance(condition, ItemExplicitSieve):
+            self._item_explicit_conditions[name] = condition
         self._dirty()
 
     def set_condition(self, name, condition):
@@ -159,16 +184,20 @@ class SieveSet(object):
         '''
         if isinstance(condition, AttributeImplicitSieve):
             self._attribute_conditions[name] = condition
-        elif isinstance(condition, (ItemImplicitSieve, ItemExplicitSieve)):
-            self._item_conditions[name] = condition
+        elif isinstance(condition, ItemImplicitSieve):
+            self._item_implicit_conditions[name] = condition
+        elif isinstance(condition, ItemExplicitSieve):
+            self._item_explicit_conditions[name] = condition
         self._dirty()   
     
     def remove_condition(self, name):
         ''' 
         @param name: The key of the condition. 
         '''
-        if name in self._item_conditions:
-            self._item_conditions.pop(name)
+        if name in self._item_implicit_conditions:
+            self._item_implicit_conditions.pop(name)
+        if name in self._item_explicit_conditions:
+            self._item_explicit_conditions.pop(name)
         if name in self._attribute_conditions:
             self._attribute_conditions.pop(name)
         else:
@@ -179,18 +208,22 @@ class SieveSet(object):
         ''' 
         @param name: The key of the condition. 
         '''
-        return name in self._item_conditions or name in self._attribute_conditions
+        return (name in self._item_implicit_conditions
+                or name in self._item_explicit_conditions
+                or name in self._attribute_conditions)
     
     def is_empty(self):
-        return len(self._item_conditions) == 0 and len(self._attribute_conditions)    
+        return (len(self._item_implicit_conditions) == 0 
+                and len(self._item_explicit_conditions) == 0 
+                and len(self._attribute_conditions) == 0)    
 
     @property
-    def ref(self):
+    def reference(self):
         '''The reference resulting of the accumulation of every item condition.
         A reference is a set of indices or set([]) if there are no conditions'''
         if self._computed_reference is None:
             self._computed_reference = self._compute_reference()
-        return self._computed_reference
+        return self._computed_reference.index
     
     @property
     def projection(self):
@@ -201,13 +234,14 @@ class SieveSet(object):
         '''
         if self._computed_projection is None:
             self._computed_projection = self._compute_projection()
-        return self._computed_projection
+        return self._computed_projection.projection
 
     @property
     def query(self):
         '''The query resulting of the accumulation of every condition.
         @param index: A string or list of strings'''
-        if len(self._item_conditions) == 0:
+        if (len(self._item_implicit_conditions) == 0
+            and len(self._item_explicit_conditions) == 0):
             return {}
         if self._computed_reference is None:
             self._computed_reference = self._compute_reference()
@@ -218,17 +252,33 @@ class SieveSet(object):
         self._computed_reference = None
         self._computed_projection = None
         
+    def _arggregate(self, a, b):
+        if self.setop == 'AND':
+            a.intersect(b)
+        if self.setop == 'OR':
+            a.union(b)
+        
     def _compute_reference(self):
-        conditions = [c for c in self._item_conditions.values()]
-        reference = copy(conditions[0])
-        for c in conditions[1:]:
-            if self.setop == 'AND':
-                reference.intersect(c)
-            if self.setop == 'OR':
-                reference.union(c)
-        return reference
+        explicit_ref = ItemExplicitSieve(self._data)
+        for c in self._item_explicit_conditions.values():
+            self._arggregate(explicit_ref, c)
 
+        if len(self._item_implicit_conditions) > 0:
+            implicit_ref = ItemImplicitSieve(self._data)
+            for c in self._item_implicit_conditions.values():
+                self._arggregate(implicit_ref, c)
+                
+            self._arggregate(explicit_ref, implicit_ref.query)
+                
+        return explicit_ref
 
+    def _compute_projection(self):
+        if len(self._attribute_conditions) > 0:
+            implicit_ref = ItemImplicitSieve(self._data)
+            for c in self._item_implicit_conditions.values():
+                self._arggregate(implicit_ref, c)
+        
+        return implicit_ref   
 
 
 
@@ -351,7 +401,10 @@ class ItemSieve(object):
         
     def _compute_reference(self):
         references = [v['reference'] for v in self._conditions.values()]
-        print self._conditions.values()
+        
+        from pympler.asizeof import asizeof
+        print 'SIZE OF REFERENCES:', asizeof(self._conditions.values())
+        
         if self.setop == 'AND':
             reference = set.intersection(*references)
         if self.setop == 'OR':
