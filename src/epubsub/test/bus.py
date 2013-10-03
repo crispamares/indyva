@@ -19,6 +19,11 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.a = self.A()
         self.bus = bus.Bus()
+        
+    def tearDown(self):
+        self.bus.close("topicA")
+        self.bus.close("topicB")
+        self.bus.close("topicC")
 
     def testSimpleTopic(self):
         self.bus.subscribe("topicA", self.a.sumAB)
