@@ -65,7 +65,7 @@ def getDF():
 
 def test_dselect_and_dfilter(tv):
     from dynamics.dselect import DynSelect
-    d = DynSelect('sel1')
+    d = DynSelect('sel1', tv.table)
     tv.set_highlight(d)
     d.set_condition('horizontal2', ['RI','SD', 'NY', 'VT'])
 

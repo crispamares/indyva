@@ -79,10 +79,7 @@ class TabularView(QtGui.QTableView):
         if self.dynfilter is not None:
             query = self.dynfilter.query
             projection = self.dynfilter.projection
-            print '*** LOOK', projection
             filtered_table = self.table.find(query, projection)
-            if filtered_table.row_count() == 0:
-                return
             model.setTable(filtered_table)
         else:
             model.setTable(self.table)
@@ -90,7 +87,7 @@ class TabularView(QtGui.QTableView):
         self.setModel(model)
         
         if self.highlight is not None:
-            reference = self.highlight.ref
+            reference = self.highlight.reference
             selection_model = self.selectionModel()
             selection_model.clearSelection()
             existing_ref = set(reference).intersection(model.data_index)

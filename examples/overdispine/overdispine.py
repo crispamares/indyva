@@ -53,7 +53,7 @@ def main():
     dfilter.subscribe('change', lambda t,m : view.update_view())
     dfilter.subscribe('remove', lambda t,m : view.update_view())
 
-    dselect = DynSelect('s_dendrites')
+    dselect = DynSelect('s_dendrites', spines_table)
     
     view.table = spines_table
     view.dfilter = dfilter
