@@ -22,7 +22,7 @@ class DynSelect(IPublisher):
         @param name: unique name
         '''
         self._name = name
-        self._sieves = SieveSet(setop='OR')
+        self._sieves = SieveSet(data, setop='OR')
         self._data = data
         
         topics = ['change', 'remove']

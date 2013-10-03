@@ -25,7 +25,7 @@ class DynFilter(IPublisher):
         '''
         self._name = name
         self._data = data
-        self._sieves = SieveSet()
+        self._sieves = SieveSet(data)
 
         topics = ['change', 'remove']
         bus = Bus(prefix= 'f.'+self._name+'.')
