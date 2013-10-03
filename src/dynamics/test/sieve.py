@@ -31,7 +31,7 @@ class TestItemImplicitSieve(unittest.TestCase):
     
     def testDomain(self):
         s = ItemImplicitSieve(self.table, [])
-        self.assertSetEqual(s.domain , set(self.table.index_domain()))
+        self.assertSetEqual(s.domain , set(self.table.index_items()))
 
     def testIndex(self):
         s = ItemImplicitSieve(self.table, [])
@@ -110,11 +110,11 @@ class TestItemExplicitSieve(unittest.TestCase):
     
     def testDomain(self):
         s = ItemExplicitSieve(self.table, {})
-        self.assertSetEqual(s.domain , set(self.table.index_domain()))
+        self.assertSetEqual(s.domain , set(self.table.index_items()))
 
     def testIndex(self):
         s = ItemExplicitSieve(self.table, {})
-        self.assertEqual(s.index , set(self.table.index_domain()))
+        self.assertEqual(s.index , set(self.table.index_items()))
         s.query = {'Information':  {'$gt': 200000}}
         self.assertEqual(s.index , set(['CA', 'TX', 'NY']))
         

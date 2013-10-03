@@ -60,7 +60,7 @@ class ItemImplicitSieve(ImplicitSieve):
     @property
     def domain(self):
         if self._domain is None:
-            self._domain = set(self.data.index_domain())
+            self._domain = set(self.data.index_items())
         return self._domain
     @property
     def query(self):
@@ -98,7 +98,7 @@ class ItemExplicitSieve(object):
     @property
     def domain(self):
         if self._domain is None:
-            self._domain = set(self.data.index_domain())
+            self._domain = set(self.data.index_items())
         return self._domain
     @property
     def query(self):
@@ -127,8 +127,8 @@ class ItemExplicitSieve(object):
 
     def to_implicit(self):
         if self._implicit_form is None:
-            domain = self._data.index_domain()
-            index = self._data.find(self._query).index_domain()
+            domain = self._data.index_items()
+            index = self._data.find(self._query).index_items()
             self._implicit_form = ImplicitSieve(domain, index)
         return self._implicit_form
     

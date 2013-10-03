@@ -79,7 +79,7 @@ class ITableView(object):
         pass
     
     @abstractmethod
-    def index_domain(self):
+    def index_items(self):
         pass
     
     @abstractmethod

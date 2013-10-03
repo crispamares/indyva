@@ -38,8 +38,8 @@ class TableView(ITableView, IPublisher):
     def distinct(self, column):
         return self._backend.distinct(column, self.view_args)
     
-    def index_domain(self):
-        return self._backend.index_domain(self.view_args)
+    def index_items(self):
+        return self._backend.index_items(self.view_args)
     
     def row_count(self):
         return self._backend.row_count(self.view_args)

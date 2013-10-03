@@ -14,7 +14,7 @@ import json
 from collections import OrderedDict
 from dataset import RSC_DIR
 import exceptions
-from dataset.table import TableView
+from dataset.table import TableView, Table
 
 class Test(unittest.TestCase):
 

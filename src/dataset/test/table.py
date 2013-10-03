@@ -72,7 +72,7 @@ class Test(unittest.TestCase):
         table.insert({'State': 'DC', 'life_meaning':42})
         view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
         self.assertIsInstance(view, TableView)
-        distincts = view.index_domain()
+        distincts = view.index_items()
         self.assertEqual(len(distincts), 2)
         for result in distincts:
             self.assertIn(result, ['DC','NY'])
