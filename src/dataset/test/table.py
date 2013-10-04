@@ -56,6 +56,16 @@ class Test(unittest.TestCase):
         self.assertIsInstance(view, TableView)
         for result in view.get_data():
             self.assertIn(result['State'], ['DC','NY'])
+            
+    def testMultiFind(self):
+        table = Table('census', self.schema).data(self.df)
+        view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        view2 = view.find({'Information':{'$gt':  200000}})
+        self.assertIsInstance(view, TableView)
+        for result in view.get_data():
+            self.assertIn(result['State'], ['DC','NY'])
+        for result in view2.get_data():
+            self.assertNotIn(result['State'], ['DC'])
 
     def testDistinct(self):
         table = Table('census', self.schema).data(self.df)
@@ -67,7 +77,7 @@ class Test(unittest.TestCase):
         for result in distincts:
             self.assertIn(result, ['DC','NY'])
 
-    def testIndexDomain(self):
+    def testIndexItems(self):
         table = Table('census', self.schema).data(self.df)
         table.insert({'State': 'DC', 'life_meaning':42})
         view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})

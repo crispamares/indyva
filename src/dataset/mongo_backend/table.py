@@ -5,6 +5,7 @@ from .connection import Connection
 import pandas as pn
 import exceptions
 from types import DictType
+from pymongo.cursor import Cursor 
 
 ''' The mongo backend stores each analysis as a different database. And 
 each dataset as a different collection.
@@ -26,13 +27,37 @@ class MongoTable(ITable):
         db.drop_collection(self.name)
         self._col = db[self.name]
 
-    def _serialize_data(self, cursor, outtype):
+    def _serialize_data(self, data, outtype):
+        '''
+        @param data: list or pymongo.cursor.Cursor
+        @param outtype: one of ['rows', 'c_list']
+        '''
+        if isinstance(data, Cursor):
+            data = list(data)
+        
         if outtype == 'rows':
-            return list(cursor)
+            return data
         if outtype == 'c_list':
-            df = pn.DataFrame(list(cursor))
+            df = pn.DataFrame(data)
             return df.to_dict('list')
         raise exceptions.NotImplementedError()
+
+    def _to_pipeline(self, view_args):
+        pipeline = []
+        for v in view_args:
+            if v.get('query', None):
+                pipeline.append({'$match': v['query']})
+            if v.get('skip', None):
+                pipeline.append({'$skip': v['skip']})
+            if v.get('limit', None):
+                pipeline.append({'$limit': v['limit']})
+            if v.get('sort', None):
+                pipeline.append({'$sort': v['sort']})
+            if v.get('projection', None):
+                projection = v['projection']
+                projection.update({'_id':False})
+                pipeline.append({'$projection': projection})
+        return pipeline    
 
     def get_data(self , outtype='rows'):
         return self._serialize_data(self.find(), outtype)
@@ -40,9 +65,15 @@ class MongoTable(ITable):
     def get_view_data(self, view_args=[{}], outtype='rows'):
         if isinstance(view_args, dict):
             view_args = [view_args]
-        if len(view_args) > 1: raise exceptions.NotImplementedError(view_args)
-        # TODO: translate view_args to aggregate syntax 
-        return self._serialize_data(self.find(**view_args[0]), outtype)
+        if len(view_args) > 1: 
+            pipeline = self._to_pipeline(view_args)
+            data = self.aggregate(pipeline)
+        else:
+            data = self.find(**view_args[0])
+        return self._serialize_data(data, outtype)
+        
+    def aggregate(self, pipeline):
+        return self._col.aggregate(pipeline)['result']
 
     def data(self, data):
         rows = []
@@ -54,7 +85,7 @@ class MongoTable(ITable):
         
         self._col.insert(rows)
         return self
-    
+
     def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
         projection = projection if isinstance(projection, DictType) else {} 
         projection.update({'_id':False})
