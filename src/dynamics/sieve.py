@@ -149,7 +149,7 @@ class ItemSievesFactory(object):
         @param reference: A list of item keys
         @param query: An explicit query
         '''
-        if reference is None and query is not None:
+        if reference is not None and query is not None:
             raise ValueError('Both reference and query params provided')
         if reference is not None:
             sieve = ItemImplicitSieve(data, reference)
