@@ -70,19 +70,22 @@ class Test(unittest.TestCase):
     def testDistinct(self):
         table = Table('census', self.schema).data(self.df)
         table.insert({'State': 'DC', 'life_meaning':42})
-        view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
-        
+        view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'},{'State': 'CA'}]})
+
         distincts = view.distinct('State')
-        self.assertEqual(len(distincts), 2)
+        self.assertEqual(len(distincts), 3)
         for result in distincts:
-            self.assertIn(result, ['DC','NY'])
+            self.assertIn(result, ['DC','NY','CA'])
             
         distinct_view = view.distinct('State', as_view=True)
         self.assertIsInstance(distinct_view, TableView)
         result = distinct_view.get_data(outtype='c_list')
-        self.assertEqual(result, {'State': ['NY', 'DC']})
+        self.assertEqual(result, {'State': ['NY', 'DC', 'CA']})
         
-
+        view2 = view.find({'Information':{'$gt':  200000}})
+        result = view2.distinct('State')
+        self.assertEqual(result, ['NY', 'CA'])
+        
     def testIndexItems(self):
         table = Table('census', self.schema).data(self.df)
         table.insert({'State': 'DC', 'life_meaning':42})

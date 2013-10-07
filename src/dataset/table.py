@@ -32,8 +32,9 @@ class TableView(ITableView, IPublisher):
         view_args = dict(query=query, projection=projection, skip=skip, limit=limit, sort=sort)
         return TableView(parent=self, view_args=view_args)
 
-    def find_one(self, *args, **kwargs):
-        return self._backend.find_one(*args, **kwargs)
+    def find_one(self, query=None, projection=None, skip=0, sort=None):
+        view_args = dict(query=query, projection=projection, skip=skip, limit=1, sort=sort)
+        return self._backend.find_one( view_args=self._merge_args(self.view_args, view_args) )xs
     
     def distinct(self, column, as_view=False):
         if not as_view:

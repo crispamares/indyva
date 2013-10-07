@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from ..abc_table import ITable
 from .connection import Connection
 
-from functools import wraps
 import pandas as pn
 import exceptions
 from types import DictType
@@ -51,15 +50,9 @@ class MongoTable(ITable):
         return is_pipeline
 
     def _to_pipeline(self, view_args):
-        hidden_id = False
         pipeline = []
         for v in view_args:
             if v.get('pipeline', None):
-                if not hidden_id:
-                    projects = [op for op in v['pipeline'] if '$project' in op]
-                    if projects:
-                        projects[-1]['$project'].update({'_id':False})
-                        hidden_id = True
                 pipeline += v['pipeline']
                 continue
             if v.get('query', None):
@@ -71,15 +64,11 @@ class MongoTable(ITable):
             if v.get('sort', None):
                 pipeline.append({'$sort': v['sort']})
             if v.get('projection', None):
-                projection = v['projection']
-                projection.update({'_id':False})
-                pipeline.append({'$project': projection})
-                hidden_id = True
-        if not hidden_id:
-            print 'HIDE _id'
-            show_all = {k:True for k in self._schema.attributes.keys()}
-            show_all.update({'_id':False})
-            pipeline.append({'$project': show_all})
+                pipeline.append({'$project': v['projection']})
+
+        show_all = {k:True for k in self._schema.attributes.keys()}
+        show_all.update({'_id':False})
+        pipeline.append({'$project': show_all})
         return pipeline    
 
     def get_data(self , outtype='rows'):
@@ -99,10 +88,6 @@ class MongoTable(ITable):
             data = self.aggregate(pipeline)    
         
         return self._serialize_data(data, outtype)
-        
-    def aggregate(self, pipeline):
-        print 'PIPELINE:', pipeline
-        return self._col.aggregate(pipeline)['result']
 
     def data(self, data):
         rows = []
@@ -114,22 +99,29 @@ class MongoTable(ITable):
         
         self._col.insert(rows)
         return self
-
+        
+    def aggregate(self, pipeline):
+        print 'PIPELINE:', pipeline
+        return self._col.aggregate(pipeline)['result']
+    
     def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
         projection = projection if isinstance(projection, DictType) else {} 
         projection.update({'_id':False})
         return self._col.find(query, fields=projection, skip=skip, limit=limit, sort=sort)
         
-    def find_one(self, query=None, projection=None, skip=0, limit=0, sort=None):
-        projection = projection if isinstance(projection, DictType) else {} 
-        projection.update({'_id':False})
-        return self._col.find_one(query, fields=projection, skip=skip, limit=limit, sort=sort)
+    def find_one(self, view_args):
+        return self.get_view_data(view_args)[0]
     
     def distinct(self, column, view_args):
-        return self.find(**view_args[0]).distinct(column)
+        if self._is_pipeline(view_args):
+            distinct_pipeline = {'pipeline' : [{'$group' : {'_id': '$'+column}},
+                                   {'$project' : {column: '$_id'}}]}
+            return self.get_view_data(view_args + [distinct_pipeline], 'c_list')[column]
+        else:
+            return self.find(**view_args[0]).distinct(column)
     
     def index_items(self, view_args):
-        return self.find(**view_args[0]).distinct(self.index)
+        return self.distinct(self.index, view_args)
 
     def row_count(self, view_args):
         if self._is_pipeline(view_args):
