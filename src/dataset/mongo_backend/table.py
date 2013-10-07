@@ -14,21 +14,6 @@ each dataset as a different collection.
 The database used as analysis namespace is setted in the connection module
 '''
 
-def if_pipeline(pipeline_f):
-    '''
-    This decorator calls pipeline_f instead of the wrapped function if
-    view_args needs to be resolved using the aggregation framework
-    Needs that the 'view_args' arg is in kwargs 
-    '''
-    def wrap(f):
-        @wraps(f)
-        def wrapper(self, *args, **kwargs):
-            if self._is_pipeline(kwargs['view_args']):
-                return pipeline_f(self, *args, **kwargs)
-            return f(self, *args, **kwargs)
-        return wrapper
-    return wrap
-
 class MongoTable(ITable):
     
     def __init__(self, *args, **kargs):
@@ -66,9 +51,15 @@ class MongoTable(ITable):
         return is_pipeline
 
     def _to_pipeline(self, view_args):
+        hidden_id = False
         pipeline = []
         for v in view_args:
             if v.get('pipeline', None):
+                if not hidden_id:
+                    projects = [op for op in v['pipeline'] if '$project' in op]
+                    if projects:
+                        projects[-1]['$project'].update({'_id':False})
+                        hidden_id = True
                 pipeline += v['pipeline']
                 continue
             if v.get('query', None):
@@ -83,6 +74,12 @@ class MongoTable(ITable):
                 projection = v['projection']
                 projection.update({'_id':False})
                 pipeline.append({'$project': projection})
+                hidden_id = True
+        if not hidden_id:
+            print 'HIDE _id'
+            show_all = {k:True for k in self._schema.attributes.keys()}
+            show_all.update({'_id':False})
+            pipeline.append({'$project': show_all})
         return pipeline    
 
     def get_data(self , outtype='rows'):
@@ -134,26 +131,23 @@ class MongoTable(ITable):
     def index_items(self, view_args):
         return self.find(**view_args[0]).distinct(self.index)
 
-    def _row_count_pipeline(self, view_args):
-        return len(self.aggregate(self._to_pipeline(view_args)))
-    
-    @if_pipeline(_row_count_pipeline)
     def row_count(self, view_args):
-        return self.find(**view_args[0]).count()
+        if self._is_pipeline(view_args):
+            count = len(self.aggregate(self._to_pipeline(view_args)))
+        else:
+            count = self.find(**view_args[0]).count()
+        return count
     
     def column_count(self, view_args):
         return len(self.column_names(view_args=view_args))
 
-    def _column_names_pipeline(self, view_args):
-        keys_set = set()
-        for row in self.aggregate(self._to_pipeline(view_args)):
-            keys_set.update(row.keys())
-        return list(keys_set.intersection(self._schema.attributes.keys()))
-
-    @if_pipeline(_column_names_pipeline)
     def column_names(self, view_args):
+        if self._is_pipeline(view_args):
+            rows = self.aggregate(self._to_pipeline(view_args))
+        else:
+            rows = self.find(**view_args[0])
         keys_set = set()
-        for row in self.find(**view_args[0]):
+        for row in rows:
             keys_set.update(row.keys())
         return list(keys_set.intersection(self._schema.attributes.keys()))
 

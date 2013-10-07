@@ -79,8 +79,8 @@ class Test(unittest.TestCase):
             
         distinct_view = view.distinct('State', as_view=True)
         self.assertIsInstance(distinct_view, TableView)
-        print distinct_view.get_data()
-        self.assertEqual(distinct_view.get_data(), 2)
+        result = distinct_view.get_data(outtype='c_list')
+        self.assertEqual(result, {'State': ['NY', 'DC']})
         
 
     def testIndexItems(self):
