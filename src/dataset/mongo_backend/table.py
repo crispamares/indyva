@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from ..abc_table import ITable
 from .connection import Connection
 
+from functools import wraps
 import pandas as pn
 import exceptions
 from types import DictType
@@ -12,6 +13,21 @@ each dataset as a different collection.
 
 The database used as analysis namespace is setted in the connection module
 '''
+
+def if_pipeline(pipeline_f):
+    '''
+    This decorator calls pipeline_f instead of the wrapped function if
+    view_args needs to be resolved using the aggregation framework
+    Needs that the 'view_args' arg is in kwargs 
+    '''
+    def wrap(f):
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
+            if self._is_pipeline(kwargs['view_args']):
+                return pipeline_f(self, *args, **kwargs)
+            return f(self, *args, **kwargs)
+        return wrapper
+    return wrap
 
 class MongoTable(ITable):
     
@@ -42,9 +58,19 @@ class MongoTable(ITable):
             return df.to_dict('list')
         raise exceptions.NotImplementedError()
 
+    def _is_pipeline(self, view_args):
+        is_pipeline = ( not isinstance(view_args, dict)
+                      and ( len(view_args) == 1 and 'pipeline' in view_args[0]
+                            or len(view_args) > 1)
+                     )
+        return is_pipeline
+
     def _to_pipeline(self, view_args):
         pipeline = []
         for v in view_args:
+            if v.get('pipeline', None):
+                pipeline += v['pipeline']
+                continue
             if v.get('query', None):
                 pipeline.append({'$match': v['query']})
             if v.get('skip', None):
@@ -56,7 +82,7 @@ class MongoTable(ITable):
             if v.get('projection', None):
                 projection = v['projection']
                 projection.update({'_id':False})
-                pipeline.append({'$projection': projection})
+                pipeline.append({'$project': projection})
         return pipeline    
 
     def get_data(self , outtype='rows'):
@@ -65,14 +91,20 @@ class MongoTable(ITable):
     def get_view_data(self, view_args=[{}], outtype='rows'):
         if isinstance(view_args, dict):
             view_args = [view_args]
-        if len(view_args) > 1: 
+        if len(view_args) == 1:
+            if 'pipeline' in view_args[0]:
+                data = self.aggregate(view_args[0]['pipeline'])
+            else:
+                data = self.find(**view_args[0])    
+        elif len(view_args) > 1: 
+            print 'TO PIP', view_args
             pipeline = self._to_pipeline(view_args)
-            data = self.aggregate(pipeline)
-        else:
-            data = self.find(**view_args[0])
+            data = self.aggregate(pipeline)    
+        
         return self._serialize_data(data, outtype)
         
     def aggregate(self, pipeline):
+        print 'PIPELINE:', pipeline
         return self._col.aggregate(pipeline)['result']
 
     def data(self, data):
@@ -102,20 +134,32 @@ class MongoTable(ITable):
     def index_items(self, view_args):
         return self.find(**view_args[0]).distinct(self.index)
 
+    def _row_count_pipeline(self, view_args):
+        return len(self.aggregate(self._to_pipeline(view_args)))
+    
+    @if_pipeline(_row_count_pipeline)
     def row_count(self, view_args):
         return self.find(**view_args[0]).count()
     
     def column_count(self, view_args):
-        keys_set = set()
-        for row in self.find(**view_args[0]):
-            keys_set.update(row.keys())
-        return len(keys_set.intersection(self._schema.attributes.keys()))
+        return len(self.column_names(view_args=view_args))
 
+    def _column_names_pipeline(self, view_args):
+        keys_set = set()
+        for row in self.aggregate(self._to_pipeline(view_args)):
+            keys_set.update(row.keys())
+        return list(keys_set.intersection(self._schema.attributes.keys()))
+
+    @if_pipeline(_column_names_pipeline)
     def column_names(self, view_args):
         keys_set = set()
         for row in self.find(**view_args[0]):
             keys_set.update(row.keys())
         return list(keys_set.intersection(self._schema.attributes.keys()))
+
+    #===========================================================================
+    #    Only Table (Not ViewTable) methods 
+    #===========================================================================
 
     def insert(self, row_or_rows):
         reference = []

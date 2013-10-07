@@ -71,11 +71,17 @@ class Test(unittest.TestCase):
         table = Table('census', self.schema).data(self.df)
         table.insert({'State': 'DC', 'life_meaning':42})
         view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
-        self.assertIsInstance(view, TableView)
+        
         distincts = view.distinct('State')
         self.assertEqual(len(distincts), 2)
         for result in distincts:
             self.assertIn(result, ['DC','NY'])
+            
+        distinct_view = view.distinct('State', as_view=True)
+        self.assertIsInstance(distinct_view, TableView)
+        print distinct_view.get_data()
+        self.assertEqual(distinct_view.get_data(), 2)
+        
 
     def testIndexItems(self):
         table = Table('census', self.schema).data(self.df)
@@ -92,18 +98,24 @@ class Test(unittest.TestCase):
         self.assertEqual(table.row_count(), 51)
         view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
         self.assertEqual(view.row_count(), 2)
+        view2 = view.find({'State': 'NY'})
+        self.assertEqual(view2.row_count(), 1)
 
     def testColumnCount(self):
         table = Table('census', self.schema).data(self.df)
         self.assertEqual(table.column_count(), 22)
-        view = table.find({}, {'Information':True})
-        self.assertEqual(view.column_count(), 1)
+        view = table.find({}, {'Information':True, 'State':True})
+        self.assertEqual(view.column_count(), 2)
+        view2 = view.find({}, {'State':True})
+        self.assertEqual(view2.column_count(), 1)
         
     def testColumnNames(self):
         table = Table('census', self.schema).data(self.df)
         self.assertEqual(len(table.column_names()), 22)
-        view = table.find({}, {'Information':True})
-        self.assertEqual(view.column_names(), ['Information'])
+        view = table.find({}, {'Information':True, 'State':True})
+        self.assertEqual(view.column_names(), ['Information', 'State'])
+        view2 = view.find({}, {'State':True})
+        self.assertEqual(view2.column_names(), ['State'])
         
     def testCheckIndex(self):
         table = Table('census', self.schema).data(self.df)

@@ -35,20 +35,28 @@ class TableView(ITableView, IPublisher):
     def find_one(self, *args, **kwargs):
         return self._backend.find_one(*args, **kwargs)
     
-    def distinct(self, column):
-        return self._backend.distinct(column, self.view_args)
+    def distinct(self, column, as_view=False):
+        if not as_view:
+            return self._backend.distinct(column, view_args=self.view_args)
+        else:
+            return self.aggregate([{'$group' : {'_id': '$'+column}},
+                                   {'$project' : {column: '$_id'}}])
+        
+    def aggregate(self, pipeline):
+        view_args = {'pipeline' : pipeline}
+        return TableView(parent=self, view_args=view_args)
     
     def index_items(self):
-        return self._backend.index_items(self.view_args)
+        return self._backend.index_items(view_args=self.view_args)
     
     def row_count(self):
-        return self._backend.row_count(self.view_args)
+        return self._backend.row_count(view_args=self.view_args)
 
     def column_count(self):
-        return self._backend.column_count(self.view_args)
+        return self._backend.column_count(view_args=self.view_args)
     
     def column_names(self):
-        return self._backend.column_names(self.view_args)
+        return self._backend.column_names(view_args=self.view_args)
     
     def for_json(self):
         return self.name

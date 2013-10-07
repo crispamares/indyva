@@ -79,6 +79,10 @@ class ITableView(object):
         pass
     
     @abstractmethod
+    def aggregate(self, pipeline):
+        pass
+       
+    @abstractmethod
     def index_items(self):
         pass
     
