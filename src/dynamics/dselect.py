@@ -37,11 +37,13 @@ class DynSelect(IPublisher):
            - Could be a reference (list or set)
            - Could be a query (dict)   
            - Could be a condition (ImplicitSieve or ExplicitSieve)           
-        @param name: If not provided a uuid is generated 
+        @param name: If not provided a uuid is generated
+        @return: condition The added condition
         '''
         condition = ItemSievesFactory.from_rqs(self._data, reference_query_condition)
-        self._sieves.add_condition(condition, name)
+        c = self._sieves.add_condition(condition, name)
         self._bus.publish('change', name)
+        return c
         
     def set_condition(self, name, reference_query_condition):
         '''Every condition has to share the same data as this dynamic otherwise
@@ -51,11 +53,13 @@ class DynSelect(IPublisher):
         @param reference_query_condition: 
            - Could be a reference (list or set)
            - Could be a query (dict)   
-           - Could be a condition (ImplicitSieve or ExplicitSieve)           
+           - Could be a condition (ImplicitSieve or ExplicitSieve)          
+        @return: condition The setted condition
         '''
         condition = ItemSievesFactory.from_rqs(self._data, reference_query_condition)
-        self._sieves.set_condition(name, condition)
+        c = self._sieves.set_condition(name, condition)
         self._bus.publish('change', name)
+        return c
         
     def remove_condition(self, name):
         ''' 
@@ -63,6 +67,18 @@ class DynSelect(IPublisher):
         '''
         self._sieves.remove_condition(name)
         self._bus.publish('remove', name)
+
+    def has_condition(self, name):
+        ''' 
+        @param name: The key of the condition. 
+        '''
+        return self._sieves.has_condition(name)
+
+    def get_condition(self, name):
+        ''' 
+        @param name: The key of the condition. 
+        '''
+        return self._sieves.get_condition(name)
 
     def is_empty(self):
         return self._sieves.is_empty()

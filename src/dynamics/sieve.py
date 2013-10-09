@@ -10,10 +10,11 @@ from copy import copy
 
 class ImplicitSieve(object):
 
-    def __init__(self, data, index):
+    def __init__(self, data, index, data_index=None):
         self._data = data
         self._domain = None
         self._index = set(index) 
+        self._data_index = data_index if data_index else self._data.index
     
     @property
     def data(self):
@@ -34,18 +35,25 @@ class ImplicitSieve(object):
 
     def union(self, index):
         self._index = self.index.union(set(index))
-
+        return self
+    
     def substract(self, index):
         self._index = self.index - set(index)
-        
+        return self
+            
     def toggle(self):
         self._index = self.domain - self.index 
-
+        return self
+    
     def intersect(self, index):
         self._index.intersection_update(set(index))
-    
+        return self
+        
     def to_explicit(self):
         raise NotImplemented()
+    
+    def to_implitic(self):
+        return self
     
     def __eq__(self, other):
         return self.domain == other.domain and self._index == other.index
@@ -59,15 +67,15 @@ class ItemImplicitSieve(ImplicitSieve):
 
     @property
     def domain(self):
-        if self._domain is None:
-            self._domain = set(self.data.index_items())
+        if self._domain is None:            
+            self._domain = set(self._data.distinct(self._data_index))
         return self._domain
     @property
     def query(self):
-        return { self.data.index : {'$in': list(self._index)} }
+        return { self._data_index : {'$in': list(self._index)} }
 
     def to_explicit(self):
-        query = { self.data.index : {'$in': list(self._index)} }
+        query = { self._data_index : {'$in': list(self._index)} }
         return ItemExplicitSieve(self.data, query)
 
 
@@ -86,19 +94,20 @@ class AttributeImplicitSieve(ImplicitSieve):
         
         
 class ItemExplicitSieve(object):
-    def __init__(self, data, query):
+    def __init__(self, data, query, data_index=None):
         self._data = data
         self._domain = None
         self._query = query 
+        self._data_index = data_index if data_index else self._data.index
         self._implicit_form = None
-    
+                
     @property
     def data(self):
         return self._data
     @property
     def domain(self):
         if self._domain is None:
-            self._domain = set(self.data.index_items())
+            self._domain = set(self.data.distinct(self._data_index))
         return self._domain
     @property
     def query(self):
@@ -114,23 +123,29 @@ class ItemExplicitSieve(object):
 
     def union(self, query):
         self.query = {'$or': [self._query, query]}
+        return self
 
     def substract(self, query):
         self.query = {'$and': [self._query, {"$nor": [query]}]}
+        return self
 
     def toggle(self):
         self.query = {'$nor': [self._query]}
-
+        return self
+    
     def intersect(self, query):
         self.query = {'$and': [self._query, query]}
-
-
+        return self
+    
     def to_implicit(self):
         if self._implicit_form is None:
-            domain = self._data.index_items()
-            index = self._data.find(self._query).index_items()
-            self._implicit_form = ImplicitSieve(domain, index)
+            domain = self.domain
+            index = self._data.find(self._query).distinct(self._data_index)
+            self._implicit_form = ImplicitSieve(domain, index, self._data_index)
         return self._implicit_form
+    
+    def to_explicit(self):
+        return self
     
     def __eq__(self, other):
         return self.data is other.data and self.query == other.query
@@ -199,6 +214,7 @@ class SieveSet(object):
         @param condition: A condition could be either an ImplicitSieve or an 
         ExplicitSieve.  
         @param name: If not provided a uuid is generated 
+        @return: condition The added condition
         '''
         name = name if name is not None else str(uuid.uuid4())
         if self.has_condition(name):
@@ -215,12 +231,15 @@ class SieveSet(object):
         elif isinstance(condition, ItemExplicitSieve):
             self._item_explicit_conditions[name] = condition
             self._computed_reference = None
+            
+        return condition
 
     def set_condition(self, name, condition):
         ''' 
         @param name: The key of the condition. 
         @param condition: A condition could be either an ImplicitSieve or an 
         ExplicitSieve. 
+        @return: condition The setted condition
         '''
         self._check_data(condition.data)
         if isinstance(condition, AttributeImplicitSieve):
@@ -232,7 +251,7 @@ class SieveSet(object):
         elif isinstance(condition, ItemExplicitSieve):
             self._item_explicit_conditions[name] = condition
             self._computed_reference = None
-        
+        return condition
     
     def remove_condition(self, name):
         ''' 
@@ -258,6 +277,17 @@ class SieveSet(object):
         return (name in self._item_implicit_conditions
                 or name in self._item_explicit_conditions
                 or name in self._attribute_conditions)
+        
+    def get_condition(self, name):
+        ''' 
+        @param name: The key of the condition. 
+        '''
+        if name in self._item_implicit_conditions:
+            return self._item_implicit_conditions[name]
+        if name in self._item_explicit_conditions:
+            return self._item_explicit_conditions[name]
+        if name in self._attribute_conditions:
+            return self._attribute_conditions[name]
     
     def is_empty(self):
         return (len(self._item_implicit_conditions) == 0 
