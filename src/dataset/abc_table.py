@@ -42,6 +42,10 @@ class ITableView(object):
     @property
     def index(self):
         return self._schema.index
+
+    @property
+    def schema(self):
+        return self._schema
     
     @property
     def view_args(self):
