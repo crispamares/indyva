@@ -71,8 +71,10 @@ class TableSchema(DataSetSchema):
         super(TableSchema, self).__init__(index)
         
         self._schema['dataset_type'] = DataSetTypes.TABLE
-        self._schema['attributes'] = OrderedDict(attributes)
-                
+        self._schema['attributes'] = OrderedDict()
+        for name in attributes:
+            self.add_attribute(name, attributes[name])
+
     @property
     def attributes(self):
         '''This is an OrededDict with the form - name:AttributeSchema'''
@@ -127,6 +129,10 @@ class AttributeSchema(object):
         @return: OrderedDict''' 
         return copy(self._schema)
     
+    @property
+    def attribute_type(self):
+        return self._schema['attribute_type']
+    
     def is_spatial(self):
         return self._schema.get('spatial', False)
 
@@ -147,3 +153,6 @@ class AttributeSchema(object):
     is_value = negation(is_key)
     is_scalar = negation(is_multidimensional) 
     is_discrete = negation(is_continuous)
+    
+    def __repr__(self):
+        return 'AttributeSchema({0})'.format(self._schema)
