@@ -6,3 +6,5 @@ Created on Aug 29, 2013
 
 This package contains all third-party modules bundled with IPython.
 '''
+
+from lru_cache import lru_cache
