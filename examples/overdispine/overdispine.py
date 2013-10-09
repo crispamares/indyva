@@ -41,12 +41,15 @@ def main():
     spines_table = data_adquisition.create_spines_table()
     
     
+    
     main_window = MainWindow()
     main_window.show()
 
     view = main_window.list_view
 
     dfilter = DynFilter('f_dendrites', spines_table)
+    #dfilter.set_item_condition('dendrite_id', query={})
+    #dfilter.set_item_condition('dendrite_type', query={'dendrite_type': 'basal'})
     main_window.add_filter(spines_table, 'dendrite_id', dfilter)
     main_window.add_filter(spines_table, 'dendrite_type', dfilter)
     #main_window.add_filter(spines_table, 'section', dfilter)

@@ -56,39 +56,50 @@ class CategoricalFilterItemModel(QtGui.QStandardItemModel):
         
         self._dfilter = dfilter # Could be shared with other condition providers
 
-        self._data = sorted(self._table.distinct(self._column))
-        
-        for d in self._data:
+        self._categories = sorted(self._table.distinct(self._column))        
+
+        if not self._dfilter.has_condition(self._column):
+            self._dfilter.set_item_condition(self._column, query={})
+        self._filtered_categories = self._get_filtered_categories()
+        for d in self._categories:
             item = QtGui.QStandardItem(str(d))
             item.setCheckable(True)
-            item.setCheckState(QtCore.Qt.Checked)
+            checked = QtCore.Qt.Checked if d in self._filtered_categories else QtCore.Qt.Unchecked
+            item.setCheckState(checked)
             item._value = d # if the category is an integer 'item.text()' -> BAD  
             self.appendRow(item)
         
         self.itemChanged.connect(self.on_item_changed)
+        dfilter.subscribe('change', self.updated_dfilter)
+        dfilter.subscribe('remove', self.updated_dfilter)
         
-    def update_condition(self):
-        filtered_categories = []
+    def _get_filtered_categories(self):
+        if self._dfilter.has_condition(self._column):
+            query = self._dfilter.get_condition(self._column).query  
+            return set(self._table.find(query).distinct(self._column))
+        else:
+            return set()
+        
+    def updated_dfilter(self, topic, msg):
+        self.itemChanged.disconnect(self.on_item_changed)
+
+        _filtered_categories = self._get_filtered_categories()
         for i in xrange(self.rowCount()):
             item = self.item(i)
-            if item.checkState() == QtCore.Qt.Checked:
-                filtered_categories.append(item._value) 
+            d = item._value
+            checked = QtCore.Qt.Checked if d in _filtered_categories else QtCore.Qt.Unchecked
+            item.setCheckState(checked)
 
-        if ( len(filtered_categories) == self.rowCount()
-             and self._dfilter.has_condition(self._column) ):
-            self._dfilter.remove_condition(self._column)
-        else:
-            query = {self._column: {'$in':filtered_categories}}
-            # TODO: Get lazzy: The next query execution should be done when required 
-            result = self._table.find(query, {self._table.index : True}).get_data('c_list')
-            ref = result.get(self._table.index, [])
-            self._dfilter.set_item_condition(self._column, ref, query)
-        
-        
+        self.itemChanged.connect(self.on_item_changed)
 
     def on_item_changed(self, item):
-        self.update_condition()
-
+        print '*** on_item_changed'
+        if item.checkState() == QtCore.Qt.Checked:
+            self._filtered_categories.add(item._value)
+        else:
+            self._filtered_categories.remove(item._value)
+        query = {self._column: {'$in': list(self._filtered_categories)}}
+        self._dfilter.set_item_condition(self._column, query=query)
     
 if __name__ == '__main__':
     def print_dfilter(topic, msg):

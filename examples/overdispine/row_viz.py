@@ -223,7 +223,7 @@ class VizListView(object):
             self.hide_plot(name)
         
         for dendrite in dendrites:
-            if self.plots.has_key(dendrite):
+            if dendrite in self.plots:
                 if not self.plots[dendrite].isVisible():
                     self.show_plot(dendrite)
                 print 'Yet ploted', dendrite
