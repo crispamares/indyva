@@ -46,25 +46,30 @@ class CategoricalFilterModel(QtCore.QAbstractListModel):
             return QtCore.Qt.Checked
         return self._data[index.row()]
     
+    
 class CategoricalFilterItemModel(QtGui.QStandardItemModel):
     
     def __init__(self, table, column, dfilter, *args, **kwargs):
+        '''
+        :param Table table:
+        :param DynFilter dfilter: 
+        '''
         QtGui.QStandardItemModel.__init__(self, *args, **kwargs)
         self.rcount = None
         self._table = table # TODO: Test that the column is a categorical attribute 
         self._column = column
         
         self._dfilter = dfilter # Could be shared with other condition providers
-
         self._categories = sorted(self._table.distinct(self._column))        
 
-        if not self._dfilter.has_condition(self._column):
-            self._dfilter.set_item_condition(self._column, query={})
-        self._filtered_categories = self._get_filtered_categories()
+        self.condition = dfilter.new_categorical_condition(column, name=column)
+        self.condition.include_all()
+        included_categories = self.condition.included_categories()
         for d in self._categories:
             item = QtGui.QStandardItem(str(d))
             item.setCheckable(True)
-            checked = QtCore.Qt.Checked if d in self._filtered_categories else QtCore.Qt.Unchecked
+            checked = ( QtCore.Qt.Checked if d in included_categories 
+                else QtCore.Qt.UnChecked )
             item.setCheckState(checked)
             item._value = d # if the category is an integer 'item.text()' -> BAD  
             self.appendRow(item)
@@ -73,21 +78,15 @@ class CategoricalFilterItemModel(QtGui.QStandardItemModel):
         dfilter.subscribe('change', self.updated_dfilter)
         dfilter.subscribe('remove', self.updated_dfilter)
         
-    def _get_filtered_categories(self):
-        if self._dfilter.has_condition(self._column):
-            query = self._dfilter.get_condition(self._column).query  
-            return set(self._table.find(query).distinct(self._column))
-        else:
-            return set()
-        
     def updated_dfilter(self, topic, msg):
         self.itemChanged.disconnect(self.on_item_changed)
 
-        _filtered_categories = self._get_filtered_categories()
+        included_categories = self.condition.included_categories()
         for i in xrange(self.rowCount()):
             item = self.item(i)
             d = item._value
-            checked = QtCore.Qt.Checked if d in _filtered_categories else QtCore.Qt.Unchecked
+            checked = ( QtCore.Qt.Checked if d in included_categories 
+                else QtCore.Qt.Unchecked)
             item.setCheckState(checked)
 
         self.itemChanged.connect(self.on_item_changed)
@@ -95,11 +94,13 @@ class CategoricalFilterItemModel(QtGui.QStandardItemModel):
     def on_item_changed(self, item):
         print '*** on_item_changed'
         if item.checkState() == QtCore.Qt.Checked:
-            self._filtered_categories.add(item._value)
+            self.condition.add_category(item._value)
         else:
-            self._filtered_categories.remove(item._value)
-        query = {self._column: {'$in': list(self._filtered_categories)}}
-        self._dfilter.set_item_condition(self._column, query=query)
+            self.condition.remove_category(item._value)
+        self._dfilter.update(self.condition)
+    
+
+    
     
 if __name__ == '__main__':
     def print_dfilter(topic, msg):

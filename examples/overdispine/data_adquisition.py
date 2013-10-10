@@ -17,6 +17,7 @@ def create_schema():
                          dict(attribute_type= 'CATEGORICAL',
                               key=True))
     schema.add_attribute('dendrite_id','CATEGORICAL')
+    schema.add_attribute('dendrite_type','CATEGORICAL')
     schema.add_attribute('size', 'QUANTITATIVE')
     schema.add_attribute('length', 'QUANTITATIVE')
     schema.add_attribute('angle', 'QUANTITATIVE')
