@@ -169,41 +169,41 @@ class TestSieveSet(unittest.TestCase):
         self.assertEqual(ss.projection, {})
         self.assertEqual(ss.reference, set([]))
         
-    def testAddConditionWithAND(self):
+    def testAddsieveWithAND(self):
         ss = SieveSet(self.table)
 
-        ss.add_condition(self.impls)
+        ss.add_sieve(self.impls)
         self.assertEqual(ss.query,  {u'State': {'$in': ['NY', 'DC']}})
         self.assertEqual(ss.projection, {})
         self.assertEqual(ss.reference, set(['DC', 'NY']))
 
-        ss.add_condition(self.expls)
+        ss.add_sieve(self.expls)
         self.assertEqual(ss.query,  {'$and': [{'Information': {'$gt': 200000}},
                                               {u'State': {'$in': ['NY', 'DC']}}]})
         self.assertEqual(ss.projection, {})
         self.assertEqual(ss.reference, set(['NY']))
         
-        ss.add_condition(self.attrs)
+        ss.add_sieve(self.attrs)
         self.assertEqual(ss.query,  {'$and': [{'Information': {'$gt': 200000}},
                                               {u'State': {'$in': ['NY', 'DC']}}]})
         self.assertEqual(ss.projection, {u'Information': True, u'State': True})
         self.assertEqual(ss.reference, set(['NY']))
 
-    def testSetConditionWithOR(self):
+    def testSetSieveWithOR(self):
         ss = SieveSet(self.table, 'OR')
 
-        ss.set_condition('implicit', self.impls)
+        ss.set_sieve('implicit', self.impls)
         self.assertEqual(ss.query,  {u'State': {'$in': ['NY', 'DC']}})
         self.assertEqual(ss.projection, {})
         self.assertEqual(ss.reference, set(['DC', 'NY']))
 
-        ss.set_condition('explicit', self.expls)
+        ss.set_sieve('explicit', self.expls)
         self.assertEqual(ss.query,  {'$or': [{'Information': {'$gt': 200000}},
                                               {u'State': {'$in': ['NY', 'DC']}}]})
         self.assertEqual(ss.projection, {})
         self.assertEqual(ss.reference, set(['CA', 'TX', 'NY', 'DC']))
         
-        ss.set_condition('attributes', self.attrs)
+        ss.set_sieve('attributes', self.attrs)
         self.assertEqual(ss.query,  {'$or': [{'Information': {'$gt': 200000}},
                                               {u'State': {'$in': ['NY', 'DC']}}]})
         self.assertEqual(ss.projection, {u'Information': True, u'State': True})
@@ -213,22 +213,22 @@ class TestSieveSet(unittest.TestCase):
     def testRemoveWithOR(self):
         ss = SieveSet(self.table, 'OR')
 
-        ss.set_condition('implicit', self.impls)
-        ss.set_condition('explicit', self.expls)
-        ss.set_condition('attributes', self.attrs)
+        ss.set_sieve('implicit', self.impls)
+        ss.set_sieve('explicit', self.expls)
+        ss.set_sieve('attributes', self.attrs)
 
         self.assertEqual(ss.query,  {'$or': [{'Information': {'$gt': 200000}},
                                               {u'State': {'$in': ['NY', 'DC']}}]})
         self.assertEqual(ss.projection, {u'Information': True, u'State': True})
         self.assertEqual(ss.reference, set(['CA', 'TX', 'NY', 'DC']))
 
-        ss.remove_condition('attributes')
+        ss.remove_sieve('attributes')
         self.assertEqual(ss.query,  {'$or': [{'Information': {'$gt': 200000}},
                                               {u'State': {'$in': ['NY', 'DC']}}]})
         self.assertEqual(ss.projection, {})
         self.assertEqual(ss.reference, set(['CA', 'TX', 'NY', 'DC']))
 
-        ss.remove_condition('explicit')        
+        ss.remove_sieve('explicit')        
         self.assertEqual(ss.query,  {u'State': {'$in': ['NY', 'DC']}})
         self.assertEqual(ss.projection, {})
         self.assertEqual(ss.reference, set(['DC', 'NY']))

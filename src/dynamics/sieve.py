@@ -7,6 +7,7 @@ Created on 10/07/2013
 from collections import OrderedDict
 import uuid
 from copy import copy
+from external import lru_cache
 
 class ImplicitSieve(object):
 
@@ -28,25 +29,35 @@ class ImplicitSieve(object):
     @index.setter
     def index(self, index):
         self._index = set(index)
-    
+        self._cache_clear()        
     @property
     def query(self):
         raise NotImplemented()
+    @property
+    def items(self):
+        raise NotImplemented()
+
+    def _cache_clear(self):
+        pass
 
     def union(self, index):
         self._index = self.index.union(set(index))
+        self._cache_clear()
         return self
     
     def substract(self, index):
         self._index = self.index - set(index)
+        self._cache_clear()
         return self
             
     def toggle(self):
         self._index = self.domain - self.index 
+        self._cache_clear()
         return self
     
     def intersect(self, index):
         self._index.intersection_update(set(index))
+        self._cache_clear()
         return self
         
     def to_explicit(self):
@@ -74,6 +85,16 @@ class ItemImplicitSieve(ImplicitSieve):
     def query(self):
         return { self._data_index : {'$in': list(self._index)} }
 
+    @property
+    @lru_cache(3)
+    def items(self):
+        print '*** items', self._data_index
+        return set(self.data.find(self.query).index_items()) 
+
+    def _cache_clear(self):
+        print '^^^ clear', self._data_index
+        self.__class__.items.fget.cache_clear()
+        
     def to_explicit(self):
         query = { self._data_index : {'$in': list(self._index)} }
         return ItemExplicitSieve(self.data, query)
@@ -99,7 +120,6 @@ class ItemExplicitSieve(object):
         self._domain = None
         self._query = query 
         self._data_index = data_index if data_index else self._data.index
-        self._implicit_form = None
                 
     @property
     def data(self):
@@ -115,12 +135,19 @@ class ItemExplicitSieve(object):
     @query.setter
     def query(self, query):
         self._query = query
-        self._implicit_form = None
+        self._cache_clear()
     @property
     def index(self):
-        self.to_implicit()
-        return self._implicit_form.index
+        return self.to_implicit().index
+    @property
+    @lru_cache(1)
+    def items(self):
+        print '*** items', self
+        return set(self.data.find(self.query).index_items()) 
 
+    def _cache_clear(self):
+        self.to_implicit.cache_clear()
+            
     def union(self, query):
         self.query = {'$or': [self._query, query]}
         return self
@@ -137,11 +164,11 @@ class ItemExplicitSieve(object):
         self.query = {'$and': [self._query, query]}
         return self
     
-    def to_implicit(self):
-        if self._implicit_form is None:
-            domain = self.domain
-            index = self._data.find(self._query).distinct(self._data_index)
-            self._implicit_form = ImplicitSieve(domain, index, self._data_index)
+    @lru_cache(1)
+    def to_implicit(self):    
+        domain = self.domain
+        index = self._data.find(self._query).distinct(self._data_index)
+        self._implicit_form = ImplicitSieve(domain, index, self._data_index)
         return self._implicit_form
     
     def to_explicit(self):
@@ -197,117 +224,117 @@ class ItemSievesFactory(object):
 class SieveSet(object):
     def __init__(self, data, setop='AND'):
         '''@param setop: The set operation. AND or OR'''
-        self._item_implicit_conditions = OrderedDict()
-        self._item_explicit_conditions = OrderedDict()
-        self._attribute_conditions = OrderedDict()
+        self._item_implicit_sieves = OrderedDict()
+        self._item_explicit_sieves = OrderedDict()
+        self._attribute_sieves = OrderedDict()
         self._computed_reference = None
         self._computed_projection = None
         
         self._setop = setop
         self._data = data # The data every sieve has to be referred
 
-    def add_condition(self, condition, name=None):
+    def add_sieve(self, sieve, name=None):
         ''' 
-        Every condition has to share the same data otherwise a ValueError is
+        Every sieve has to share the same data otherwise a ValueError is
         raised
          
-        @param condition: A condition could be either an ImplicitSieve or an 
+        @param sieve: A sieve could be either an ImplicitSieve or an 
         ExplicitSieve.  
         @param name: If not provided a uuid is generated 
-        @return: condition The added condition
+        @return: sieve The added sieve
         '''
         name = name if name is not None else str(uuid.uuid4())
-        if self.has_condition(name):
-            raise ValueError("Already exists a condition with the name given")
+        if self.has_sieve(name):
+            raise ValueError("Already exists a sieve with the name given")
 
-        self._check_data(condition.data)
+        self._check_data(sieve.data)
 
-        if isinstance(condition, AttributeImplicitSieve):
-            self._attribute_conditions[name] = condition
+        if isinstance(sieve, AttributeImplicitSieve):
+            self._attribute_sieves[name] = sieve
             self._computed_projection = None
-        elif isinstance(condition, ItemImplicitSieve):
-            self._item_implicit_conditions[name] = condition
+        elif isinstance(sieve, ItemImplicitSieve):
+            self._item_implicit_sieves[name] = sieve
             self._computed_reference = None
-        elif isinstance(condition, ItemExplicitSieve):
-            self._item_explicit_conditions[name] = condition
+        elif isinstance(sieve, ItemExplicitSieve):
+            self._item_explicit_sieves[name] = sieve
             self._computed_reference = None
             
-        return condition
+        return sieve
 
-    def set_condition(self, name, condition):
+    def set_sieve(self, name, sieve):
         ''' 
-        @param name: The key of the condition. 
-        @param condition: A condition could be either an ImplicitSieve or an 
+        @param name: The key of the sieve. 
+        @param sieve: A sieve could be either an ImplicitSieve or an 
         ExplicitSieve. 
-        @return: condition The setted condition
+        @return: sieve The setted sieve
         '''
-        self._check_data(condition.data)
-        if isinstance(condition, AttributeImplicitSieve):
-            self._attribute_conditions[name] = condition
+        self._check_data(sieve.data)
+        if isinstance(sieve, AttributeImplicitSieve):
+            self._attribute_sieves[name] = sieve
             self._computed_projection = None
-        elif isinstance(condition, ItemImplicitSieve):
-            self._item_implicit_conditions[name] = condition
+        elif isinstance(sieve, ItemImplicitSieve):
+            self._item_implicit_sieves[name] = sieve
             self._computed_reference = None
-        elif isinstance(condition, ItemExplicitSieve):
-            self._item_explicit_conditions[name] = condition
+        elif isinstance(sieve, ItemExplicitSieve):
+            self._item_explicit_sieves[name] = sieve
             self._computed_reference = None
-        return condition
+        return sieve
     
-    def remove_condition(self, name):
+    def remove_sieve(self, name):
         ''' 
-        @param name: The key of the condition. 
+        @param name: The key of the sieve. 
         '''
-        if name in self._item_implicit_conditions:
-            self._item_implicit_conditions.pop(name)
+        if name in self._item_implicit_sieves:
+            self._item_implicit_sieves.pop(name)
             self._computed_reference = None
-        elif name in self._item_explicit_conditions:
-            self._item_explicit_conditions.pop(name)
+        elif name in self._item_explicit_sieves:
+            self._item_explicit_sieves.pop(name)
             self._computed_reference = None
-        elif name in self._attribute_conditions:
-            self._attribute_conditions.pop(name)
+        elif name in self._attribute_sieves:
+            self._attribute_sieves.pop(name)
             self._computed_projection = None
         else:
-            raise ValueError("There is no condition with the name given")
+            raise ValueError("There is no sieve with the name given")
         
 
-    def has_condition(self, name):
+    def has_sieve(self, name):
         ''' 
-        @param name: The key of the condition. 
+        @param name: The key of the sieve. 
         '''
-        return (name in self._item_implicit_conditions
-                or name in self._item_explicit_conditions
-                or name in self._attribute_conditions)
+        return (name in self._item_implicit_sieves
+                or name in self._item_explicit_sieves
+                or name in self._attribute_sieves)
         
-    def get_condition(self, name):
+    def get_sieve(self, name):
         ''' 
-        @param name: The key of the condition. 
+        @param name: The key of the sieve. 
         '''
-        if name in self._item_implicit_conditions:
-            return self._item_implicit_conditions[name]
-        if name in self._item_explicit_conditions:
-            return self._item_explicit_conditions[name]
-        if name in self._attribute_conditions:
-            return self._attribute_conditions[name]
+        if name in self._item_implicit_sieves:
+            return self._item_implicit_sieves[name]
+        if name in self._item_explicit_sieves:
+            return self._item_explicit_sieves[name]
+        if name in self._attribute_sieves:
+            return self._attribute_sieves[name]
     
     def is_empty(self):
-        return (len(self._item_implicit_conditions) == 0 
-                and len(self._item_explicit_conditions) == 0 
-                and len(self._attribute_conditions) == 0)    
+        return (len(self._item_implicit_sieves) == 0 
+                and len(self._item_explicit_sieves) == 0 
+                and len(self._attribute_sieves) == 0)    
 
     @property
     def reference(self):
-        '''The reference resulting of the accumulation of every item condition.
-        A reference is a set of indices or set([]) if there are no conditions'''
+        '''The reference resulting of the accumulation of every item sieve.
+        A reference is a set of indices or set([]) if there are no sieves'''
         if self._computed_reference is None:
             self._computed_reference = self._compute_reference()
-        return self._computed_reference.index
+        return self._computed_reference.items
     
     @property
     def projection(self):
         '''The projection resulting of the accumulation of every attribute 
-        condition.
+        sieve.
         A projection is a dict of { 'attr_name' -> Bool } or {} if there are 
-        no conditions
+        no sieves
         '''
         if self._computed_projection is None:
             self._computed_projection = self._compute_projection()
@@ -315,7 +342,7 @@ class SieveSet(object):
 
     @property
     def query(self):
-        '''The query resulting of the accumulation of every condition.
+        '''The query resulting of the accumulation of every sieve.
         '''
         if self._computed_reference is None:
             self._computed_reference = self._compute_reference()
@@ -333,25 +360,26 @@ class SieveSet(object):
             a.union(b)
 
     def _compute_reference(self):
-        explicit_conditions = self._item_explicit_conditions.values()
-        implicit_conditions = self._item_implicit_conditions.values()
+        explicit_sieves = self._item_explicit_sieves.values()
+        implicit_sieves = self._item_implicit_sieves.values()
         aggregated_sieve = None
 
-        if (len(self._item_implicit_conditions) == 0
-            and len(self._item_explicit_conditions) == 0):
+        if (len(self._item_implicit_sieves) == 0
+            and len(self._item_explicit_sieves) == 0):
             return ItemImplicitSieve(self._data, [])
          
         explicit_sieve = None
-        if len(explicit_conditions) > 0:
-            explicit_sieve = copy(explicit_conditions[0])
-            for c in explicit_conditions[1:]:
+        if len(explicit_sieves) > 0:
+            explicit_sieve = copy(explicit_sieves[0])
+            for c in explicit_sieves[1:]:
                 self._arggregate(explicit_sieve, c.query)
 
         implicit_sieve = None
-        if len(implicit_conditions) > 0:
-            implicit_sieve = copy(implicit_conditions[0])
-            for c in implicit_conditions[1:]:
-                self._arggregate(implicit_sieve, c.index)
+        if len(implicit_sieves) > 0:
+            implicit_sieve = ItemImplicitSieve(self._data, 
+                implicit_sieves[0].items)
+            for c in implicit_sieves[1:]:
+                self._arggregate(implicit_sieve, c.items)
         
         if explicit_sieve and implicit_sieve:        
             self._arggregate(explicit_sieve, implicit_sieve.query)
@@ -364,11 +392,11 @@ class SieveSet(object):
         return aggregated_sieve
 
     def _compute_projection(self):
-        attribute_conditions = self._attribute_conditions.values()
+        attribute_sieves = self._attribute_sieves.values()
         implicit_sieve = None
-        if len(attribute_conditions) > 0:
-            implicit_sieve = copy(attribute_conditions[0])
-            for c in attribute_conditions[1:]:
+        if len(attribute_sieves) > 0:
+            implicit_sieve = copy(attribute_sieves[0])
+            for c in attribute_sieves[1:]:
                 self._arggregate(implicit_sieve, c.index)
         else:
             implicit_sieve = AttributeImplicitSieve(self._data, [])

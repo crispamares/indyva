@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
 
     def testIncludeAll(self):
         cc = CategoricalCondition(data=self.table, attr='fake_cat')
-        cc.incude_all()
+        cc.include_all()
         self.assertSetEqual(set(cc.included_categories()),
                             set(self.table.distinct('fake_cat')))
 

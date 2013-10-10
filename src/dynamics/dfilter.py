@@ -2,13 +2,15 @@
 '''
 Created on 03/07/2013
 
-@author: jmorales
+:author: jmorales
 '''
 
-from epubsub.abc_publisher import IPublisher
+from epubsub.abc_publisher import IPublisher, pub_result
 from epubsub.bus import Bus
 
-from sieve import (SieveSet, AttributeImplicitSieve, ItemSievesFactory)
+from sieve import SieveSet
+from dynamics.condition import CategoricalCondition, AttributeCondition,\
+    Condition
 
 class DynFilter(IPublisher):
     '''
@@ -20,120 +22,102 @@ class DynFilter(IPublisher):
 
     def __init__(self, name, data):
         '''
-        @param name: unique name
-        @param data: the dataset that is going to suffer the filters 
+        :param str name: unique name
+        :param data: the dataset that is going to suffer the conditions
         '''
         self._name = name
         self._data = data
         self._sieves = SieveSet(data)
+        
+        self._conditions = {}
 
         topics = ['change', 'remove']
         bus = Bus(prefix= 'f.'+self._name+'.')
         IPublisher.__init__(self, bus, topics)
+
+    def new_categorical_condition(self, *args, **kwargs):
+        '''
+        :param str attr: The attribute that will be used as the category  
+        :param str name: If a name is not provided, an uuid is generated
+        :param int bins: If provided, the attribute will be coerced to be
+        :return: CategoricalCondition The created condition
+        '''
+        condition = CategoricalCondition(self._data, *args, **kwargs)
+        self.add_condition(condition)
+        return condition
+    
+    def new_attribute_condition(self, *args, **kwargs):
+        ''' 
+        :param str name: If a name is not provided, an uuid is generated
+        :return: AttributeCondition The created condition        
+        '''
+        condition = AttributeCondition(self._data, *args, **kwargs)
+        self.add_condition(condition)
+        return condition
         
-    def add_condition(self, condition, name=None):
-        '''Every condition has to share the same data as this dynamic otherwise
+
+    def add_condition(self, condition):
+        '''
+        If the condition (name) already exists a ValueError is raised.
+        Every condition has to share the same data as this dynamic otherwise
          a ValueError is raised
-         
-        @param condition: A condition could be either an ImplicitSieve or an 
-        ExplicitSieve.  
-        @param name: If not provided a uuid is generated 
-        @return: condition The added condition
+        :param Condition condition: A Condition
+        '''
+        if self.has_condition(condition.name):
+            raise ValueError("Already exists a condition with the given name")
+        return self.set_condition(condition)
+
+    @pub_result('change')
+    def set_condition(self, condition):
+        '''
+        Every condition has to share the same data as this dynamic otherwise
+         a ValueError is raised
+        
+        :param Condition condition: A Condition
         '''
         if condition.data != self._data:
             raise ValueError("Condition has {0} dataset, {1} expected"
                              .format(condition.data.name, self._data.name))
-        c = self._sieves.add_condition(condition, name)
-        self._bus.publish('change', name)
-        return c
+        self._conditions[condition.name] = condition
+        self._sieves.set_sieve(condition.name, condition.sieve)
+        return condition.name
 
-    def set_condition(self, name, condition):
-        '''Every condition has to share the same data as this dynamic otherwise
-         a ValueError is raised
-        
-        @param name: The key of the condition
-        @param condition: A condition could be either an ImplicitSieve or an 
-        ExplicitSieve.  
-        @return: condition The setted condition        
+ 
+    def update(self, condition):
         '''
-        if condition.data != self._data:
-            raise ValueError("Condition has {0} dataset, {1} expected"
-                             .format(condition.data.name, self._data.name))
-        c = self._sieves.set_condition(name, condition)
-        self._bus.publish('change', name)
-        return c
+        :param Condition condition: A previously added Condition
+        '''
+        if not self.has_condition(condition.name):
+            raise ValueError("There are no conditions with the given name: {0}"
+                             .format(condition.name))
+        self.set_condition(condition)
         
-    def add_item_condition(self, reference=None, query = None, name=None):
+    @pub_result('remove')
+    def remove_condition(self, condition):
         ''' 
-        You can create an implicit (by giving the reference) or explicit (by 
-        giving the query) condition 
-        @param reference: Reference is a list of item keys
-        @param query: Providing an explicit condition is useful for recomputing
-         the reference if the dataset changes 
-        @param name: If not provided a uuid is generated 
-        @return: condition The added condition        
+        :param condition: Could be a the name of the condition itself
         '''
-        condition = ItemSievesFactory.from_ref_and_query(self._data, reference, query)
-        c = self._sieves.add_condition(condition, name)
-        self._bus.publish('change', name)
-        return c
+        name = condition.name if isinstance(condition, Condition) else condition
+        self._conditions.pop(name)
+        self._sieves.remove_sieve(name)
+        return name
 
-    def add_attr_condition(self, attr_reference, name=None):
+    def has_condition(self, condition):
         ''' 
-        @param attr_reference: is a list of attribute names
-        @param name: If not provided a uuid is generated 
-        @return: condition The added condition        
+        :param condition: Could be a the name of the condition itself
         '''
-        condition = AttributeImplicitSieve(self._data, attr_reference)
-        c = self._sieves.add_condition(condition, name)
-        self._bus.publish('change', name)
-        return c
         
-    def set_item_condition(self, name, reference=None, query=None):
-        ''' 
-        @param name: The key of the condition. 
-        @param reference: Reference is a list of item keys
-        @param query: Providing an explicit condition is useful for recomputing
-         the reference if the dataset changes
-        @return: condition The setted condition          
-        '''
-        condition = ItemSievesFactory.from_ref_and_query(self._data, reference, query)
-        c = self._sieves.set_condition(name, condition)
-        self._bus.publish('change', name)
-        return c
-
-    def set_attr_condition(self, name, attr_reference):
-        ''' 
-        @param name: The key of the condition. 
-        @param attr_reference: is a list of attribute names
-        @return: condition The setted condition        
-        '''
-        condition = AttributeImplicitSieve(self._data, attr_reference)
-        c = self._sieves.set_condition(name, condition)       
-        self._bus.publish('change', name)
-        return c
-        
-    def remove_condition(self, name):
-        ''' 
-        @param name: The key of the condition. 
-        '''
-        self._sieves.remove_condition(name)
-        self._bus.publish('remove', name)
-
-    def has_condition(self, name):
-        ''' 
-        @param name: The key of the condition. 
-        '''
-        return self._sieves.has_condition(name)
+        name = condition.name if isinstance(condition, Condition) else condition
+        return name in self._conditions and self._sieves.has_sieve(name) 
     
     def get_condition(self, name):
         ''' 
-        @param name: The key of the condition. 
+        :param str name: The key of the condition. 
         '''
-        return self._sieves.get_condition(name)
+        return self._conditions.get_condition(name)
     
     def is_empty(self):
-        return self._sieves.is_empty() 
+        return (not self._conditions) and self._sieves.is_empty() 
     
     @property
     def reference(self):
@@ -159,7 +143,7 @@ class DynFilter(IPublisher):
     @property
     def view_args(self):
         '''The view_args, that groups the query and the projection 
-        @return: dict(query=>query, projection=>projection)
+        :return: dict(query=>query, projection=>projection)
         '''
         return dict(query = self.query, projection= self.projection) 
     
