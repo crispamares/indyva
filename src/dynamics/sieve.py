@@ -7,7 +7,8 @@ Created on 10/07/2013
 from collections import OrderedDict
 import uuid
 from copy import copy
-from external import lru_cache
+from external import lazy
+from external.cached import cached
 
 class ImplicitSieve(object):
 
@@ -84,16 +85,16 @@ class ItemImplicitSieve(ImplicitSieve):
     @property
     def query(self):
         return { self._data_index : {'$in': list(self._index)} }
-
-    @property
-    @lru_cache(3)
+    
+    @lazy
     def items(self):
         print '*** items', self._data_index
         return set(self.data.find(self.query).index_items()) 
 
     def _cache_clear(self):
         print '^^^ clear', self._data_index
-        self.__class__.items.fget.cache_clear()
+        lazy.invalidate(self, 'items')
+        
         
     def to_explicit(self):
         query = { self._data_index : {'$in': list(self._index)} }
@@ -139,14 +140,14 @@ class ItemExplicitSieve(object):
     @property
     def index(self):
         return self.to_implicit().index
-    @property
-    @lru_cache(1)
+    @lazy
     def items(self):
         print '*** items', self
         return set(self.data.find(self.query).index_items()) 
 
     def _cache_clear(self):
-        self.to_implicit.cache_clear()
+        lazy.invalidate(self, 'items')
+        cached.invalidate(self, 'to_implicit')
             
     def union(self, query):
         self.query = {'$or': [self._query, query]}
@@ -164,7 +165,7 @@ class ItemExplicitSieve(object):
         self.query = {'$and': [self._query, query]}
         return self
     
-    @lru_cache(1)
+    @cached
     def to_implicit(self):    
         domain = self.domain
         index = self._data.find(self._query).distinct(self._data_index)
