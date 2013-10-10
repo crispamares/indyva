@@ -8,3 +8,5 @@ This package contains all third-party modules bundled with IPython.
 '''
 
 from lru_cache import lru_cache
+from lazy import lazy
+from cached import cached
