@@ -32,53 +32,17 @@ class Condition(object):
         
         
 
-class AttributeCondition(Condition):
-    def __init__(self, data, name=None):
-        '''
-        @param data: The dataset that will be queried
-        @param name: If a name is not provided, an uuid is generated
-        '''
-        Condition.__init__(self, data, name)
-        
-        self._sieve = AttributeImplicitSieve(data, [])
-
-    def included_attributes(self):
-        return list(self._sieve.index)
-     
-    def excluded_attributes(self):
-        return list(self._sieve.domain - self._sieve.index)
-    
-    def add_category(self, value):
-        if isinstance(value, types.StringTypes):
-            value = set( (value,) )
-        self._sieve.union(set(value))
-
-    def remove_category(self, value):
-        if isinstance(value, types.StringTypes):
-            value = set( (value,) )
-        self._sieve.substract(value)
-             
-    def include_all(self):
-        self._sieve.index = self._sieve.domain
-        
-    def exclude_all(self):
-        self._sieve.index = []
-        
-    def toggle(self):
-        self._sieve.toggle()
-
-
-
 
         
 class CategoricalCondition(Condition):
     
-    def __init__(self, data, attr, name=None, bins=None):
+    def __init__(self, data, attr, categories=[], name=None, bins=None):
         '''
-        @param data: The dataset that will be queried
-        @param attr: The attribute that will be used as the category  
-        @param name: If a name is not provided, an uuid is generated
-        @param bins: If provided, the attribute will be coerced to be
+        :param data: The dataset that will be queried
+        :param attr: The attribute that will be used as the category 
+        :param categories: The categories initially included 
+        :param name: If a name is not provided, an uuid is generated
+        :param bins: If provided, the attribute will be coerced to be
         categorical by grouping in this number of bins 
         '''
         Condition.__init__(self, data, name)
@@ -90,7 +54,7 @@ class CategoricalCondition(Condition):
         if bins is not None:
             raise NotImplementedError('Bins not yet implemented')
         
-        self._sieve = ItemImplicitSieve(data, [], data_index=attr)
+        self._sieve = ItemImplicitSieve(data, categories, data_index=attr)
 
     def _cache_clear(self):
         self.included_items.cache_clear()
@@ -138,3 +102,45 @@ class CategoricalCondition(Condition):
     def toggle(self):
         self._sieve.toggle()
         self._cache_clear()
+
+
+
+
+class AttributeCondition(Condition):
+    def __init__(self, data, attributes=[], name=None):
+        '''
+        :param data: The dataset that will be queried
+        :param attributes: The attributes initially included
+        :param name: If a name is not provided, an uuid is generated
+        '''
+        Condition.__init__(self, data, name)
+        
+        self._sieve = AttributeImplicitSieve(data, attributes)
+
+    def included_attributes(self):
+        return list(self._sieve.index)
+     
+    def excluded_attributes(self):
+        return list(self._sieve.domain - self._sieve.index)
+    
+    def add_category(self, value):
+        if isinstance(value, types.StringTypes):
+            value = set( (value,) )
+        self._sieve.union(set(value))
+
+    def remove_category(self, value):
+        if isinstance(value, types.StringTypes):
+            value = set( (value,) )
+        self._sieve.substract(value)
+             
+    def include_all(self):
+        self._sieve.index = self._sieve.domain
+        
+    def exclude_all(self):
+        self._sieve.index = []
+        
+    def toggle(self):
+        self._sieve.toggle()
+
+
+

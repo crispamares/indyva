@@ -88,11 +88,9 @@ class ItemImplicitSieve(ImplicitSieve):
     
     @lazy
     def items(self):
-        print '*** items', self._data_index
         return set(self.data.find(self.query).index_items()) 
 
     def _cache_clear(self):
-        print '^^^ clear', self._data_index
         lazy.invalidate(self, 'items')
         
         
@@ -142,7 +140,6 @@ class ItemExplicitSieve(object):
         return self.to_implicit().index
     @lazy
     def items(self):
-        print '*** items', self
         return set(self.data.find(self.query).index_items()) 
 
     def _cache_clear(self):
