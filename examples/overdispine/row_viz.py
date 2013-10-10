@@ -22,13 +22,15 @@ class RowSVGViz(QtSvg.QSvgWidget):
         Constructor
         '''
         self.dselect = None
+        self._selection = None
+        self.selected = False
         
         QtSvg.QSvgWidget.__init__(self, *args)
         self.setMinimumHeight(220)
         self.setSizePolicy(Qt.QSizePolicy.Preferred, Qt.QSizePolicy.Preferred)
         
-        self.figure = plt.figure(figsize=(16,3))
-
+        self.figure = plt.figure(figsize=(16,3), facecolor='r')
+        
         self.ax_1 = self.figure.add_subplot(141, title='points')
         self.ax_2 = self.figure.add_subplot(142, title='size')
         self.ax_3 = self.figure.add_subplot(143, title='length')
@@ -40,8 +42,21 @@ class RowSVGViz(QtSvg.QSvgWidget):
 
     def mousePressEvent( self, event ):
         print "Click"
-        raise NotImplementedError
-        self.dselect.add_condition()
+        if not self.dselect:
+            return
+        self._selection = self.dselect.get_condition('dendrite_id', None)
+        if not self._selection:
+            self._selection = self.dselect.new_categorical_condition(
+                'dendrite_id', name='dendrite_id') 
+        if not self.selected:
+            self._selection.add_category(self.dendrite_id)
+            self.selected = True
+        else:
+            self._selection.remove_category(self.dendrite_id)
+            self.selected = False
+        self.dselect.update(self._selection)
+        self.need_draw = True
+        self.update_view()
         
     @property
     def spines(self):
@@ -58,74 +73,15 @@ class RowSVGViz(QtSvg.QSvgWidget):
         if not self.need_draw:
             return
         
-        print 'update-view', self.dendrite_id
-        self.figure.suptitle(self.dendrite_id)        
-        
-        try:
-            #self.ax_1.hist([1,1,1,1,3,3,3,4,5,7,7,7,7])
-            self.ax_2.hist(self.spines['size'])
-            self.ax_3.hist(self.spines['length'])
-            self.ax_4.hist(self.spines['angle'])
-        except Exception, e:
-            #QtGui.QMessageBox.warning(None, 'Painting ' + self.dendrite_id, str(e) )
-            print 'Error', e
-        self.figure.tight_layout()
-        
-        imgdata = StringIO.StringIO()
-        self.figure.savefig(imgdata, format='svg')
-        imgdata.seek(0)  # rewind the data
-        svg = imgdata.read()
-        self.load(QtCore.QByteArray( svg ))
-        
-        self.need_draw = False
-
-
-class RowViz(FigureCanvas):
-    '''
-    classdocs
-    '''
-    def __init__(self, *args, **kwargs):
-        '''
-        Constructor
-        '''
-        self.dselect = None
-        
-        FigureCanvas.__init__(self, Figure((8,3)))
-        self.setMinimumHeight(220)
-        self.setSizePolicy(Qt.QSizePolicy.Preferred, Qt.QSizePolicy.Preferred)
-        self.updateGeometry()
-
-        self.ax_1 = self.figure.add_subplot(141, title='points')
-        self.ax_2 = self.figure.add_subplot(142, title='size')
-        self.ax_3 = self.figure.add_subplot(143, title='length')
-        self.ax_4 = self.figure.add_subplot(144, title='angle')
-
-        self._spines = None
-        self.dendrite_id = ''
-        self.need_draw = False
-
-    def mousePressEvent( self, event ):
-        print "Click"
-        raise NotImplementedError
-        self.dselect.add_condition()
-        
-    @property
-    def spines(self):
-        return self._spines
-    
-    @spines.setter
-    def spines(self, spines):
-        self._spines = spines
-        self.need_draw = True
-        
-    def update_view(self):
-        if self.spines is None:
-            raise Exception('No spines assigned before painting')
-        if not self.need_draw:
-            return
+        facecolor='w'
+        if self.dselect:
+            self._selection = self.dselect.get_condition('dendrite_id', None)
+            if (self._selection and 
+                self.dendrite_id in self._selection.included_categories()):
+                facecolor = 'r'
         
         print 'update-view', self.dendrite_id
-        self.figure.suptitle(self.dendrite_id)        
+        self.figure.suptitle(self.dendrite_id) 
         
         try:
             #self.ax_1.hist([1,1,1,1,3,3,3,4,5,7,7,7,7])
@@ -136,7 +92,14 @@ class RowViz(FigureCanvas):
             #QtGui.QMessageBox.warning(None, 'Painting ' + self.dendrite_id, str(e) )
             print 'Error', e
         #self.figure.tight_layout()
-
+        
+        imgdata = StringIO.StringIO()
+        self.figure.savefig(imgdata, format='svg', facecolor=facecolor)
+        imgdata.seek(0)  # rewind the data
+        svg = imgdata.read()
+        self.load(QtCore.QByteArray( svg ))
+        
+        
         self.need_draw = False
         
 

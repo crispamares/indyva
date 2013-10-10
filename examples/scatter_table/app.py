@@ -67,13 +67,16 @@ def test_dselect_and_dfilter(tv):
     from dynamics.dselect import DynSelect
     d = DynSelect('sel1', tv.table)
     tv.set_highlight(d)
-    d.set_condition('horizontal2', ['RI','SD', 'NY', 'VT'])
+    horizontal2 = d.new_categorical_condition('State', 'horizontal2')
+    horizontal2.add_category(['RI','SD', 'NY', 'VT'])
+    d.update(horizontal2)
 
     from dynamics.dfilter import  DynFilter
     f = DynFilter('filt1', tv.table)
     tv.set_dynfilter(f)
-    f.set_item_condition('horizontal', ['DC','NY'])
-    f.set_attr_condition('vertical', ['State', 'Information'])
+    f.new_categorical_condition('State', ['DC','NY'], 'horizontal')
+    f.new_attribute_condition(['State', 'Information'], 'vertical')
+    
    
 def main():
     app = QtGui.QApplication(sys.argv)
