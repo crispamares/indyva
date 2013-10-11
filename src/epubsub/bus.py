@@ -24,7 +24,7 @@ class Bus(object):
         self._bus_id = uuid.uuid4()
         
     def __del__(self):
-        self._hub._unsibscribe_by_group_id(self._bus_id)
+        self._hub._unsubscribe_by_group_id(self._bus_id)
         
     def subscribe(self, topic, destination):
         self._hub._subscribe(self._prefix + topic, destination, group_id=self._bus_id)

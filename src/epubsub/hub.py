@@ -43,7 +43,7 @@ class Hub(object):
         '''
         self._subscriptions.pop(topic, None) 
         
-    def _unsibscribe_by_group_id(self, group_id):
+    def _unsubscribe_by_group_id(self, group_id):
         for topic, destinations in self._subscriptions.items(): 
             for destination, subscription_info in destinations.items():
                 if subscription_info.get('group_id', None) == group_id:

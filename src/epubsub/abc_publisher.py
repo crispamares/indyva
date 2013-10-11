@@ -43,7 +43,7 @@ def pub_result(topic):
 class IPublisher(object):
     '''
     This class is useful for publishers that want to provide
-    and an easy way to subscribe to it own topics. 
+    and an easy way to subscribe to its own topics. 
     
     Hides the bus and hub classes for the subscribers
     '''
