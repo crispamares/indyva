@@ -31,6 +31,24 @@ class ConditionSet(IPublisher):
         bus = Bus(prefix= '{0}.{1}.'.format(prefix, self._name))
         IPublisher.__init__(self, bus, topics)        
 
+    def _retransmit(self, topic, msg):
+        msg['original_topic'] = topic
+        self._bus.publish('change', msg)
+
+    def _set_condition(self, condition):
+        '''
+        This method is the one that inserts conditions in the ConditionSet
+        
+        :param Condition condition: A Condition
+        '''
+        if condition.data != self._data:
+            raise ValueError("Condition has {0} dataset, {1} expected"
+                             .format(condition.data.name, self._data.name))
+        self._conditions[condition.name] = condition
+        condition.subscribe('change', self._retransmit)
+        self._sieves.set_sieve(condition.name, condition.sieve)
+        return condition
+
     @pub_result('change')
     def add_condition(self, condition):
         '''
@@ -63,21 +81,6 @@ class ConditionSet(IPublisher):
         :param Condition condition: A Condition
         '''
         return self._set_condition(condition)
-
-
-    def _set_condition(self, condition):
-        '''
-        Every condition has to share the same data as this dynamic otherwise
-         a ValueError is raised
-        
-        :param Condition condition: A Condition
-        '''
-        if condition.data != self._data:
-            raise ValueError("Condition has {0} dataset, {1} expected"
-                             .format(condition.data.name, self._data.name))
-        self._conditions[condition.name] = condition
-        self._sieves.set_sieve(condition.name, condition.sieve)
-        return condition
 
     @pub_result('change')
     def update(self, condition):
