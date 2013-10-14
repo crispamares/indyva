@@ -6,12 +6,14 @@ Created on Oct 9, 2013
 '''
 
 from sieve import ItemImplicitSieve, AttributeImplicitSieve
-from external import lru_cache
+from external import cached
 import types
 import uuid
 
+from epubsub import IPublisher, Bus, pub_result
 
-class Condition(object):
+
+class Condition(IPublisher):
     
     def __init__(self, data, name=None):
         '''
@@ -22,6 +24,10 @@ class Condition(object):
         self.name = name if name is not None else str(uuid.uuid4())
         self._sieve = None
 
+        topics = ['change']
+        bus = Bus(prefix= '{0}.{1}.'.format('c', self.name))
+        IPublisher.__init__(self, bus, topics)       
+
     @property
     def data(self):
         return self._data
@@ -30,7 +36,38 @@ class Condition(object):
     def sieve(self):
         return self._sieve
         
+    def _add(self, value):
+        value = set( (value,) ) if isinstance(value, types.StringTypes) \
+                                else set(value)        
+        self._sieve.union(value)
+        self._cache_clear()
+        return dict(included=list(value), excluded=[])
+
+    def _remove(self, value):
+        value = set( (value,) ) if isinstance(value, types.StringTypes) \
+                                else set(value)
+        self._sieve.substract(value)
+        self._cache_clear()
+        return dict(included=[], excluded=list(value))
+             
+    def _include_all(self):
+        included = self._sieve.domain - self._sieve.index 
+        self._sieve.index = self._sieve.domain
+        self._cache_clear()
+        return dict(included=list(included), excluded=[])
+    
+    def _exclude_all(self):
+        excluded = self._sieve.index 
+        self._sieve.index = []
+        self._cache_clear()
+        return dict(included=[], excluded=list(excluded))
         
+    def _toggle(self):
+        included = self._sieve.domain - self._sieve.index 
+        excluded = self._sieve.index 
+        self._sieve.toggle()
+        self._cache_clear()
+        return dict(included=list(included), excluded=list(excluded))
 
 
         
@@ -57,8 +94,8 @@ class CategoricalCondition(Condition):
         self._sieve = ItemImplicitSieve(data, categories, data_index=attr)
 
     def _cache_clear(self):
-        self.included_items.cache_clear()
-        self.excluded_items.cache_clear()
+        cached.invalidate(self, 'included_items')
+        cached.invalidate(self, 'excluded_items')
     
     @property
     def attr(self):
@@ -70,39 +107,34 @@ class CategoricalCondition(Condition):
     def excluded_categories(self):
         return list(self._sieve.domain - self._sieve.index)
     
-    @lru_cache(1)
+    @cached
     def included_items(self):
         return self._data.find(self._sieve.query).index_items()
     
-    @lru_cache(1)
+    @cached
     def excluded_items(self):
         return self._data.find( 
            {self._attr : {'$nin' : list(self._sieve.index) }}).index_items()
 
+    @pub_result('change')
     def add_category(self, value):
-        if isinstance(value, types.StringTypes):
-            value = set( (value,) )
-        self._sieve.union(set(value))
-        self._cache_clear()
+        return self._add(value)
 
+    @pub_result('change')
     def remove_category(self, value):
-        if isinstance(value, types.StringTypes):
-            value = set( (value,) )
-        self._sieve.substract(value)
-        self._cache_clear()
+        return self._remove(value)
              
+    @pub_result('change')
     def include_all(self):
-        self._sieve.index = self._sieve.domain
-        self._cache_clear()
-        
+        return self._include_all()
+    
+    @pub_result('change')    
     def exclude_all(self):
-        self._sieve.index = []
-        self._cache_clear()
+        return self._exclude_all()
         
+    @pub_result('change')
     def toggle(self):
-        self._sieve.toggle()
-        self._cache_clear()
-
+        return self._toggle()
 
 
 
@@ -123,24 +155,25 @@ class AttributeCondition(Condition):
     def excluded_attributes(self):
         return list(self._sieve.domain - self._sieve.index)
     
-    def add_category(self, value):
-        if isinstance(value, types.StringTypes):
-            value = set( (value,) )
-        self._sieve.union(set(value))
+    @pub_result('change')
+    def add_attribute(self, value):
+        return self._add(value)
 
-    def remove_category(self, value):
-        if isinstance(value, types.StringTypes):
-            value = set( (value,) )
-        self._sieve.substract(value)
+    @pub_result('change')
+    def remove_attribute(self, value):
+        return self._remove(value)
              
+    @pub_result('change')
     def include_all(self):
-        self._sieve.index = self._sieve.domain
-        
+        return self._include_all()
+    
+    @pub_result('change')    
     def exclude_all(self):
-        self._sieve.index = []
+        return self._exclude_all()
         
+    @pub_result('change')
     def toggle(self):
-        self._sieve.toggle()
+        return self._toggle()
 
 
 
