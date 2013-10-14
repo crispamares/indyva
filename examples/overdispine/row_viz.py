@@ -21,9 +21,8 @@ class RowSVGViz(QtSvg.QSvgWidget):
         '''
         Constructor
         '''
-        self.dselect = None
+        self._dselect = None
         self._selection = None
-        self.selected = False
         
         QtSvg.QSvgWidget.__init__(self, *args)
         self.setMinimumHeight(220)
@@ -40,6 +39,20 @@ class RowSVGViz(QtSvg.QSvgWidget):
         self.dendrite_id = ''
         self.need_draw = False
 
+    @property
+    def dselect(self):
+        return self._dselect
+    @dselect.setter
+    def dselect(self, dselect):
+        '''
+        :param DynSelect dselect: 
+        '''
+        self._dselect = dselect #### TODO: Continue here
+        self._dselect.subscribe('change', self.on_dselect_change)
+
+    def on_dselect_change(self, topic, msg):
+        topic.is_from()
+
     def mousePressEvent( self, event ):
         print "Click"
         if not self.dselect:
@@ -48,15 +61,12 @@ class RowSVGViz(QtSvg.QSvgWidget):
         if not self._selection:
             self._selection = self.dselect.new_categorical_condition(
                 'dendrite_id', name='dendrite_id') 
-        if not self.selected:
-            self._selection.add_category(self.dendrite_id)
-            self.selected = True
-        else:
-            self._selection.remove_category(self.dendrite_id)
-            self.selected = False
-        self.dselect.update(self._selection)
+        
         self.need_draw = True
-        self.update_view()
+        self._selection.exclude_all()    
+        self._selection.add_category(self.dendrite_id)
+        print self._selection.included_categories()
+        self.dselect.update(self._selection)
         
     @property
     def spines(self):
