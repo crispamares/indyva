@@ -110,5 +110,5 @@ def _singleton():
         yield hub
 
 __singleton = _singleton()
-def get_instance():
+def instance():
     return __singleton.next()    

@@ -66,18 +66,22 @@ class Loop(object):
         cls._interrupted = True
 
     @classmethod
+    def do_one_iteration(cls):
+        cls.exec_queue(cls._message)
+        cls.exec_queue(cls._render)
+        
+        # The idle queue only executes one function per cycle
+        if len(cls._idle):
+            func, args, kwargs = cls._idle.pop()
+            func(*args, **kwargs)
+
+    @classmethod
     def run(cls):
         signal.signal(signal.SIGINT, cls._signal_handler)
         while True:
             if cls._interrupted: break
-            
-            cls.exec_queue(cls._message)
-            cls.exec_queue(cls._render)
-            
-            # The idle queue only executes one function per cycle
-            if len(cls._idle):
-                func, args, kwargs = cls._idle.pop()
-                func(*args, **kwargs)
+
+            cls.do_one_iteration()
             
             # The message queue works with polling so sleeping is not necessary
             if len(cls._message) == 0:

@@ -20,7 +20,7 @@ class Bus(object):
          this bus 
         '''
         self._prefix = prefix
-        self._hub = hub.get_instance()
+        self._hub = hub.instance()
         self._bus_id = uuid.uuid4()
         
     def __del__(self):
