@@ -7,8 +7,10 @@ Created on Jun 27, 2013
 from PyQt4 import QtGui, QtCore
 
 from dataset.table import TableView
+from epubsub import hub
 
 class TDataTableModel(QtCore.QAbstractTableModel):
+        
     def setTable(self, table):
         self._table = table
         self._data = self._table.get_data('c_list')
@@ -21,7 +23,7 @@ class TDataTableModel(QtCore.QAbstractTableModel):
         
         self.rcount = None
         self.ccount = None
-    
+
     def rowCount(self, parent):
         self.rcount = self.rcount if self.rcount is not None else self._table.row_count()
         return self.rcount if not parent.isValid() else 0
@@ -51,30 +53,45 @@ class TabularView(QtGui.QTableView):
         self.table = None
         self.dynfilter = None
         self.highlight = None
+        
+        self.dirty = True
 
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.MultiSelection)
+
+        hub.instance().subscribe('r.', self.on_render)
         
     def set_table(self, table):
         self.table = table
+        self.dirty = True
 
     def set_dynfilter(self, dynfilter):
         self.dynfilter = dynfilter
         self.dynfilter.subscribe('change', self.on_filter_change)
+        self.dirty = True
         
     def set_highlight(self, dynselect):
         self.highlight = dynselect
         self.highlight.subscribe('change', self.on_hightlight_change)
+        self.dirty = True
 
     def on_filter_change(self, topic, msg):
         print 'topic: {0}, msg: {1}'.format(topic, msg)
-        self.render_table()
+        #self.render_table()
+        self.dirty = True
     
     def on_hightlight_change(self, topic, msg):
         print 'topic: {0}, msg: {1}'.format(topic, msg)
+        #self.render_table()
+        self.dirty = True
+        
+    def on_render(self, topic, msg):
+        if not self.dirty:
+            return        
         self.render_table()
         
     def render_table(self):
+        self.dirty = False
         model = TDataTableModel()
         if self.dynfilter is not None:
             query = self.dynfilter.query

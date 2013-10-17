@@ -15,9 +15,11 @@ from collections import OrderedDict
 import pandas as pn
 from dataset.table import Table
 from tabular_view import TabularView
+from eventloop import QtLoop
 
 
 from internal_ipkernel import InternalIPKernel
+import kernel
 
 class IPWindow(Qt.QWidget, InternalIPKernel):
 
@@ -80,6 +82,8 @@ def test_dselect_and_dfilter(tv):
    
 def main():
     app = QtGui.QApplication(sys.argv)
+    QtLoop().install()
+    _k = kernel.Kernel()
     
     ipwin = IPWindow(app)    
     
