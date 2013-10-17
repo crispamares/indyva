@@ -7,6 +7,9 @@ Created on 06/06/2013
 
 from weakref import WeakValueDictionary
 
+
+PREFIX = dict(control = 'c.', render = 'r.')
+
 class Hub(object):
     '''
     For common uses the Bus is preferred 
@@ -17,13 +20,36 @@ class Hub(object):
     If the destination (a callable) is a method then a weakref of the object 
     (the method's owner) is saved in order to know when the object is collected 
     by the gc. 
-    
-    
     '''
 
     def __init__(self):
         self._subscriptions = {}
         self._subscribers = WeakValueDictionary()
+
+    @staticmethod
+    def instance():
+        """Returns a global `Hub` instance. 
+        
+        :warning: Not ThreadSafe.
+        """
+        if not hasattr(Hub, "_instance"):        
+            Hub._instance = Hub()
+        return Hub._instance
+
+    @staticmethod
+    def initialized():
+        """Returns true if the singleton instance has been created."""
+        return hasattr(Hub, "_instance")
+        
+    def install(self):
+        """Installs this `Loop` object as the singleton instance.
+
+        This is normally not necessary as `instance()` will create
+        an `IOLoop` on demand, but you may want to call `install` to use
+        a custom subclass of `Loop`.
+        """
+        assert not Hub.initialized()
+        Hub._instance = self
 
     def _subscribe(self, topic, destination, only_once=False, group_id=None):
         ''' TODO: publish new subscriptions and new topics through meta topic'''
@@ -57,7 +83,7 @@ class Hub(object):
         self._unsubscribe(topic, oid, destination)
             
     def _unsubscribe(self, topic, oid, destination):
-        if oid is None or oid in self._subscribers:
+        if oid in self._subscribers:
             self._subscriptions[topic][oid].pop(destination)
         else:
             self._subscriptions[topic].pop(oid)
@@ -65,7 +91,7 @@ class Hub(object):
     def close(self, topic):
         '''Removes all the subscriptions to a topic. 
            No error trying to close unexpected topic
-           @param topic: str
+           @param str topic:
         '''
         self._subscriptions.pop(topic, None) 
         
@@ -92,23 +118,21 @@ class Hub(object):
                 oids_to_remove.append(oid)
                 continue
             for destination, subscription_info in destinations.items():
-                self._send_msg(topic, oid, destination, msg)
+                # Get the callable in the case of a method destination
+                if oid is not None and oid in self._subscribers:
+                    callback = getattr(self._subscribers[oid], destination)
+                else:
+                    callback = destination
                 if subscription_info.get('only_once', False):
                     self._unsubscribe(topic, oid, destination)
+                self._send_msg(callback, topic, msg)
+                
         for oid in oids_to_remove:
             self._subscriptions[topic].pop(oid)
         
-    def _send_msg(self, topic, oid, destination, msg):
-        if oid is not None and oid in self._subscribers:
-            destination = getattr(self._subscribers[oid], destination)
+    def _send_msg(self, destination, topic, msg):
         destination(topic, msg)
 
 
-def _singleton():
-    hub = Hub()
-    while True:
-        yield hub
-
-__singleton = _singleton()
 def instance():
-    return __singleton.next()    
+    return Hub.instance()

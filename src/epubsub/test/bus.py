@@ -4,6 +4,7 @@ Created on 06/06/2013
 
 @author: jmorales
 '''
+
 import unittest
 from .. import bus
 
