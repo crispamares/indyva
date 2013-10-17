@@ -45,7 +45,7 @@ class Test(unittest.TestCase):
         
     def testFindOne(self):
         table = MongoTable('census', self.schema).data(self.df)
-        result = table.find_one({'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        result = table.find_one(dict(query={'$or':[{'State': 'NY'},{'State': 'DC'}]}))
         self.assertIn(result['State'], ['DC','NY'])
         
 
