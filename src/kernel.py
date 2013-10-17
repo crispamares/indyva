@@ -68,6 +68,7 @@ class Kernel(object):
         self._queues['render'] = self._render
         self._queues['idle'] = self._idle
 
+        self.loop_periodic = None
         self._init_loop()
         self._init_reder()
     
@@ -75,14 +76,17 @@ class Kernel(object):
         def publish_render():
             Hub.instance().publish(PREFIX['render'], {id : uuid.uuid4()})
         defer_publish = partial(self.defer, self._render, publish_render)
-        self._loop.add_periodic_callback(defer_publish, self._render_interval)
+        self._loop.add_periodic_callback(defer_publish, 
+            self._render_interval, start=True)
+        
         
     def _init_loop(self):
-        self._loop.add_periodic_callback(self.do_one_iteration, 
-                                         self._loop_interval)
+        self.loop_periodic = self._loop.add_periodic_callback(
+            self.do_one_iteration, self._loop_interval, start=True)
     
     def defer(self, queue, func, *args, **kwargs):
-        if queue is isinstance(queue, types.StringTypes):
+        self._loop.start_periodic(self.loop_periodic)
+        if isinstance(queue, types.StringTypes):
             queue = self._queues[queue]
         queue.appendleft( (func, args, kwargs) )
         
@@ -100,6 +104,10 @@ class Kernel(object):
         return i
             
     def do_one_iteration(self):
+        if (not self._control and 
+            not self._message and 
+            not self._idle):
+            self._loop.stop_periodic(self.loop_periodic)
         # process all control msgs
         self.flush(self._control)
         # process one msg
