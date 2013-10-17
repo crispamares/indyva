@@ -6,24 +6,27 @@ Created on Oct 17, 2013
 '''
 
 from .loop import Loop
+from PyQt4.QtGui import QApplication
+from PyQt4.QtCore import QTimer
 
-from zmq.eventloop import IOLoop
-from zmq.eventloop.minitornado.ioloop import PeriodicCallback
 import uuid
 
-class ZMQLoop(Loop):
+class QtLoop(Loop):
     
     def __init__(self):
-        self.loop = IOLoop.instance()
+        self.loop = QApplication.instance()
+        if self.loop is None:
+            raise AssertionError(
+                'QApplication must be initialized before creating QtLoop object')
         self._periodics = {}
 
     def start(self):
-        self.loop.start()
+        self.loop.exec_()
 
     def stop(self):
         for periodic in self._periodics:
-            self.stop_periodic(periodic)        
-        self.loop.stop()
+            self.stop_periodic(periodic)
+        self.loop.quit()
 
     def add_periodic_callback (self, callback, interval, name=None, start=False):
         '''
@@ -32,8 +35,12 @@ class ZMQLoop(Loop):
         '''
         name = name if name else uuid.uuid4()
         self.stop_periodic(name)
-        periodic = PeriodicCallback(callback, interval, self.loop)
-        self._periodics[name] = periodic
+
+        timer = QTimer()
+        timer.timeout.connect(callback)
+        timer.setInterval(interval)
+
+        self._periodics[name] = timer
         
         if start: self.start_periodic(name)
         
@@ -46,7 +53,7 @@ class ZMQLoop(Loop):
     
     def start_periodic(self, name):
         periodic = self._periodics.get(name, None)
-        if periodic is not None and not periodic._running:
+        if periodic is not None and not periodic.isActive():
             periodic.start()
     
     

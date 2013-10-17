@@ -23,6 +23,12 @@ class Loop(object):
         return Loop._instance
 
     @staticmethod
+    def clear():
+        if hasattr(Loop, "_instance"):
+            Loop._instance.stop()
+            del Loop._instance
+
+    @staticmethod
     def initialized():
         """Returns true if the singleton instance has been created."""
         return hasattr(Loop, "_instance")
@@ -43,11 +49,17 @@ class Loop(object):
     def stop(self):
         raise NotImplementedError()
 
-    def add_periodic_callback (self, callback, interval):
+    def add_periodic_callback (self, callback, interval, name, start=False):
         '''
         :param callback callable: 
         :param interval float: Interval time in ms
         '''
+        raise NotImplementedError()
+
+    def stop_periodic(self, name):
+        raise NotImplementedError()
+    
+    def start_periodic(self, name):
         raise NotImplementedError()
 
     def time(self):
