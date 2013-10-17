@@ -14,7 +14,9 @@ DataSetTypes = type("DataSetTypes", (),
                     dict(TABLE='TABLE', NETWORK='NETWORK', TREE='TREE'))
 AttributeTypes = type("AttributeTypes", (), 
                       dict(CATEGORICAL='CATEGORICAL', 
-                           ORDINAL='ORDINAL',QUANTITATIVE='QUANTITATIVE'))
+                           ORDINAL='ORDINAL',
+                           QUANTITATIVE='QUANTITATIVE',
+                           UNKNOWN='UNKNOWN'))
 
 
 class DataSetSchema:
