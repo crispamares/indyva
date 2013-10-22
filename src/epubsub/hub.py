@@ -105,8 +105,9 @@ class Hub(object):
                 for destination, subscription_info in destinations.items():
                     if subscription_info.get('group_id', None) == group_id:
                         self._unsubscribe(topic, oid, destination)
+        
         for oid in oids_to_remove:
-            self._subscriptions[topic].pop(oid)    
+            self._subscriptions[topic].pop(oid, None)    
                     
         
     def publish(self, topic, msg):
@@ -128,7 +129,7 @@ class Hub(object):
                 self._send_msg(callback, topic, msg)
                 
         for oid in oids_to_remove:
-            self._subscriptions[topic].pop(oid)
+            self._subscriptions[topic].pop(oid, None)
         
     def _send_msg(self, destination, topic, msg):
         destination(topic, msg)
