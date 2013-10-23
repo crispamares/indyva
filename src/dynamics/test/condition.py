@@ -12,6 +12,7 @@ from collections import OrderedDict
 from dataset.table import Table
 
 from dynamics.condition import CategoricalCondition
+import names
 
 class Test(unittest.TestCase):
 
@@ -28,6 +29,9 @@ class Test(unittest.TestCase):
         fake_cat = ['C1','C2','C3','C4']
         for i, item in enumerate(items):
             self.table.update({'State':item}, {'$set': {'fake_cat': fake_cat[ i % 4]}})
+            
+    def tearDown(self):
+        names.clear()
 
     def testCreation(self):
         cc = CategoricalCondition(data=self.table, attr='fake_cat')

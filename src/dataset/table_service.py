@@ -7,8 +7,9 @@ Created on Jul 19, 2013
 from table import Table
 from functools import partial
 from dataset.abc_table import ITableView
+from names import INamed
 
-class TableService(object):
+class TableService(INamed):
     '''
     This class provide a facade for managing table objects
     '''
@@ -18,11 +19,7 @@ class TableService(object):
         @param name: The unique name of the service
         '''
         self._tables = {}
-        self._name = name
-
-    @property
-    def name(self):
-        return self._name
+        INamed.__init__(self, name)
     
     def register_in(self, dispatcher):
         dispatcher.add_method(self.new_table)

@@ -22,7 +22,7 @@ class DynFilter(ConditionSet):
         :param str name: unique name
         :param data: the dataset that is going to suffer the conditions
         '''
-        ConditionSet.__init__(self, name, data, prefix='f')
+        ConditionSet.__init__(self, name, data, namespace='f')
 
     @pub_result('change')
     def new_categorical_condition(self, *args, **kwargs):

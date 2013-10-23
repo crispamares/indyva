@@ -22,7 +22,7 @@ class DynSelect(ConditionSet):
         :param str name: unique name
         :param data: the dataset that is going to suffer the conditions
         '''
-        ConditionSet.__init__(self, name, data, prefix='s')
+        ConditionSet.__init__(self, name, data, namespace='s', setop='OR')
 
     @pub_result('change')
     def new_categorical_condition(self, *args, **kwargs):

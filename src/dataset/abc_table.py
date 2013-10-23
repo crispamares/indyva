@@ -10,6 +10,7 @@ import schemas
 from abc import ABCMeta, abstractmethod
 import exceptions
 from copy import copy
+from names import INamed
 
 class ITableView(object):
     
@@ -33,11 +34,7 @@ class ITableView(object):
     def _new_name(self, prefix=''):
         cls = self.__class__
         cls._id_counter += 1
-        return prefix+'.v{0}'.format(cls._id_counter)
-        
-    @property
-    def name(self):
-        return self._name
+        return prefix+':v{0}'.format(cls._id_counter)
     
     @property
     def index(self):
@@ -110,13 +107,11 @@ class ITable(ITableView):
     '''
     __metaclass__ = ABCMeta
     
-    def __init__(self, name='unnamed', schema=None):
+    def __init__(self, schema=None):
         '''
-        @param name: The name of the table
         @param schema: column types and semantics. Supported forms are: dict or
             TableSchema
         '''
-        self._name = name
         
         if schema is None:
             raise exceptions.NotImplementedError("Inferring the schema is not yet implemented") 

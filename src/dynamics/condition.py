@@ -8,24 +8,24 @@ Created on Oct 9, 2013
 from sieve import ItemImplicitSieve, AttributeImplicitSieve
 from external import cached
 import types
-import uuid
 
 from epubsub import IPublisher, Bus, pub_result
+from names import INamed
 
 
-class Condition(IPublisher):
+class Condition(IPublisher, INamed):
     
     def __init__(self, data, name=None):
         '''
         @param data: The dataset that will be queried
         @param name: If a name is not provided, an uuid is generated
         '''        
+        INamed.__init__(self, name, prefix='c:')
         self._data = data
-        self.name = name if name is not None else str(uuid.uuid4())
         self._sieve = None
 
         topics = ['change']
-        bus = Bus(prefix= '{0}.{1}.'.format('c', self.name))
+        bus = Bus(prefix= '{0}:{1}:'.format('c', self.name))
         IPublisher.__init__(self, bus, topics)       
 
     @property

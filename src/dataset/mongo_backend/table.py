@@ -15,14 +15,15 @@ The database used as analysis namespace is setted in the connection module
 
 class MongoTable(ITable):
     
-    def __init__(self, *args, **kargs):
+    def __init__(self, name=None, schema=None):
         ''' The MongoTable is an operational database. This means that even when there is a 
         collection in the DB with the same name, the user has to be provided data to use.
         Note: This convention might be changed only for performance reasons.
         '''
         self.connection = Connection()
-        ITable.__init__(self, *args, **kargs)
-
+        ITable.__init__(self, schema)
+        
+        self.name = name
         db = self.connection.db
         db.drop_collection(self.name)
         self._col = db[self.name]

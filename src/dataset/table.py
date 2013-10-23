@@ -8,8 +8,10 @@ from epubsub.abc_publisher import IPublisher, pub_result
 from epubsub.bus import Bus
 
 from mongo_backend.table import MongoTable
+from names import INamed
 
-class TableView(ITableView, IPublisher):
+
+class TableView(ITableView, IPublisher, INamed):
     _backend = MongoTable
 
     def __init__(self, parent, view_args):
@@ -17,9 +19,9 @@ class TableView(ITableView, IPublisher):
             self._backend = parent._backend
             self._schema = parent._schema
             bus = parent._bus
-            self._name = self._new_name(parent.name) # New name for the created ViewTable
+            INamed.__init__(self, self._new_name(parent.name), prefix='ds:')
         else:
-            bus = Bus(prefix= 'ds.'+self.name+'.')
+            bus = Bus(prefix= '{0}:{1}:'.format('ds', self.name))
         
         topics = ['add', 'update', 'remove']
         IPublisher.__init__(self, bus, topics)
@@ -63,12 +65,13 @@ class TableView(ITableView, IPublisher):
         return self.name
     
 
-class Table(ITable, TableView):
+class Table(ITable, TableView, INamed):
     _backend = MongoTable
 
-    def __init__(self, name='unnamed', schema=None):
+    def __init__(self, name=None, schema=None):
         self._backend = self._backend(name, schema)
-        ITable.__init__(self, name, schema)
+        INamed.__init__(self, name, prefix='ds:')
+        ITable.__init__(self, schema)
         TableView.__init__(self, None, None)
         
     def _check_index(self, row_or_rows):

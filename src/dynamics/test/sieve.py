@@ -14,6 +14,7 @@ from dataset.table import Table
 
 from dynamics.sieve import (ItemImplicitSieve, AttributeImplicitSieve,
                              ItemExplicitSieve, SieveSet)
+import names
 
 class TestItemImplicitSieve(unittest.TestCase):
 
@@ -22,8 +23,11 @@ class TestItemImplicitSieve(unittest.TestCase):
         with open(RSC_DIR+'/schema_census') as f:
             schema = json.loads(f.read())
         
-        self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
+        self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])    
         self.table = Table('census', self.schema).data(self.df)
+        
+    def tearDown(self):
+        names.clear()        
         
     def testCreate(self):
         s = ItemImplicitSieve(self.table, [])

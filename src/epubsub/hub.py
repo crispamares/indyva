@@ -7,7 +7,6 @@ Created on 06/06/2013
 
 from weakref import WeakValueDictionary
 
-
 PREFIX = dict(control = 'c.', render = 'r.')
 
 class Hub(object):
@@ -42,11 +41,11 @@ class Hub(object):
         return hasattr(Hub, "_instance")
         
     def install(self):
-        """Installs this `Loop` object as the singleton instance.
+        """Installs this `Hub` object as the singleton instance.
 
         This is normally not necessary as `instance()` will create
-        an `IOLoop` on demand, but you may want to call `install` to use
-        a custom subclass of `Loop`.
+        an `Hub` on demand, but you may want to call `install` to use
+        a custom subclass of `Hub`.
         """
         assert not Hub.initialized()
         Hub._instance = self

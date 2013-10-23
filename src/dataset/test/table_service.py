@@ -15,6 +15,7 @@ from collections import OrderedDict
 from dataset import RSC_DIR
 import exceptions
 from dataset.table import TableView, Table
+import names
 
 class Test(unittest.TestCase):
 
@@ -37,6 +38,9 @@ class Test(unittest.TestCase):
         # Create a table
         data = self.df
         self.service.new_table('_census', data, self.schema)
+        
+    def tearDown(self):
+        names.clear()
         
     def testCreationAsList(self):
         data = []
