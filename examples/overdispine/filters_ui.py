@@ -97,11 +97,8 @@ class CategoricalFilterItemModel(QtGui.QStandardItemModel):
             self.condition.add_category(item._value)
         else:
             self.condition.remove_category(item._value)
-        self._dfilter.update(self.condition)
-    
 
-    
-    
+
 if __name__ == '__main__':
     def print_dfilter(topic, msg):
         #print msg

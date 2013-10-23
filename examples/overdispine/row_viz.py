@@ -51,22 +51,23 @@ class RowSVGViz(QtSvg.QSvgWidget):
         self._dselect.subscribe('change', self.on_dselect_change)
 
     def on_dselect_change(self, topic, msg):
-        topic.is_from()
+        self.update_view()
 
     def mousePressEvent( self, event ):
-        print "Click"
+        print "Click with dselect:", self.dselect
         if not self.dselect:
             return
-        self._selection = self.dselect.get_condition('dendrite_id', None)
-        if not self._selection:
+        self._selection = self.dselect.get_condition('s_dendrite_id', None)
+        if self._selection is None:
             self._selection = self.dselect.new_categorical_condition(
-                'dendrite_id', name='dendrite_id') 
+                'dendrite_id', name='s_dendrite_id') 
         
-        self.need_draw = True
-        self._selection.exclude_all()    
+        self.need_draw = True    
+        self._selection.exclude_all()
+        self.need_draw = True    
         self._selection.add_category(self.dendrite_id)
-        print self._selection.included_categories()
-        self.dselect.update(self._selection)
+        print 'selected:', self._selection.included_items()
+        #self.dselect.update(self._selection)
         
     @property
     def spines(self):
@@ -83,12 +84,13 @@ class RowSVGViz(QtSvg.QSvgWidget):
         if not self.need_draw:
             return
         
-        facecolor='w'
+        facecolor='b'
         if self.dselect:
-            self._selection = self.dselect.get_condition('dendrite_id', None)
-            if (self._selection and 
-                self.dendrite_id in self._selection.included_categories()):
-                facecolor = 'r'
+            selection = self.dselect.get_condition('s_dendrite_id', None)
+            if selection is not None: 
+                print '** font_color', selection.included_items()
+                if self.dendrite_id in selection.included_items():
+                    facecolor = 'r'
         
         print 'update-view', self.dendrite_id
         self.figure.suptitle(self.dendrite_id) 
@@ -117,8 +119,8 @@ class VizListView(object):
     
     def __init__(self, table=None, dfilter=None, dselect=None):
         self.table = table
-        self.dfilter = dfilter
-        self.dselect = dselect
+        self._dfilter = dfilter
+        self._dselect = dselect
         self.plots = OrderedDict()
 
         self.scroll = QtGui.QScrollArea()
@@ -130,6 +132,26 @@ class VizListView(object):
         self.scroll.setWidget(self.viz_area)
         self.scroll.setWidgetResizable(True)
         self.scroll.setVerticalScrollBarPolicy(2)
+    
+    @property
+    def dfilter(self):
+        return self._dfilter
+    @dfilter.setter
+    def dfilter(self, dfilter):
+        '''
+        :param DynSelect dfilter: 
+        '''
+        self._dfilter = dfilter 
+        self._dfilter.subscribe('change', self.on_dfilter_change)
+    @property
+    def dselect(self):
+        return self._dselect
+    @dselect.setter
+    def dselect(self, dselect):
+        self._dselect = dselect 
+        
+    def on_dfilter_change(self, topic, msg):
+        self.update_view()    
     
     @property
     def widget(self):
@@ -146,60 +168,30 @@ class VizListView(object):
         
     def hide_plot(self, name):
         self.plots[name].hide()
-        
-    def remove_plot(self, name):
-        self.plots.pop(name)
-        
-    def render_plots(self):
-        # insert plots
-        for i, name in enumerate(self.plots):
-            child = self.viz_area.findChild(QtGui.QLabel, name='_plot_'+name)
-            if child is None:
-                plot = self.plots[name]
-                self.v_layout.insertWidget(i, plot)
-                plot.update_view()
-
-        # remove plots
-        children_plots = { str(o.objectName()).replace('_plot_', '') : o 
-                          for o in self.viz_area.children() 
-                          if str(o.objectName()).startswith('_plot_')}
-        plots_to_remove = set(children_plots.keys()).difference(self.plots.keys())
-        print 'REALLY plots to remove', plots_to_remove
-        for plot in plots_to_remove:
-            #self.v_layout.removeWidget(children_plots[plot])
-            #children_plots[plot].deleteLater()
-            children_plots[plot].hide()
-        
-        # Update plots
-        #for plot in self.plots.values():
-        #    plot.update_view()
-        
-        print 'finshing update'
-        #self.scroll.adjustSize()
-        self.viz_area.update()
-        print 'finished update'
-        
     
     def update_view(self):
         if self.table is None:
             raise Exception('No table assigned before painting')
-        query = {}
-        if self.dfilter is not None:
-            query = self.dfilter.query
         
-        dendrites = sorted(self.table.find(query).distinct('dendrite_id'))        
-        #
+        if self.dfilter is not None:
+            dendrites = sorted(self.dfilter.reference)    
+        else:
+            dendrites = sorted(self.table.distinct('dendrite_id'))        
+
+        print 'dendrites', dendrites
+        print '++ dfilter', self.dfilter
+
         plots_to_remove = set(self.plots.keys()).difference(dendrites)
         print 'plots-to-remove', plots_to_remove
         for name in plots_to_remove:
-            print 'removing', name
+            #print 'removing', name
             self.hide_plot(name)
         
         for dendrite in dendrites:
             if dendrite in self.plots:
                 if not self.plots[dendrite].isVisible():
                     self.show_plot(dendrite)
-                print 'Yet ploted', dendrite
+                #print 'Yet ploted', dendrite
                 continue
 
             #print 'ADDING', dendrite
@@ -212,9 +204,9 @@ class VizListView(object):
             
             plot = RowSVGViz()
             plot.spines = spines
-            plot.dselect = self.dselect
+            plot.dselect = self._dselect
             plot.dendrite_id = dendrite
             self.add_plot(dendrite, plot)
         print 'FINISH'
-        #self.render_plots()
+
     

@@ -39,7 +39,7 @@ def main():
     app = QtGui.QApplication(sys.argv)
     
     spines_table = data_adquisition.create_spines_table()
-    
+    dendrites_table = data_adquisition.create_dendrites_table(spines_table)
     
     
     main_window = MainWindow()
@@ -47,16 +47,17 @@ def main():
 
     view = main_window.list_view
 
-    dfilter = DynFilter('f_dendrites', spines_table)
+    dfilter = DynFilter('f_dendrites', dendrites_table)
     #dfilter.set_item_condition('dendrite_id', query={})
     #dfilter.set_item_condition('dendrite_type', query={'dendrite_type': 'basal'})
-    main_window.add_filter(spines_table, 'dendrite_id', dfilter)
-    main_window.add_filter(spines_table, 'dendrite_type', dfilter)
+    main_window.add_filter(dendrites_table, 'dendrite_id', dfilter)
+    main_window.add_filter(dendrites_table, 'dendrite_type', dfilter)
     #main_window.add_filter(spines_table, 'section', dfilter)
-    dfilter.subscribe('change', lambda t,m : view.update_view())
-    dfilter.subscribe('remove', lambda t,m : view.update_view())
+    
+    #dfilter.subscribe('change', lambda t,m : view.update_view())
+    #dfilter.subscribe('remove', lambda t,m : view.update_view())
 
-    dselect = DynSelect('s_dendrites', spines_table)
+    dselect = DynSelect('s_dendrites', dendrites_table)
     
     view.table = spines_table
     view.dfilter = dfilter
