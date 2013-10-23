@@ -9,30 +9,34 @@ from epubsub import IPublisher, pub_result, Bus
 
 from sieve import SieveSet
 from dynamics.condition import Condition
+from names import INamed
 
-class ConditionSet(IPublisher):
+class ConditionSet(IPublisher, INamed):
     '''
     This class is a collection of conditions. Is used as the base class for
     DynFilter and DynSelect
     '''
 
-    def __init__(self, name, data, prefix='cs'):
+    def __init__(self, name, data, namespace='cs', setop='AND'):
         '''
         :param str name: unique name
         :param data: the dataset that is going to suffer the conditions
         '''
-        self._name = name
+        INamed.__init__(self, name, prefix=namespace+':')
         self._data = data
-        self._sieves = SieveSet(data)
+        self._sieves = SieveSet(data, setop)
         
         self._conditions = {}
 
         topics = ['change', 'remove']
-        bus = Bus(prefix= '{0}.{1}.'.format(prefix, self._name))
-        IPublisher.__init__(self, bus, topics)        
+        bus = Bus(prefix= '{0}:{1}:'.format(namespace, self._name))
+        IPublisher.__init__(self, bus, topics)
 
     def _retransmit(self, topic, msg):
+        print "retransmit"
         msg['original_topic'] = topic
+        condition = msg['origin']
+        self._sieves.set_sieve(condition.name, condition.sieve)
         self._bus.publish('change', msg)
 
     def _set_condition(self, condition):
@@ -147,6 +151,9 @@ class ConditionSet(IPublisher):
         '''
         return dict(query = self.query, projection= self.projection) 
     
+    def __repr__(self):
+        return '{0}: {1} -> {2}'.format(type(self), self._name, self._conditions)
+
 
 
             
