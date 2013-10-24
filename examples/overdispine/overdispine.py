@@ -5,13 +5,17 @@ Created on 03/09/2013
 @author: jmorales
 '''
 import sys
-from PyQt4 import QtGui, Qt, QtSvg
+from PyQt4 import QtGui, Qt
 
 from row_viz import VizListView
 import data_adquisition
 from filters_ui import CategoricalFilterView, CategoricalFilterItemModel
 from dynamics.dfilter import DynFilter
 from dynamics.dselect import DynSelect
+
+from eventloop import QtLoop
+from kernel import Kernel
+from epubsub.hub import Hub
 
 
 __version__ = '0.1'
@@ -36,7 +40,11 @@ class MainWindow(QtGui.QMainWindow):
         self.addDockWidget(Qt.Qt.RightDockWidgetArea, fview.get_in_dock(self))        
 
 def main():
+
     app = QtGui.QApplication(sys.argv)
+
+    QtLoop().install()
+    kernel = Kernel()
     
     spines_table = data_adquisition.create_spines_table()
     dendrites_table = data_adquisition.create_dendrites_table(spines_table)
@@ -62,8 +70,9 @@ def main():
     view.table = spines_table
     view.dfilter = dfilter
     view.dselect = dselect
-    view.update_view()
+    #view.update_view()
     
+    Hub.instance().subscribe('r:', view.on_render)
     
 
     app.exec_()

@@ -37,7 +37,9 @@ class RowSVGViz(QtSvg.QSvgWidget):
 
         self._spines = None
         self.dendrite_id = ''
-        self.need_draw = False
+        
+        self.dirty = False
+        self.selected = False
 
     @property
     def dselect(self):
@@ -49,24 +51,32 @@ class RowSVGViz(QtSvg.QSvgWidget):
         '''
         self._dselect = dselect #### TODO: Continue here
         self._dselect.subscribe('change', self.on_dselect_change)
-
-    def on_dselect_change(self, topic, msg):
+        
+    def on_render(self, topic, msg):
         self.update_view()
 
+    def on_dselect_change(self, topic, msg):
+        now_selected = self.dendrite_id in self.dselect.reference
+        if now_selected and not self.selected:        
+            self.selected = True
+            self.dirty = True
+        elif self.selected and not now_selected:
+            self.selected = False
+            self.dirty = True
+        #self.update_view()
+
     def mousePressEvent( self, event ):
-        print "Click with dselect:", self.dselect
+        #print "Click with dselect:", self.dselect
         if not self.dselect:
             return
         self._selection = self.dselect.get_condition('s_dendrite_id', None)
         if self._selection is None:
             self._selection = self.dselect.new_categorical_condition(
                 'dendrite_id', name='s_dendrite_id') 
-        
-        self.need_draw = True    
+           
         self._selection.exclude_all()
-        self.need_draw = True    
         self._selection.add_category(self.dendrite_id)
-        print 'selected:', self._selection.included_items()
+        #print 'selected:', self._selection.included_items()
         #self.dselect.update(self._selection)
         
     @property
@@ -76,21 +86,15 @@ class RowSVGViz(QtSvg.QSvgWidget):
     @spines.setter
     def spines(self, spines):
         self._spines = spines
-        self.need_draw = True
+        self.dirty = True
         
     def update_view(self):
         if self.spines is None:
             raise Exception('No spines assigned before painting')
-        if not self.need_draw:
+        if not self.dirty:
             return
         
-        facecolor='b'
-        if self.dselect:
-            selection = self.dselect.get_condition('s_dendrite_id', None)
-            if selection is not None: 
-                print '** font_color', selection.included_items()
-                if self.dendrite_id in selection.included_items():
-                    facecolor = 'r'
+        facecolor='r' if self.selected else 'b'
         
         print 'update-view', self.dendrite_id
         self.figure.suptitle(self.dendrite_id) 
@@ -110,9 +114,8 @@ class RowSVGViz(QtSvg.QSvgWidget):
         imgdata.seek(0)  # rewind the data
         svg = imgdata.read()
         self.load(QtCore.QByteArray( svg ))
-        
-        
-        self.need_draw = False
+
+        self.dirty = False
         
 
 class VizListView(object):
@@ -122,6 +125,8 @@ class VizListView(object):
         self._dfilter = dfilter
         self._dselect = dselect
         self.plots = OrderedDict()
+        
+        self.dirty = True
 
         self.scroll = QtGui.QScrollArea()
         
@@ -149,9 +154,11 @@ class VizListView(object):
     @dselect.setter
     def dselect(self, dselect):
         self._dselect = dselect 
+        for plot in self.plots.values():
+            plot.dselect = dselect
         
     def on_dfilter_change(self, topic, msg):
-        self.update_view()    
+        self.dirty = True
     
     @property
     def widget(self):
@@ -168,6 +175,14 @@ class VizListView(object):
         
     def hide_plot(self, name):
         self.plots[name].hide()
+        
+    def on_render(self, topic, msg):
+        for plot in self.plots.values():
+            plot.on_render(topic, msg)
+        if self.dirty:
+            self.dirty = False
+            self.update_view()
+        
     
     def update_view(self):
         if self.table is None:
@@ -207,6 +222,8 @@ class VizListView(object):
             plot.dselect = self._dselect
             plot.dendrite_id = dendrite
             self.add_plot(dendrite, plot)
+            self.dirty = True
+            return
         print 'FINISH'
 
     
