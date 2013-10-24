@@ -33,7 +33,7 @@ class ConditionSet(IPublisher, INamed):
         IPublisher.__init__(self, bus, topics)
 
     def _retransmit(self, topic, msg):
-        print "retransmit"
+        #print "retransmit"
         msg['original_topic'] = topic
         condition = msg['origin']
         self._sieves.set_sieve(condition.name, condition.sieve)
