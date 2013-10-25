@@ -74,9 +74,8 @@ def main():
     
     Hub.instance().subscribe('r:', view.on_render)
     
-
     app.exec_()
-    
+        
 
 if __name__ == '__main__':
     main()

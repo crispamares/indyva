@@ -14,11 +14,12 @@ import uuid
 from eventloop import Loop
 import types
 
-
+# Total 100 ms to be interactive
+# http://www.nngroup.com/articles/response-times-3-important-limits/
 FPS = 30
-RENDERINTERVAL = 1000 / FPS 
+RENDERINTERVAL = 1000 / FPS
+POLLINTERVAL = 10 
 LOOPINTERVAL = 0.01
-
 
 
 class KernelHub(Hub):
@@ -49,15 +50,20 @@ class Kernel(object):
     '''
     
     def __init__(self, loop=None, loop_interval=LOOPINTERVAL, 
-                              render_interval=RENDERINTERVAL):
+                              render_interval=RENDERINTERVAL,
+                              poll_interval=POLLINTERVAL):
         '''
         :param Loop loop: 
         '''
         self._loop = loop if loop else Loop.instance()
-        KernelHub(self).install()
+        self.hub = KernelHub(self)
+        self.hub.install()
         
         self._render_interval = render_interval
         self._loop_interval = loop_interval
+        self._poll_interval = poll_interval
+        
+        self._servers = []
         
         self._queues = {}
         self._render = deque(maxlen=1)
@@ -72,6 +78,11 @@ class Kernel(object):
         self.loop_periodic = None
         self._init_loop()
         self._init_reder()
+
+
+    def _init_loop(self):
+        self.loop_periodic = self._loop.add_periodic_callback(
+            self.do_one_iteration, self._loop_interval, start=True)
     
     def _init_reder(self):
         def publish_render():
@@ -79,11 +90,19 @@ class Kernel(object):
         defer_publish = partial(self.defer, self._render, publish_render)
         self._loop.add_periodic_callback(defer_publish, 
             self._render_interval, start=True)
+
+    def _init_poll(self):
+        def publish_poll():
+            Hub.instance().publish(PREFIX['control']+'poll', {id : uuid.uuid4()})
+        defer_publish = partial(self.defer, self._control, publish_poll)
+        self._loop.add_periodic_callback(defer_publish, 
+            self._poll_interval, start=True)
+    
+    def add_server(self, server):
+        self._servers.append(server)
+        self.hub.subscribe(PREFIX['control']+'poll', server.poll)
+        self._init_poll()
         
-        
-    def _init_loop(self):
-        self.loop_periodic = self._loop.add_periodic_callback(
-            self.do_one_iteration, self._loop_interval, start=True)
     
     def defer(self, queue, func, *args, **kwargs):
         self._loop.start_periodic(self.loop_periodic)
@@ -105,9 +124,7 @@ class Kernel(object):
         return i
             
     def do_one_iteration(self):
-        if (not self._control and 
-            not self._message and 
-            not self._idle):
+        if (not self._control and not self._message and not self._idle):
             self._loop.stop_periodic(self.loop_periodic)
         # process all control msgs
         self.flush(self._control)

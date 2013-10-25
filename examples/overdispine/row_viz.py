@@ -49,7 +49,7 @@ class RowSVGViz(QtSvg.QSvgWidget):
         '''
         :param DynSelect dselect: 
         '''
-        self._dselect = dselect #### TODO: Continue here
+        self._dselect = dselect
         self._dselect.subscribe('change', self.on_dselect_change)
         
     def on_render(self, topic, msg):
@@ -94,7 +94,7 @@ class RowSVGViz(QtSvg.QSvgWidget):
         if not self.dirty:
             return
         
-        facecolor='r' if self.selected else 'b'
+        facecolor='r' if self.selected else 'w'
         
         print 'update-view', self.dendrite_id
         self.figure.suptitle(self.dendrite_id) 
