@@ -19,7 +19,6 @@ from external.tinyrpc.server import RPCServer
 from external.tinyrpc.dispatch import RPCDispatcher
 
 
-ENDPOINTDIR = 'tcp://127.0.0.1:10111'
 
 def main():
     

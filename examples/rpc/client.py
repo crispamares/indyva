@@ -12,6 +12,7 @@ import timeit
 from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from external.tinyrpc.transports.zmq import ZmqClientTransport
 from external.tinyrpc import RPCClient, RPCProxy
+from external.tinyrpc.transports.http import HttpPostClientTransport
 
 
 def raw_call(socket, method, params):
@@ -29,15 +30,26 @@ def raw_call(socket, method, params):
 
     
 def main():
+    use_zmq = False
+    use_http = not use_zmq
     
-    ctx = zmq.Context()
-    transport = ZmqClientTransport.create(ctx, 'tcp://127.0.0.1:10111')
-    rpc_client = RPCClient(JSONRPCProtocol(), transport)
+    
+    if use_zmq:
+        ctx = zmq.Context()
+        transport = ZmqClientTransport.create(ctx, 'tcp://127.0.0.1:10111')
+        rpc_client = RPCClient(JSONRPCProtocol(), transport)
+    elif use_http:
+        rpc_client = RPCClient(
+            JSONRPCProtocol(),
+            HttpPostClientTransport('http://127.0.0.1:8080/')
+            )
 
-    res = raw_call(transport.socket, 'echo', {'s':'Ping'})
-    print 'Raw call result:', res
-    res = raw_call(transport.socket, 'echo', ['Pong'])
-    print 'Raw call result:', res
+
+    if use_zmq:
+        res = raw_call(transport.socket, 'echo', {'s':'Ping'})
+        print 'Raw call result:', res
+        res = raw_call(transport.socket, 'echo', ['Pong'])
+        print 'Raw call result:', res
     
     remote_server = rpc_client.get_proxy()
     schema, data = _get_data()
@@ -105,5 +117,5 @@ def compute_overhead():
     pass
 
 if __name__ == '__main__':
-    #main()
-    get_times()
+    main()
+    #get_times()
