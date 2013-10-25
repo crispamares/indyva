@@ -37,19 +37,20 @@ class RPCServer(object):
         will fetch the next message and repeat.
         """
         while True:
+            print 'listening'
             context, message = self.transport.receive_message()
-
+            print 'recived', message
             # assuming protocol is threadsafe and dispatcher is theadsafe, as
             # long as its immutable
 
             def handle_message(context, message):
+                print 'handle'
                 try:
                     request = self.protocol.parse_request(message)
                 except RPCError as e:
                     response = e.error_respond()
                 else:
                     response = self.dispatcher.dispatch(request)
-
                 # send reply
                 self.transport.send_reply(context, response.serialize())
 
