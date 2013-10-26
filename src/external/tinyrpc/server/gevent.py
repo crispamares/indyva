@@ -14,6 +14,7 @@ class RPCServerGreenlets(RPCServer):
 
     def start(self):
         '''
-        Create a Greenlet with serve_forever
+        Create a Greenlet with serve_forever so you can do a gevenet.joinall of 
+        several RPCServerGreenlets  
         '''
         return gevent.spawn(self.serve_forever)
