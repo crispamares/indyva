@@ -22,7 +22,7 @@ class ZMQServer(RPCServerGreenlets):
         ctx = zmq.Context()
         transport = ZmqServerTransport.create(ctx, 'tcp://127.0.0.1:'+str(port))
         protocol = JSONRPCProtocol()
-        dispatcher = Front()
+        dispatcher = Front.instance()
         RPCServerGreenlets.__init__(self, transport, protocol, dispatcher)
 
 class WSGIServer(RPCServerGreenlets):
@@ -30,7 +30,7 @@ class WSGIServer(RPCServerGreenlets):
         self.port = port
         self.transport = WsgiServerTransport(queue_class=gevent.queue.Queue)
         protocol = JSONRPCProtocol()
-        dispatcher = Front()
+        dispatcher = Front.instance()
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)
         
     def serve_forever(self):
@@ -47,7 +47,7 @@ class WSServer(RPCServerGreenlets):
         self.port = port
         self.transport = WSServerTransport(queue_class=gevent.queue.Queue)
         protocol = JSONRPCProtocol()
-        dispatcher = Front()
+        dispatcher = Front.instance()
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)
         
     def serve_forever(self):
