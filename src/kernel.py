@@ -9,10 +9,12 @@ from collections import deque
 from epubsub.hub import Hub, PREFIX
 from functools import partial
 import uuid
-
+from time import time
 
 from eventloop import Loop
 import types
+import gevent
+from gevent.queue import Queue
 
 # Total 100 ms to be interactive
 # http://www.nngroup.com/articles/response-times-3-important-limits/
@@ -59,6 +61,8 @@ class Kernel(object):
         self.hub = KernelHub(self)
         self.hub.install()
         
+        self._new_message = gevent.event.Event()
+        
         self._render_interval = render_interval
         self._loop_interval = loop_interval
         self._poll_interval = poll_interval
@@ -66,78 +70,88 @@ class Kernel(object):
         self._servers = []
         
         self._queues = {}
-        self._render = deque(maxlen=1)
-        self._idle = deque()
-        self._message = deque()
-        self._control = deque()
+        self._render = Queue(maxsize=1)
+        self._idle = Queue()
+        self._message = Queue()
+        self._control = Queue()
         self._queues['control'] = self._control
         self._queues['message'] = self._message
         self._queues['render'] = self._render
         self._queues['idle'] = self._idle
 
-        self.loop_periodic = None
-        self._init_loop()
-        self._init_reder()
 
+    def start(self):
+        '''
+        Start the event loop and all the servers added before calling this 
+        method. 
+        Returns a list of Greenlets so you can do a joinall if you want to block  
+        :return: [Greenlets]
+        '''
+        greenlets = []
+        greenlets.append(gevent.spawn(self._init_loop))
+        greenlets.append(gevent.spawn(self._init_render))
+        for server in self._servers:
+            greenlets.append(gevent.spawn(server.serve_forever))
+        return greenlets
+    
+    def run_forever(self):
+        '''
+        Start the event loop and all the servers added before calling this 
+        method. This is a blocking method.
+        '''
+        gevent.joinall(self.start())
 
     def _init_loop(self):
-        self.loop_periodic = self._loop.add_periodic_callback(
-            self.do_one_iteration, self._loop_interval, start=True)
+        while True:
+            if self.all_empty():
+                self._new_message.wait()
+            self.do_one_iteration()
     
     def _init_reder(self):
         def publish_render():
             Hub.instance().publish(PREFIX['render'], {id : uuid.uuid4()})
         defer_publish = partial(self.defer, self._render, publish_render)
-        self._loop.add_periodic_callback(defer_publish, 
-            self._render_interval, start=True)
-
-    def _init_poll(self):
-        def publish_poll():
-            Hub.instance().publish(PREFIX['control']+'poll', {id : uuid.uuid4()})
-        defer_publish = partial(self.defer, self._control, publish_poll)
-        self._loop.add_periodic_callback(defer_publish, 
-            self._poll_interval, start=True)
-    
+        while True:
+            gevent.sleep(self._render_interval)
+            defer_publish() # render queue blocks... maxsize == 1 
+            
     def add_server(self, server):
         self._servers.append(server)
-        self.hub.subscribe(PREFIX['control']+'poll', server.poll)
-        self._init_poll()
         
+    def all_empty(self):
+        return all([q.empty() for q in self._queues.values()])
     
     def defer(self, queue, func, *args, **kwargs):
-        self._loop.start_periodic(self.loop_periodic)
         if isinstance(queue, types.StringTypes):
             queue = self._queues[queue]
-        queue.appendleft( (func, args, kwargs) )
+        queue.put( (func, args, kwargs) )
+        self._new_message.set()
         
     def flush(self, queue, num=0):
         '''
-        :param collections.deque queue
+        :param gevent.queue.Queue :
         '''
-        num = min(num, len(queue))
+        num = min(num, queue.qsize())
         i = 0
-        while queue:
+        while queue.qsize():
             if num and i >= num: break
-            func, args, kwargs = queue.pop()
+            func, args, kwargs = queue.get_nowait()
             func(*args, **kwargs)
             i += 1
         return i
             
     def do_one_iteration(self):
-        if (not self._control and not self._message and not self._idle):
-            self._loop.stop_periodic(self.loop_periodic)
         # process all control msgs
         self.flush(self._control)
         # process one msg
         self.flush(self._message, 1)
-        # recv and send in sockets
-        #######################################################
         # process render msgs 
         self.flush(self._render)
         # if msgs.empty: process one idle
         if not self._message:
             self.flush(self._idle, 1)
 
+            
 
 
 #DEFERRING = True

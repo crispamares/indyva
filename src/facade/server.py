@@ -11,7 +11,6 @@ from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from facade import Front
 from external.tinyrpc.server.gevent import RPCServerGreenlets
 
-import gevent
 import gevent.wsgi
 import gevent.queue
 from external.tinyrpc.transports.websocket import WSServerTransport
