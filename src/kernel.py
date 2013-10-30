@@ -5,13 +5,10 @@ Created on 16/10/2013
 @author: jmorales
 '''
 
-from collections import deque
 from epubsub.hub import Hub, PREFIX
 from functools import partial
 import uuid
-from time import time
 
-from eventloop import Loop
 import types
 import gevent
 from gevent.queue import Queue
@@ -19,9 +16,8 @@ from gevent.queue import Queue
 # Total 100 ms to be interactive
 # http://www.nngroup.com/articles/response-times-3-important-limits/
 FPS = 30
-RENDERINTERVAL = 1000 / FPS
-POLLINTERVAL = 10 
-LOOPINTERVAL = 0.01
+RENDERINTERVAL = 1.0 / FPS  # In seconds
+LOOPINTERVAL = 0.00001      # In seconds
 
 
 class KernelHub(Hub):
@@ -51,13 +47,12 @@ class Kernel(object):
     computation of events 
     '''
     
-    def __init__(self, loop=None, loop_interval=LOOPINTERVAL, 
-                              render_interval=RENDERINTERVAL,
-                              poll_interval=POLLINTERVAL):
+    def __init__(self, loop_interval=LOOPINTERVAL,
+                        render_interval=RENDERINTERVAL):
         '''
-        :param Loop loop: 
+        :param float loop_interval: times in seconds 
+        :param float render_interval: times in seconds 
         '''
-        self._loop = loop if loop else Loop.instance()
         self.hub = KernelHub(self)
         self.hub.install()
         
@@ -65,8 +60,7 @@ class Kernel(object):
         
         self._render_interval = render_interval
         self._loop_interval = loop_interval
-        self._poll_interval = poll_interval
-        
+
         self._servers = []
         
         self._queues = {}
@@ -78,7 +72,6 @@ class Kernel(object):
         self._queues['message'] = self._message
         self._queues['render'] = self._render
         self._queues['idle'] = self._idle
-
 
     def start(self):
         '''
@@ -104,10 +97,11 @@ class Kernel(object):
     def _init_loop(self):
         while True:
             if self.all_empty():
+                self._new_message.clear()
                 self._new_message.wait()
             self.do_one_iteration()
     
-    def _init_reder(self):
+    def _init_render(self):
         def publish_render():
             Hub.instance().publish(PREFIX['render'], {id : uuid.uuid4()})
         defer_publish = partial(self.defer, self._render, publish_render)
