@@ -8,6 +8,8 @@ Created on Jun 27, 2013
 
 
 from PyQt4 import QtGui, Qt
+from external import qtgevent
+qtgevent.install()
 import sys
 from dataset import RSC_DIR
 import json
@@ -15,7 +17,7 @@ from collections import OrderedDict
 import pandas as pn
 from dataset.table import Table
 from tabular_view import TabularView
-from eventloop import QtLoop
+
 
 
 from internal_ipkernel import InternalIPKernel
@@ -80,11 +82,13 @@ def test_dselect_and_dfilter(tv):
     f.new_attribute_condition(['State', 'Information'], 'vertical')
     
    
-def main():
+def main():    
     app = QtGui.QApplication(sys.argv)
-    QtLoop().install()
-    _k = kernel.Kernel()
     
+    k = kernel.Kernel()
+    k.start()    
+
+            
     ipwin = IPWindow(app)    
     
     main_window = QtGui.QMainWindow()
@@ -101,11 +105,12 @@ def main():
     main_window.show()
     ipwin.show()
     
-    
     ipwin.namespace['tv'] = tv
+    ipwin.namespace['k'] = k
     ipwin.namespace['table'] = tv.table
     ipwin.namespace['getDF'] = getDF
     ipwin.namespace['test_dselect_and_dfilter'] = test_dselect_and_dfilter
+    
     
     ipwin.ipkernel.start()
     

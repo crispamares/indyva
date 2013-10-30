@@ -59,7 +59,7 @@ class TabularView(QtGui.QTableView):
         self.setSelectionBehavior(self.SelectRows)
         self.setSelectionMode(self.MultiSelection)
 
-        hub.instance().subscribe('r.', self.on_render)
+        hub.instance().subscribe('r:', self.on_render)
         
     def set_table(self, table):
         self.table = table

@@ -6,17 +6,15 @@ Created on 03/09/2013
 '''
 import sys
 from PyQt4 import QtGui, Qt
-
+from external import qtgevent
+qtgevent.install()
 from row_viz import VizListView
 import data_adquisition
 from filters_ui import CategoricalFilterView, CategoricalFilterItemModel
 from dynamics.dfilter import DynFilter
 from dynamics.dselect import DynSelect
 
-from eventloop import QtLoop
 from kernel import Kernel
-from epubsub.hub import Hub
-
 
 __version__ = '0.1'
 
@@ -43,37 +41,27 @@ def main():
 
     app = QtGui.QApplication(sys.argv)
 
-    QtLoop().install()
     kernel = Kernel()
+    kernel.start()
     
     spines_table = data_adquisition.create_spines_table()
     dendrites_table = data_adquisition.create_dendrites_table(spines_table)
-    
-    
+
     main_window = MainWindow()
     main_window.show()
 
     view = main_window.list_view
 
     dfilter = DynFilter('f_dendrites', dendrites_table)
-    #dfilter.set_item_condition('dendrite_id', query={})
-    #dfilter.set_item_condition('dendrite_type', query={'dendrite_type': 'basal'})
     main_window.add_filter(dendrites_table, 'dendrite_id', dfilter)
     main_window.add_filter(dendrites_table, 'dendrite_type', dfilter)
-    #main_window.add_filter(spines_table, 'section', dfilter)
-    
-    #dfilter.subscribe('change', lambda t,m : view.update_view())
-    #dfilter.subscribe('remove', lambda t,m : view.update_view())
 
     dselect = DynSelect('s_dendrites', dendrites_table)
     
     view.table = spines_table
     view.dfilter = dfilter
     view.dselect = dselect
-    #view.update_view()
-    
-    Hub.instance().subscribe('r:', view.on_render)
-    
+
     app.exec_()
         
 

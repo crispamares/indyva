@@ -30,7 +30,7 @@ def raw_call(socket, method, params):
 
     
 def main():
-    use_zmq = False
+    use_zmq = True
     use_http = not use_zmq
     
     

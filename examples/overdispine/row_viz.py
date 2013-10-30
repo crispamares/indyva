@@ -14,6 +14,8 @@ from collections import OrderedDict
 
 import StringIO
 
+from epubsub import hub
+
 
 class RowSVGViz(QtSvg.QSvgWidget):
 
@@ -137,6 +139,8 @@ class VizListView(object):
         self.scroll.setWidget(self.viz_area)
         self.scroll.setWidgetResizable(True)
         self.scroll.setVerticalScrollBarPolicy(2)
+    
+        hub.instance().subscribe('r:', self.on_render)
     
     @property
     def dfilter(self):
