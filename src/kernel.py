@@ -84,7 +84,7 @@ class Kernel(object):
         greenlets.append(gevent.spawn(self._init_loop))
         greenlets.append(gevent.spawn(self._init_render))
         for server in self._servers:
-            greenlets.append(gevent.spawn(server.serve_forever))
+            greenlets.append(server.start())
         return greenlets
     
     def run_forever(self):
