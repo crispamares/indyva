@@ -8,6 +8,8 @@ import sys
 from PyQt4 import QtGui, Qt
 from external import qtgevent
 qtgevent.install()
+from facade.server import WSServer
+from facade.front import Front
 from row_viz import VizListView
 import data_adquisition
 from filters_ui import CategoricalFilterView, CategoricalFilterItemModel
@@ -41,26 +43,33 @@ def main():
 
     app = QtGui.QApplication(sys.argv)
 
+    ws_server = WSServer()
     kernel = Kernel()
-    kernel.start()
+    ws_server.start()
+    #BUG: kernel.add_server(ws_server)
+    print kernel.start()
     
     spines_table = data_adquisition.create_spines_table()
     dendrites_table = data_adquisition.create_dendrites_table(spines_table)
-
-    main_window = MainWindow()
-    main_window.show()
-
-    view = main_window.list_view
+    Front.instance().get_method('TableSrv.expose_table')('spines_table', spines_table)
+    
+    # TODO: Expose the spines_table through the TableSrv  
 
     dfilter = DynFilter('f_dendrites', dendrites_table)
-    main_window.add_filter(dendrites_table, 'dendrite_id', dfilter)
-    main_window.add_filter(dendrites_table, 'dendrite_type', dfilter)
-
     dselect = DynSelect('s_dendrites', dendrites_table)
+
+    show_main_window = False
+    if show_main_window:    
+        main_window = MainWindow()
+        main_window.show()
+        view = main_window.list_view
     
-    view.table = spines_table
-    view.dfilter = dfilter
-    view.dselect = dselect
+        main_window.add_filter(dendrites_table, 'dendrite_id', dfilter)
+        main_window.add_filter(dendrites_table, 'dendrite_type', dfilter)
+    
+        view.table = spines_table
+        view.dfilter = dfilter
+        view.dselect = dselect
 
     app.exec_()
         
