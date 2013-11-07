@@ -87,7 +87,6 @@ class WSApplication(WebSocketApplication):
 
     def on_open(self):
         print 'on_open'
-        assert self._gateway._ws is None
         self._gateway._ws = self.ws
         self._gateway._flush()
     

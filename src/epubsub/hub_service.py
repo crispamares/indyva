@@ -48,17 +48,21 @@ class HubService(INamed):
       
     def new_gateway(self, name, transport, port=8081):
         '''
+        If the gateway already exists nothing is done.
+        
         :param str name: The unique name of the gateway
         :param str transport: ['zmq' | 'ws'] The kind of transport to use
         :param int port: The port where clients has to connect 
         '''
-        if transport == 'zmq':
-            self._gateways[name] = ZMQGateway(name, port)
-        elif transport == 'ws':
-            self._gateways[name] = WSGateway(name, port)
-        else:
-            raise ValueError('{0} Transport not identified. Supported: "zmq", "ws"'
-                .format(transport))
+        if name not in self._gateways:
+            if transport == 'zmq':
+                self._gateways[name] = ZMQGateway(name, port)
+            elif transport == 'ws':
+                self._gateways[name] = WSGateway(name, port)
+            else:
+                raise ValueError('{0} Transport not identified. Supported: "zmq", "ws"'
+                    .format(transport))
+        return self._gateways[name]
             
     def del_gateway(self, name):
         self._gateways.pop(name)
