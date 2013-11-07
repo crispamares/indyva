@@ -36,6 +36,8 @@ class INamed(object):
         authority = NameAuthority.instance()
         authority.unresgister(self._prefix+self._name)
     
+    def for_json(self):
+        return self._name
 
 class NameAuthority(object):
     '''
@@ -85,6 +87,7 @@ class NameAuthority(object):
         '''
         Unregister the name so the same name can be registered in the future 
         '''
+        print 'unregistering', name
         self._names.pop(name, None)
 
     def new_name(self, prefix=''):

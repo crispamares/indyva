@@ -61,8 +61,6 @@ class TableView(ITableView, IPublisher, INamed):
     def column_names(self):
         return self._backend.column_names(view_args=self.view_args)
     
-    def for_json(self):
-        return self.name
     
 
 class Table(ITable, TableView, INamed):
