@@ -3,7 +3,7 @@ Created on Jun 26, 2013
 
 @author: crispamares
 '''
-from bus import Bus
+
 from abc import ABCMeta
 from functools import wraps
 

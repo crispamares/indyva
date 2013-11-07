@@ -6,7 +6,6 @@ Created on 06/06/2013
 '''
 import hub
 import uuid
-
 DEFAULT_PREFIX_TOPIC = ""
 
 class Bus(object):

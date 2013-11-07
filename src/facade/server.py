@@ -18,7 +18,7 @@ from geventwebsocket.server import WebSocketServer
 
 class ZMQServer(RPCServerGreenlets):
     def __init__(self, port=10111):
-        ctx = zmq.Context()
+        ctx = zmq.Context.instance()
         transport = ZmqServerTransport.create(ctx, 'tcp://127.0.0.1:'+str(port))
         protocol = JSONRPCProtocol()
         dispatcher = Front.instance()

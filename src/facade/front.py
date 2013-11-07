@@ -6,6 +6,7 @@ Created on 17/07/2013
 '''
 from external.tinyrpc.dispatch import RPCDispatcher, public
 from dataset import table_service
+from epubsub import hub_service
 
 class Front(RPCDispatcher):
     '''
@@ -41,6 +42,7 @@ class Front(RPCDispatcher):
         
         self.add_method(self.echo)
         self.add_service(table_service.TableService('TableSrv'))
+        self.add_service(hub_service.HubService('HubSrv'))
         
     def add_service(self, service):
         subdispatcher = RPCDispatcher()

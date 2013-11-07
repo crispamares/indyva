@@ -103,7 +103,7 @@ class Kernel(object):
     
     def _init_render(self):
         def publish_render():
-            Hub.instance().publish(PREFIX['render'], {id : uuid.uuid4()})
+            Hub.instance().publish(PREFIX['render'], {'id' : str(uuid.uuid4())})
         defer_publish = partial(self.defer, self._render, publish_render)
         while True:
             gevent.sleep(self._render_interval)
