@@ -3,8 +3,15 @@ define(["when"],
 function() {
     var when = require('when');
 
-    var WsRpc = function(server, path){
+    var WsRpc = function(server, path, port){
 	var self = this;
+
+	path = path || 'ws';
+	port = port || 8080;
+	server = server || 'localhost:'+String(port);
+
+	this._out_queue = [];
+	this._futures = {};
 	this.ws = new WebSocket('ws://' + server + '/' + path);
 	this.ws.onmessage = function(event) { self._onmessage(event); };
 	this.ws.onopen = function(event) { self._flush(); };
@@ -18,6 +25,18 @@ function() {
     WsRpc.prototype._current_id = 1;
     /// The not ready queue
     WsRpc.prototype._out_queue = [];
+    /// The installed instance
+    WsRpc.prototype._instance = null;
+
+    // Class method
+    WsRpc.instance = function() {
+	if (WsRpc.prototype._instance == null) throw new Error("WsRpc not already installed");
+	return WsRpc.prototype._instance;
+    };
+    WsRpc.prototype.install = function() {
+	if (WsRpc.prototype._instance) throw new Error("WsRpc already installed");
+	WsRpc.prototype._instance = this;
+    };
 
     /**
      * @fn call

@@ -18,7 +18,7 @@ function () {
 	var spec = getTreemapSpec(970, 500, data);
 	vg.parse.spec(spec, function(chart) {
 			  chart({el:container})
-			      .on("mouseover", function(event, item) { console.log(item.datum.data); })
+//			      .on("mouseover", function(event, item) { console.log(item.datum.data); })
 			      .update(); 
 		      });
     };
@@ -26,7 +26,6 @@ function () {
     treemapView.prototype.setData = function(data) {
 	this.data = data;
     };
-
 
 
     function getTreemapSpec(width, height, data) {

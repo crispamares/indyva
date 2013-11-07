@@ -14,14 +14,20 @@ requirejs(['jquery',
 	   'when', 
 	   'bootstrap', 
 	   'WsRpc',
+	   'hub',
 	   'd3',
 	   'vega',
 	   'treemap'], 
 
-function($, when, bootstrap, WsRpc, d3, vega ) {
+function($, when, bootstrap, WsRpc, Hub, d3, vega ) {
     console.log('running');
 
-    rpc = new WsRpc('localhost:8080', 'ws');
+    rpc = new WsRpc();
+    rpc.install();
+
+    hub = new Hub();
+    hub.install();
+
     var treemap = require("treemap");
     var view = new treemap("#overview"); 
 
