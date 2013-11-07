@@ -5,21 +5,24 @@ require.config({
 	bootstrap: 'vendor/bootstrap.min',
 	when: 'vendor/when',
 	d3: 'vendor/d3.v3.min',
-	vega: 'vendor/vega'
+	vega: 'vendor/vega',
+	lodash: 'vendor/lodash.min'
     }
 });
 
 
 requirejs(['jquery', 
+	   'lodash',
 	   'when', 
 	   'bootstrap', 
 	   'WsRpc',
 	   'hub',
 	   'd3',
 	   'vega',
-	   'treemap'], 
+	   'treemap',
+	   'comboSelector'], 
 
-function($, when, bootstrap, WsRpc, Hub, d3, vega ) {
+function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
     console.log('running');
 
     rpc = new WsRpc();
@@ -30,9 +33,21 @@ function($, when, bootstrap, WsRpc, Hub, d3, vega ) {
 
     var treemap = require("treemap");
     var view = new treemap("#overview"); 
+    hub.subscribe('comboChanged', 
+	    function(topic, msg) { 
+		console.log(topic);
+		drawTreemap(when, rpc, view, msg);});
 
+    drawTreemap(when, rpc, view, "size");
 
-    when.map( groupBySpine(),
+    var comboSelector = require("comboSelector");
+    var menu = new comboSelector('#menu');
+    menu.update();
+
+});
+
+function drawTreemap(when, rpc, view, column) {
+    when.map( groupBySpine(column),
 	    function(pipeline) {return rpc.call('TableSrv.aggregate', ["spines_table", pipeline]);})
 	.then(
 	    function(views) {
@@ -48,12 +63,11 @@ function($, when, bootstrap, WsRpc, Hub, d3, vega ) {
 			   ]};
 		view.setData(data);
 		view.update();
-	    });
+	    });    
+}
 
-});
-
-
-function groupByDendriteId() {
+function groupByDendriteId(column) {
+    column = column || 'size';
 
     var apical_pipeline = [{$match: {dendrite_type:"apical"}},
 		    {$project: {dendrite_type:1, size:1, dendrite_id: 1}  }, 
@@ -66,13 +80,18 @@ function groupByDendriteId() {
     return [ apical_pipeline, basal_pipeline];
 }
 
-function groupBySpine() {
+function groupBySpine(column) {
+    column = column || 'size';
 
+    var project1 = {$project: {dendrite_type:1, dendrite_id: 1, spine_id:1}};
+    project1.$project[column] = 1;
+
+    var group = {$group : {_id: "$dendrite_id", 
+		 children: {$addToSet: {name: "$spine_id", size:'$'+column}} }};
 
     var apical_pipeline = [{$match: {dendrite_type:"apical"}} ,
-			   {$project: {dendrite_type:1, size:1, dendrite_id: 1, spine_id:1}  }, 
-			   {$group : {_id: "$dendrite_id", 
-				      children: {$addToSet: {name: "$spine_id", size: "$size"}} }}, 
+			   project1,
+			   group,
 			   {$project : { name: "$_id", children:1 , _id: 0}}];
 
     var basal_pipeline = apical_pipeline.slice();
