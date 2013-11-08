@@ -51,7 +51,7 @@ class ZMQGateway(Gateway):
         
     def publish(self, topic, msg):
         msg_json = json.dumps(msg, default=for_json_bridge)
-        self.socket.send_multipart([topic, msg_json])
+        self.socket.send_multipart([str(topic), msg_json])
 
 
 
