@@ -1,9 +1,10 @@
 
 define(
-["when","WsRpc", "vega"]
+["when","WsRpc", "vega", "hub"]
 ,
 function () {
-    
+    var hub = require('hub');
+
     var treemapView = function(container) {
 	// Subscribe to 'r:'
 	// Subscribe to dynamics
@@ -11,21 +12,48 @@ function () {
 	this.container = container;
     };
 
-   
-    treemapView.prototype.update = function() {
-	var data = this.data;
+    treemapView.prototype.render = function() {
+	var self = this;
 	var container = this.container;
-	var spec = getTreemapSpec(970, 500, data);
+	var spec = getTreemapSpec(970, 500, this.data);
 	vg.parse.spec(spec, function(chart) {
-			  chart({el:container})
-//			      .on("mouseover", function(event, item) { console.log(item.datum.data); })
+			  self.view = chart({el:container});
+			  self.view.on("click", function(event, item) { 
+					   console.log(item.datum.data);
+					   hub.instance().publish('spine_selected', item.datum.data);
+				       })
 			      .update(); 
 		      });
     };
 
+    treemapView.prototype.update = function() {
+	if (this.view){
+	    console.log('update', this.view.width());
+	    this.view = 
+	    this.view.update();
+	}
+	else
+	    this.render();
+    };
+
     treemapView.prototype.setData = function(data) {
 	this.data = data;
-    };
+/*	if (this.view) {
+	    var vg_data = [{
+		    "name": "tree",
+		    "values": data,
+		    "format": {"type": "treejson"},
+		    "transform": [
+			{"type": "treemap", "value": "data.size"}
+		    ]
+		}];
+		gvalues = data;
+		gdata = vg_data;
+		gview = this.view;
+	    console.log('data', this.data);
+	    this.view.data(vg.parse.data(vg_data).flow);
+	}
+*/    };
 
 
     function getTreemapSpec(width, height, data) {

@@ -35,7 +35,7 @@ function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
     var view = new treemap("#overview"); 
     hub.subscribe('comboChanged', 
 	    function(topic, msg) { 
-		console.log(topic);
+		console.log('To draw', topic, msg);
 		drawTreemap(when, rpc, view, msg);});
 
     drawTreemap(when, rpc, view, "size");
@@ -62,8 +62,12 @@ function drawTreemap(when, rpc, view, column) {
 			   {name: "basal", children: sizes[1] }
 			   ]};
 		view.setData(data);
-		view.update();
-	    });    
+		view.render();		    
+	    })
+	.otherwise(function (err) {
+		console.log(err);
+	    }
+	);    
 }
 
 function groupByDendriteId(column) {
