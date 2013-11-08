@@ -8,7 +8,7 @@ import sys
 from PyQt4 import QtGui, Qt
 from external import qtgevent
 qtgevent.install()
-from facade.server import WSServer
+from facade.server import WSServer, ZMQServer
 from facade.front import Front
 from row_viz import VizListView
 import data_adquisition
@@ -44,8 +44,10 @@ def main():
     app = QtGui.QApplication(sys.argv)
 
     ws_server = WSServer()
+    zmq_server = ZMQServer(8090)
     kernel = Kernel()
     ws_server.start()
+    zmq_server.start()
     #BUG: kernel.add_server(ws_server)
     print kernel.start()
     
