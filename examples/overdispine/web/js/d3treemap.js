@@ -28,16 +28,35 @@ function () {
 
 	this.render = function() {
 
-	    div.selectAll(".node")
-		.data(treemap.nodes(this.data))
-		.enter().append("div")
+	    var nodes = div.selectAll(".node")
+		.data(treemap.nodes(this.data));
+
+	    nodes.enter().append("div")
 		.attr("class", "node")
-		.style("left", function(d) { return d.x + "px"; })
-		.style("top", function(d) { return d.y + "px"; })
-		.style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-		.style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; })
 		.style("background", function(d) { return d.children ? color(d.name) : null; });
+
+	    nodes
+		.style("left", function(d) { return d.x + "px"; })
+		.style("top", function(d) { return d.y + "px"; });
+
+	    var leaves = nodes.filter(function(d){return ! Boolean(d.children);});
+	    var parents = nodes.filter(function(d){return Boolean(d.children);});
+	    parents
+		.style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+		.style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+
+	    leaves		
+		.classed("leaf", true)
+		.style("left", function(d) { return Math.max(0, d.x - 1) + "px"; })
+		.style("top", function(d) { return Math.max(0, d.y - 1) + "px"; })
+		.style("width", function(d) { return d.dx + 1 + "px"; })
+		.style("height", function(d) { return d.dy + 1 + "px"; });
+
+
+
+
 		//.text(function(d) { return d.children ? null : d.name; });
+
 	};
 
     };

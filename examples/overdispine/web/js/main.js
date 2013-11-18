@@ -65,7 +65,7 @@ function drawTreemap(when, rpc, view, column) {
 		view.render();		    
 	    })
 	.otherwise(function (err) {
-		console.log(err);
+		console.log(err.stack);
 	    }
 	);    
 }

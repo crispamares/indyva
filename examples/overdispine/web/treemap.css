@@ -6,3 +6,6 @@
   position: absolute;
   text-indent: 2px;
 }
+.node.leaf:hover {
+  background: red;
+}
