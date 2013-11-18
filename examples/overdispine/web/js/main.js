@@ -19,7 +19,7 @@ requirejs(['jquery',
 	   'hub',
 	   'd3',
 	   'vega',
-	   'treemap',
+	   'd3treemap',
 	   'comboSelector'], 
 
 function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
@@ -31,7 +31,7 @@ function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
     hub = new Hub();
     hub.install();
 
-    var treemap = require("treemap");
+    var treemap = require("d3treemap");
     var view = new treemap("#overview"); 
     hub.subscribe('comboChanged', 
 	    function(topic, msg) { 
