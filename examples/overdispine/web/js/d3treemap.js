@@ -28,34 +28,53 @@ function () {
 
 	this.render = function() {
 
-	    var nodes = div.selectAll(".node")
-		.data(treemap.nodes(this.data));
+	    var treemap_data = treemap.nodes(this.data);
 
-	    nodes.enter().append("div")
-		.attr("class", "node")
-		.style("background", function(d) { return d.children ? color(d.name) : null; });
+	    var leaves = div.selectAll(".leaf")
+		.data(treemap_data.filter(function(d){return ! Boolean(d.children);}));
+	    var parents = div.selectAll(".parent")
+		.data(treemap_data.filter(function(d){return Boolean(d.children);}));
 
-	    nodes
-		.style("left", function(d) { return d.x + "px"; })
-		.style("top", function(d) { return d.y + "px"; });
+	    parents.enter().append("div")
+		.attr("class", "node parent")
+		.style("background", function(d) { return color(d.name);});
 
-	    var leaves = nodes.filter(function(d){return ! Boolean(d.children);});
-	    var parents = nodes.filter(function(d){return Boolean(d.children);});
-	    parents
-		.style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-		.style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
+	    leaves.enter().append("div")
+		.attr("class", "node leaf")
+		.on("click", function(d) {
+			hub.instance().publish('spine_selected', d.name);});
 
-	    leaves		
-		.classed("leaf", true)
+	    /**
+	     * Wait ~100 until treemap computation is done
+	     * Hide leaves
+	     * Change the location of leaves NO TRANSITION HERE
+	     * 
+	     */
+
+	    leaves
+		.style("visibility","hidden")
 		.style("left", function(d) { return Math.max(0, d.x - 1) + "px"; })
 		.style("top", function(d) { return Math.max(0, d.y - 1) + "px"; })
 		.style("width", function(d) { return d.dx + 1 + "px"; })
-		.style("height", function(d) { return d.dy + 1 + "px"; })
-		.on("click", function(d) {
-			hub.instance().publish('spine_selected', d.name);
-		    });
+		.style("height", function(d) { return d.dy + 1 + "px"; });
 
+	     d3.transition()
+	        .delay(850)
+		.each('end', function(){leaves.style("visibility",null);});
+		
 
+	    parents
+		.style("background", "gray")
+	      .transition()
+		.delay(450)
+		.duration(350)
+		.style("left", function(d) { return d.x + "px"; })
+		.style("top", function(d) { return d.y + "px"; })
+		.style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+		.style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; })
+	      .transition()
+		.duration(650)
+	        .style("background", function(d) { return color(d.name);});
 
 
 		//.text(function(d) { return d.children ? null : d.name; });
@@ -76,22 +95,7 @@ function () {
 
     treemapView.prototype.setData = function(data) {
 	this.data = data;
-/*	if (this.view) {
-	    var vg_data = [{
-		    "name": "tree",
-		    "values": data,
-		    "format": {"type": "treejson"},
-		    "transform": [
-			{"type": "treemap", "value": "data.size"}
-		    ]
-		}];
-		gvalues = data;
-		gdata = vg_data;
-		gview = this.view;
-	    console.log('data', this.data);
-	    this.view.data(vg.parse.data(vg_data).flow);
-	}
-*/    };
+    };
 
 
     function getTreemapSpec(width, height, data) {
