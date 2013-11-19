@@ -50,7 +50,10 @@ function () {
 		.style("left", function(d) { return Math.max(0, d.x - 1) + "px"; })
 		.style("top", function(d) { return Math.max(0, d.y - 1) + "px"; })
 		.style("width", function(d) { return d.dx + 1 + "px"; })
-		.style("height", function(d) { return d.dy + 1 + "px"; });
+		.style("height", function(d) { return d.dy + 1 + "px"; })
+		.on("click", function(d) {
+			hub.instance().publish('spine_selected', d.name);
+		    });
 
 
 
