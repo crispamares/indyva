@@ -5,17 +5,25 @@ function() {
 
     function ComboSelector(container, table, attributeType) {
 	this.container = $(container);
+	// TODO: autoextract options from table and attributeType
 	this.options = ["size", "length", "angle"];
     }
     
     ComboSelector.prototype.update =  function() {
 	
-	var template = _.template('<select class="form-control">'
+	var template = _.template('<div class="panel panel-default">'
+			   + '  <div class="panel-heading">'
+			   + '    <h3 class="panel-title">Property to expose</h3>'
+			   + '  </div>'
+			   + '  <div class="panel-body">'
+			   + '<select class="form-control">'
 			   + '<% _.forEach(options, function(option) {%>'
 			   + '<option> <%- option  %> </option> <% }) %>'
-			   + '</select>');
+			   + '</select>'
+			   + '  </div>'
+			   + '</div>');
 	var html = template({options: this.options});
-	this.container.html(html);
+	this.container.append(html);
 
 	this.container
 	    .find('select')

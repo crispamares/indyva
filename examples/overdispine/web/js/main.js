@@ -19,8 +19,9 @@ requirejs(['jquery',
 	   'hub',
 	   'd3',
 	   'vega',
-	   'd3treemap',
-	   'comboSelector'], 
+	   'treemap',
+	   'comboSelector',
+	   'selectionList'], 
 
 function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
     console.log('running');
@@ -31,8 +32,12 @@ function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
     hub = new Hub();
     hub.install();
 
-    var treemap = require("d3treemap");
-    var view = new treemap("#overview"); 
+     
+    // ----------------------------------------
+    //     Treemap
+    // ----------------------------------------
+    var Treemap = require("treemap");
+    var view = new Treemap("#overview"); 
     hub.subscribe('comboChanged', 
 	    function(topic, msg) { 
 		console.log('To draw', topic, msg);
@@ -40,9 +45,21 @@ function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
 
     drawTreemap(when, rpc, view, "size");
 
-    var comboSelector = require("comboSelector");
-    var menu = new comboSelector('#menu');
+    // ----------------------------------------
+    //     ComboSelector
+    // ----------------------------------------
+    var ComboSelector = require("comboSelector");
+    var menu = new ComboSelector('#menu');
     menu.update();
+
+
+    // ----------------------------------------
+    //     SelectionList
+    // ----------------------------------------
+    var SelectionList = require("selectionList");
+    var selectionList = new SelectionList('#menu');
+    selectionList.update();
+
 
 });
 
@@ -51,6 +68,7 @@ function drawTreemap(when, rpc, view, column) {
 	    function(pipeline) {return rpc.call('TableSrv.aggregate', ["spines_table", pipeline]);})
 	.then(
 	    function(views) {
+		console.log('views', views);
 		return when.map(views, function(view) {return rpc.call('TableSrv.get_data', [view]);});
 	    })
 	.then(
@@ -65,7 +83,7 @@ function drawTreemap(when, rpc, view, column) {
 		view.render();		    
 	    })
 	.otherwise(function (err) {
-		console.log(err.stack);
+		console.log(err, err.stack);
 	    }
 	);    
 }
