@@ -8,6 +8,7 @@ from table import Table
 from functools import partial
 from dataset.abc_table import ITableView
 from names import INamed
+from facade.showcase import Case
 
 class TableService(INamed):
     '''
@@ -18,7 +19,7 @@ class TableService(INamed):
         '''
         @param name: The unique name of the service
         '''
-        self._tables = {}
+        self._tables = Case()
         INamed.__init__(self, name)
     
     def register_in(self, dispatcher):

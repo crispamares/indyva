@@ -17,6 +17,7 @@ class INamed(object):
     '''
     def __init__(self, name, prefix=''):
         authority = NameAuthority.instance()
+        prefix = str(prefix)
         if name is None:
             name = authority.new_name(prefix)
         else:
@@ -37,7 +38,7 @@ class INamed(object):
         authority.unresgister(self._prefix+self._name)
     
     def for_json(self):
-        return self._name
+        return self.full_name
 
 class NameAuthority(object):
     '''
