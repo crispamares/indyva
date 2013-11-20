@@ -6,6 +6,7 @@ from .. import RPCBatchProtocol, RPCRequest, RPCResponse, RPCErrorResponse,\
                InvalidReplyError, RPCError, RPCBatchRequest, RPCBatchResponse
 
 import json
+import traceback
 
 class FixedErrorMessageMixin(object):
     def __init__(self, *args, **kwargs):
@@ -100,8 +101,9 @@ def _get_code_and_message(error):
             msg = JSONRPCMethodNotFoundError.message
         else:
             # allow exception message to propagate
+            traceback.print_exc()
             code = JSONRPCServerError.jsonrpc_error_code
-            msg = str(error)
+            msg = traceback.format_exception_only(type(error), error)
     else:
         code = -32000
         msg = error
