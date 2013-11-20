@@ -1,11 +1,14 @@
+svg {
+  shape-rendering: crispEdges;
+}
 .node {
-  border: solid 1px white;
-  font: 10px sans-serif;
-  line-height: 12px;
-  overflow: hidden;
-  position: absolute;
-  text-indent: 2px;
+  stroke: white;
+  stroke-width:1px;
+}
+.node.leaf {
+  fill-opacity: 0;
 }
 .node.leaf:hover {
-  background: red;
+  fill: red;
+  fill-opacity: 1;
 }

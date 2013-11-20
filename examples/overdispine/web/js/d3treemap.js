@@ -21,64 +21,49 @@ function () {
 	    .padding(4)
 	    .value(function(d) { return d.size; });
 
-	var div = d3.select(container).append("div")
-	    .style("position", "relative")
+	var svg = d3.select(container).append("svg")
 	    .style("width", width + "px")
 	    .style("height", height + "px");
+
+	var parent_layer = svg.append('g');
+	var leaf_layer = svg.append('g');
 
 	this.render = function() {
 
 	    var treemap_data = treemap.nodes(this.data);
 
-	    var leaves = div.selectAll(".leaf")
+	    var leaves = leaf_layer.selectAll(".leaf")
 		.data(treemap_data.filter(function(d){return ! Boolean(d.children);}));
-	    var parents = div.selectAll(".parent")
+	    var parents = parent_layer.selectAll(".parent")
 		.data(treemap_data.filter(function(d){return Boolean(d.children);}));
 
-	    parents.enter().append("div")
+	    parents.enter().append("rect")
 		.attr("class", "node parent")
-		.style("background", function(d) { return color(d.name);});
+		.attr("fill", function(d) { return color(d.name);});
 
-	    leaves.enter().append("div")
+	    leaves.enter().append("rect")
 		.attr("class", "node leaf")
 		.on("click", function(d) {
 			hub.instance().publish('spine_selected', d.name);});
-
-	    /**
-	     * Wait ~100 until treemap computation is done
-	     * Hide leaves
-	     * Change the location of leaves NO TRANSITION HERE
-	     * 
-	     */
+	    leaf_layer
+		.attr("opacity",0)
+	      .transition()
+	        .delay(400)
+		.attr("opacity",1);
+		
+	    parents
+	      .transition()
+		.duration(350)
+		.attr("x", function(d) { return d.x + "px"; })
+		.attr("y", function(d) { return d.y + "px"; })
+		.attr("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
+		.attr("height", function(d) { return Math.max(0, d.dy - 1) + "px"; });
 
 	    leaves
-		.style("visibility","hidden")
-		.style("left", function(d) { return Math.max(0, d.x - 1) + "px"; })
-		.style("top", function(d) { return Math.max(0, d.y - 1) + "px"; })
-		.style("width", function(d) { return d.dx + 1 + "px"; })
-		.style("height", function(d) { return d.dy + 1 + "px"; });
-
-	     d3.transition()
-	        .delay(850)
-		.each('end', function(){leaves.style("visibility",null);});
-		
-
-	    parents
-		.style("background", "gray")
-	      .transition()
-		.delay(450)
-		.duration(350)
-		.style("left", function(d) { return d.x + "px"; })
-		.style("top", function(d) { return d.y + "px"; })
-		.style("width", function(d) { return Math.max(0, d.dx - 1) + "px"; })
-		.style("height", function(d) { return Math.max(0, d.dy - 1) + "px"; })
-	      .transition()
-		.duration(650)
-	        .style("background", function(d) { return color(d.name);});
-
-
-		//.text(function(d) { return d.children ? null : d.name; });
-
+		.attr("x", function(d) { return d.x + "px"; })
+		.attr("y", function(d) { return d.y + "px"; })
+		.attr("width", function(d) { return d.dx + "px"; })
+		.attr("height", function(d) { return d.dy + "px"; });
 	};
 
     };
