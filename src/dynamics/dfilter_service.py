@@ -28,11 +28,11 @@ class DynFilterService(INamed):
     def new_dfilter(self, name, data):
         dataset = Showcase.instance().get(data)
         new_dfilter = DynFilter(name, dataset)
-        self._dfilters[name] = new_dfilter
+        self._dfilters[new_dfilter.full_name] = new_dfilter
         return new_dfilter
 
-    def expose_dfilter(self, name, dfilter):
-        self._dfilters[name] = dfilter
+    def expose_dfilter(self, dfilter):
+        self._dfilters[dfilter.full_name] = dfilter
         return dfilter
 
     def del_dfilter(self, name):

@@ -15,6 +15,7 @@ class Showcase(object):
 
     def __init__(self):
         self._objects = WeakValueDictionary()
+        self._cases = WeakValueDictionary()
         
     @staticmethod
     def instance():
@@ -52,9 +53,14 @@ class Showcase(object):
         :param INamed full_name: the exposed object.
         '''
         self._objects[instance.full_name] = instance  
+        
+    def get_case(self, name):
+        case = self._cases.get(name)
+        if case is None:
+            case = self._cases[name] = Case()
+        return case
     
 class Case(dict):
     def __setitem__(self, *args, **kwargs):
-        print 'key:', args[0], 'value:', args[1]
         Showcase.instance().put(args[1])
         return dict.__setitem__(self, *args, **kwargs)
