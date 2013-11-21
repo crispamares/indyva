@@ -53,7 +53,7 @@ def main():
     
     spines_table = data_adquisition.create_spines_table()
     dendrites_table = data_adquisition.create_dendrites_table(spines_table)
-    Front.instance().get_method('TableSrv.expose_table')('spines_table', spines_table)
+    Front.instance().get_method('TableSrv.expose_table')(spines_table)
     
     # TODO: Expose the spines_table through the TableSrv  
 

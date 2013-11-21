@@ -65,7 +65,7 @@ function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
 
 function drawTreemap(when, rpc, view, column) {
     when.map( groupBySpine(column),
-	    function(pipeline) {return rpc.call('TableSrv.aggregate', ["spines_table", pipeline]);})
+	    function(pipeline) {return rpc.call('TableSrv.aggregate', ["ds:spines", pipeline]);})
 	.then(
 	    function(views) {
 		console.log('views', views);
