@@ -51,23 +51,24 @@ class TableService(INamed):
         table = self._tables[table_name]
         result = table.__getattribute__(method)(*args, **kwargs)
         if isinstance(result, ITableView):
-            self._tables[result.name] = result
+            self._tables[result.full_name] = result
         return result
     
     def _proxy_property(self, method, table_name):
         table = self._tables[table_name]
         result = table.__getattribute__(method)
         if isinstance(result, ITableView):
-            self._tables[result.name] = result
+            self._tables[result.full_name] = result
         return result
         
     def new_table(self, name, data, schema=None):
         new_table = Table(name, schema).data(data)
+        name = new_table.full_name
         self._tables[name] = new_table
         return new_table
 
-    def expose_table(self, name, table):
-        self._tables[name] = table
+    def expose_table(self, table):
+        self._tables[table.full_name] = table
         return table
 
     def del_table(self, name):
