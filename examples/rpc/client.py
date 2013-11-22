@@ -59,13 +59,16 @@ def main():
     
     #table_service = RPCProxy(rpc_client, prefix='TableSrv.')
     table_service = rpc_client.get_proxy(prefix='TableSrv.')
-    result = table_service.new_table('table2', data, schema)
+    table2 = table_service.new_table('table2', data, schema)
     print 'Proxy result:', result
     
-    result = table_service.find('table2', {'$or':[{'State': 'NY'},{'State': 'DC'}]})
+    result = table_service.find(table2, {'$or':[{'State': 'NY'},{'State': 'DC'}]})
     print 'Proxy result:', result
     
-    result = table_service.get_data(result)
+    result = table_service.insert(table2, {'State': 'MD', 'LiveMeanning': 42})
+    print 'Proxy result:', result
+    
+    result = table_service.get_data(table2)
     print 'Proxy result:', result
     
     result = remote_server.echo('Hello, World!')
@@ -73,7 +76,11 @@ def main():
         
     #remote_server.tables_container.new_table()
     
+    dselect = rpc_client.call('DynSelectSrv.new_dselect', args=['dselect', table2], kwargs=None)
+    print 'New dselect', dselect
 
+    result = rpc_client.call('DynSelectSrv.new_categorical_condition', [dselect, 'State',[],'cond1'], kwargs=None)
+    print 'New Categorical Condition', result
 
 def _get_data():
     from dataset import RSC_DIR
