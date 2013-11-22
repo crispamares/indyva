@@ -28,6 +28,7 @@ class DynSelect(ConditionSet):
     def new_categorical_condition(self, *args, **kwargs):
         '''
         :param str attr: The attribute that will be used as the category  
+        :param categories: The categories initially included         
         :param str name: If a name is not provided, an uuid is generated
         :param int bins: If provided, the attribute will be coerced to be
         :return: CategoricalCondition The created condition

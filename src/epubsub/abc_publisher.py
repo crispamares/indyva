@@ -30,8 +30,7 @@ def pub_result(topic):
             pub_options = kwargs.pop('pub_options', {})
             
             result = func (self, *args, **kwargs) 
-            msg = {'origin':self, 'function':func, 
-                   'topic':topic, 'result': result}
+            msg = {'origin':self.name, 'topic':topic, 'result': result}
 
             if not pub_options.get('silent', False):
                 self._bus.publish(topic, msg)

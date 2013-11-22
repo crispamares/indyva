@@ -35,8 +35,8 @@ class ConditionSet(IPublisher, INamed):
     def _retransmit(self, topic, msg):
         #print "retransmit"
         msg['original_topic'] = topic
-        condition = msg['origin']
-        self._sieves.set_sieve(condition.name, condition.sieve)
+        condition_name = msg['origin']
+        self._sieves.set_sieve(condition_name, self._conditions[condition_name].sieve)
         self._bus.publish('change', msg)
 
     def _set_condition(self, condition):
@@ -128,7 +128,7 @@ class ConditionSet(IPublisher, INamed):
         '''The reference resulting of the accumulation of every item condition.
         A reference is a set of indices or None if there are no item conditions
         '''
-        return self._sieves.reference
+        return list(self._sieves.reference)
 
     @property
     def projection(self):
