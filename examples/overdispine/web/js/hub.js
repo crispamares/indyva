@@ -29,7 +29,7 @@ function() {
     Hub.prototype._instance = null;
 
     Hub.instance = function() {
-	if (Hub.prototype._instance == null) throw new Error("Hub not already installed");
+	if (Hub.prototype._instance == null) Hub.prototype._instance = new Hub();
 	return Hub.prototype._instance;
     };
     Hub.prototype.install = function() {

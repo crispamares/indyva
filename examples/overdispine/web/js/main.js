@@ -10,6 +10,7 @@ require.config({
     }
 });
 
+function showError(err) { console.log(err, err.stack); }
 
 requirejs(['jquery', 
 	   'lodash',
@@ -26,24 +27,20 @@ requirejs(['jquery',
 function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
     console.log('running');
 
-    rpc = new WsRpc();
-    rpc.install();
+    rpc = WsRpc.instance();
+    hub = Hub.instance();
 
-    hub = new Hub();
-    hub.install();
-
-     
     // ----------------------------------------
     //     Treemap
     // ----------------------------------------
     var Treemap = require("treemap");
-    var view = new Treemap("#overview"); 
+    var treemap = new Treemap("#overview"); 
     hub.subscribe('comboChanged', 
 	    function(topic, msg) { 
 		console.log('To draw', topic, msg);
-		drawTreemap(when, rpc, view, msg);});
+		drawTreemap(when, rpc, treemap, msg);});
 
-    drawTreemap(when, rpc, view, "size");
+    drawTreemap(when, rpc, treemap, "size");
 
     // ----------------------------------------
     //     ComboSelector
@@ -59,6 +56,23 @@ function($, _, when, bootstrap, WsRpc, Hub, d3, vega ) {
     var SelectionList = require("selectionList");
     var selectionList = new SelectionList('#menu');
     selectionList.update();
+
+
+    // ----------------------------------------
+    //     Dynamics
+    // ----------------------------------------
+    rpc.call('DynSelectSrv.new_dselect', ['spines_dselect', 'ds:spines'])
+	.then(
+	    function(dselect) {
+		treemap.setSpinesDselect(dselect);
+		return rpc.call('DynSelectSrv.new_categorical_condition', [dselect, 'spine_id']);
+	    })
+	.then(function(condition) {
+		treemap.setSpinesCondition(condition);
+		selectionList.setSpinesCondition(condition);
+	    })
+	.otherwise(showError);    
+
 
 
 });
@@ -82,10 +96,7 @@ function drawTreemap(when, rpc, view, column) {
 		view.setData(data);
 		view.render();		    
 	    })
-	.otherwise(function (err) {
-		console.log(err, err.stack);
-	    }
-	);    
+	.otherwise(showError);    
 }
 
 function groupByDendriteId(column) {

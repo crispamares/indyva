@@ -13,7 +13,7 @@ function() {
 	
 	var template = _.template('<div class="panel panel-default">'
 			   + '  <div class="panel-heading">'
-			   + '    <h3 class="panel-title">Property to expose</h3>'
+			   + '    <h3 class="panel-title">Visible Property</h3>'
 			   + '  </div>'
 			   + '  <div class="panel-body">'
 			   + '<select class="form-control">'

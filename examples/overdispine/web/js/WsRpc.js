@@ -30,7 +30,7 @@ function() {
 
     // Class method
     WsRpc.instance = function() {
-	if (WsRpc.prototype._instance == null) throw new Error("WsRpc not already installed");
+	if (WsRpc.prototype._instance == null) WsRpc.prototype._instance = new WsRpc();
 	return WsRpc.prototype._instance;
     };
     WsRpc.prototype.install = function() {
