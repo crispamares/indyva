@@ -26,20 +26,34 @@ function() {
     }
     
     SelectionList.prototype.update =  function() {
+	var self = this;
 	
 	var div = d3.select(this.container.selector)
 	    .select('div.list-group').selectAll('a').data(this.items, function(d){return d;});
 
 	div.enter()
 	    .append('a')
-	    .attr("class", "list-group-item btn")
+	    .attr("class", "list-group-item")
 	    .attr("href", "#")
-	    .text(function(d) {return d;})
-	    .on("click", function(d) {
-		hub.publish('spine_selected', d);});
+	    .call(function(a) {
+		      a.text(function(d) {return  d;})
+			  .on("click", function(d) {
+				  hub.publish('spine_selected', d);});
+		      a.append('button')
+			  .attr("class", "close")
+			  .attr("type", "button")
+			  .text('x')
+			  .on("click", function(d) { 
+				  console.log('close', d);
+				  rpc.call('ConditionSrv.remove_category', [self.spinesCondition, d]);
+				  d3.event.stopPropagation();
+			      });
 
-	    
-	
+		  });
+
+	div.exit()
+	    .remove();
+
     };
 
     SelectionList.prototype._rpcIncludedItems = function(condition) {
