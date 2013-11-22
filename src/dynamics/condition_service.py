@@ -45,12 +45,14 @@ class ConditionService(INamed):
         dispatcher.add_method(partial(self._proxy, 'excluded_items'), 'excluded_items')
         dispatcher.add_method(partial(self._proxy, 'add_category'), 'add_category')
         dispatcher.add_method(partial(self._proxy, 'remove_category'), 'remove_category')
+        dispatcher.add_method(partial(self._proxy, 'toggle_category'), 'toggle_category')
 
         # AttributeCondition Methods
         dispatcher.add_method(partial(self._proxy, 'included_attributes'), 'included_attributes')
         dispatcher.add_method(partial(self._proxy, 'excluded_attributes'), 'excluded_attributes')
         dispatcher.add_method(partial(self._proxy, 'add_attribute'), 'add_attribute')
         dispatcher.add_method(partial(self._proxy, 'remove_attribute'), 'remove_attribute')
+        dispatcher.add_method(partial(self._proxy, 'toggle_attribute'), 'toggle_attribute')
 
 
     def _proxy(self, method, condition_name, *args, **kwargs):

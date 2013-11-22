@@ -56,7 +56,7 @@ function () {
 		.attr("class", "node leaf")
 		.on("click", function(d) {
 			if (self.spinesCondition) {
-			    rpc.call('ConditionSrv.add_category', [self.spinesCondition, d.name]);
+			    rpc.call('ConditionSrv.toggle_category', [self.spinesCondition, d.name]);
 			}
 		    });
 	    leaf_layer

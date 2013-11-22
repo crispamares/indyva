@@ -49,6 +49,17 @@ class Condition(IPublisher, INamed):
         self._sieve.substract(value)
         self._cache_clear()
         return dict(included=[], excluded=list(value))
+    
+    def _toggle_value(self, value):
+        value = set( (value,) ) if isinstance(value, types.StringTypes) \
+                                else set(value)
+                                
+        to_add = value - self.sieve.index
+        to_remove = self.sieve.index.intersection(value)
+        self._sieve.union(to_add)
+        self._sieve.substract(to_remove)
+        self._cache_clear()
+        return dict(included=list(to_add), excluded=list(to_remove))
              
     def _include_all(self):
         included = self._sieve.domain - self._sieve.index 
@@ -123,6 +134,10 @@ class CategoricalCondition(Condition):
     @pub_result('change')
     def remove_category(self, value):
         return self._remove(value)
+
+    @pub_result('change')
+    def toggle_category(self, value):
+        return self._toggle_value(value)
              
     @pub_result('change')
     def include_all(self):
@@ -162,6 +177,10 @@ class AttributeCondition(Condition):
     @pub_result('change')
     def remove_attribute(self, value):
         return self._remove(value)
+    
+    @pub_result('change')
+    def toggle_attribute(self, value):
+        return self._toggle_value(value)    
              
     @pub_result('change')
     def include_all(self):

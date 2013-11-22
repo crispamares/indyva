@@ -52,6 +52,15 @@ class Test(unittest.TestCase):
         cc.add_category(['C1', 'C3'])
         cc.remove_category('C1')
         self.assertEqual(set(cc.included_categories()), set(['C3']))
+        
+    def testToggleItem(self):
+        cc = CategoricalCondition(data=self.table, attr='fake_cat')
+        cc.add_category(['C1', 'C3'])
+        cc.toggle_category('C1')
+        cc.toggle_category('C2')
+        self.assertEqual(set(cc.included_categories()), set(['C3', 'C2']))
+        cc.toggle_category(['C2','C4'])
+        self.assertEqual(set(cc.included_categories()), set(['C3', 'C4']))
 
     def testIncludeAll(self):
         cc = CategoricalCondition(data=self.table, attr='fake_cat')
