@@ -5,9 +5,13 @@ Created on 17/07/2013
 @author: jmorales
 '''
 from external.tinyrpc.dispatch import RPCDispatcher
+
+from front_service import FrontService
 from dataset import table_service
 from epubsub import hub_service
 from dynamics import condition_service, dselect_service
+
+
 
 class Front(RPCDispatcher):
     '''
@@ -42,6 +46,7 @@ class Front(RPCDispatcher):
         RPCDispatcher.__init__(self)
         
         self.add_method(self.echo)
+        self.add_service(FrontService(self, 'FrontSrv'))
         self.add_service(table_service.TableService('TableSrv'))
         self.add_service(hub_service.HubService('HubSrv'))
         self.add_service(condition_service.ConditionService('ConditionSrv'))
