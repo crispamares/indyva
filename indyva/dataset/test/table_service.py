@@ -13,7 +13,6 @@ import pandas as pn
 import json
 from collections import OrderedDict
 from dataset import RSC_DIR
-import exceptions
 from dataset.table import TableView, Table
 import names
 
@@ -37,7 +36,7 @@ class Test(unittest.TestCase):
         
         # Create a table
         data = self.df
-        self.service.new_table('_census', data, self.schema)
+        self._census = self.service.new_table('_census', data, self.schema).full_name
         
     def tearDown(self):
         names.clear()
@@ -65,65 +64,65 @@ class Test(unittest.TestCase):
         self.dispatcher.dispatch(request)
 
     def testGetData(self):
-        res = self.service.get_data('_census')
+        res = self.service.get_data(self._census)
         self.assertEqual(len(res), len(self.df))
 
         request = JSONRPCRequest()
         request.method = 'get_data'
-        request.args = ['_census']
+        request.args = [self._census]
         request.unique_id = 1
         res = self.dispatcher.dispatch(request).result
         self.assertEqual(len(res), len(self.df))
 
     def testFindOne(self):
-        result = self.service.find_one('_census', {'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        result = self.service.find_one(self._census, {'$or':[{'State': 'NY'},{'State': 'DC'}]})
         self.assertIsInstance(result, dict)
         self.assertIn(result['State'], ['DC','NY'])
 
     def testFind(self):
-        view = self.service.find('_census', {'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        view = self.service.find(self._census, {'$or':[{'State': 'NY'},{'State': 'DC'}]})
         self.assertIsInstance(view, TableView)
         for result in view.get_data():
             self.assertIn(result['State'], ['DC','NY'])
 
     def testRowCount(self):
-        self.assertEqual(self.service.row_count('_census'), 51)
-        view = self.service.find('_census',{'$or':[{'State': 'NY'},{'State': 'DC'}]})
+        self.assertEqual(self.service.row_count(self._census), 51)
+        view = self.service.find(self._census,{'$or':[{'State': 'NY'},{'State': 'DC'}]})
         self.assertEqual(view.row_count(), 2)
 
     def testColumnCount(self):
-        self.assertEqual(self.service.column_count('_census'), 22)
-        view = self.service.find('_census', {}, {'Information':True})
+        self.assertEqual(self.service.column_count(self._census), 22)
+        view = self.service.find(self._census, {}, {'Information':True})
         self.assertEqual(view.column_count(), 1)
         
     def testColumnNames(self):
-        self.assertEqual(len(self.service.column_names('_census')), 22)
-        view = self.service.find('_census', {}, {'Information':True})
+        self.assertEqual(len(self.service.column_names(self._census)), 22)
+        view = self.service.find(self._census, {}, {'Information':True})
         self.assertEqual(view.column_names(), ['Information'])
         
     def testCheckIndex(self):
         with self.assertRaises(ValueError):
-            self.service._check_index('_census', {'life_meaning':42})
-        self.service._check_index('_census', {'State': 'ES', 'life_meaning':42})
+            self.service._check_index(self._census, {'life_meaning':42})
+        self.service._check_index(self._census, {'State': 'ES', 'life_meaning':42})
         
     def testIndex(self):
-        self.assertEqual(self.service.index('_census'), 'State')
+        self.assertEqual(self.service.index(self._census), 'State')
                 
     def testInsert(self):
         
-        c1 = self.service.row_count('_census')
-        self.service.insert('_census', {'State': 'ES', 'life_meaning':42})
-        self.assertEqual(self.service.row_count('_census') - c1, 1)
+        c1 = self.service.row_count(self._census)
+        self.service.insert(self._census, {'State': 'ES', 'life_meaning':42})
+        self.assertEqual(self.service.row_count(self._census) - c1, 1)
 
-        c2 = self.service.row_count('_census')
-        self.service.insert('_census', 
+        c2 = self.service.row_count(self._census)
+        self.service.insert(self._census, 
                             [{'State': 'ES', 'life_meaning':42},
                              {'State': 'ES2', 'life_meaning':42},])
-        self.assertEqual(self.service.row_count('_census') - c2, 2)
+        self.assertEqual(self.service.row_count(self._census) - c2, 2)
         
-        view = self.service.find('_census', {'life_meaning': {'$exists':True}})
+        view = self.service.find(self._census, {'life_meaning': {'$exists':True}})
         self.assertEqual(view.row_count(), 3)
-        self.assertEqual( self.service.find_one('_census', {'life_meaning': {'$exists':True}})['life_meaning'], 42)
+        self.assertEqual( self.service.find_one(self._census, {'life_meaning': {'$exists':True}})['life_meaning'], 42)
         
     def testAddEvent(self):
         table = Table('census', self.schema).data(self.df)
@@ -133,14 +132,14 @@ class Test(unittest.TestCase):
         self.assertTrue(self.callback_executed)
         
     def testUpdate(self):
-        val = self.service.find_one('_census', {'State': 'DC'}, {'Information':True})['Information']
+        val = self.service.find_one(self._census, {'State': 'DC'}, {'Information':True})['Information']
         val -= 2000
-        self.service.update('_census', {'State': 'DC'}, {'$set': {'Information':val}})
-        self.assertEqual(self.service.find_one('_census', {'State': 'DC'}, {'Information':True})['Information'], val)
+        self.service.update(self._census, {'State': 'DC'}, {'$set': {'Information':val}})
+        self.assertEqual(self.service.find_one(self._census, {'State': 'DC'}, {'Information':True})['Information'], val)
 
     def testUpdateEvent(self):
         # TODO: ¿Do the table service provide subscribing facilities
-        table = Table('census', self.schema).data(self.df)
+        table = Table(self._census, self.schema).data(self.df)
         table.subscribe_once('update', self.callback)
         self.callback_executed = False
         table.update({'State': 'DC'}, {'$set': {'Information':2000}})
@@ -149,13 +148,13 @@ class Test(unittest.TestCase):
     def testRemove(self):
         
         query = {'State': 'DC'}
-        c1 = self.service.find('_census', query).row_count()
-        self.service.remove('_census', query)
-        self.assertGreater(c1, self.service.find('_census', query).row_count())
+        c1 = self.service.find(self._census, query).row_count()
+        self.service.remove(self._census, query)
+        self.assertGreater(c1, self.service.find(self._census, query).row_count())
     
     def testRemoveEvent(self):
         # TODO: Do the table service provide subscribing facilities?
-        table = Table('census', self.schema).data(self.df)
+        table = Table(self._census, self.schema).data(self.df)
         query = {'State': 'DC'}
         table.subscribe_once('remove', self.callback)
         self.callback_executed = False

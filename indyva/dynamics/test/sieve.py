@@ -27,7 +27,7 @@ class TestItemImplicitSieve(unittest.TestCase):
         self.table = Table('census', self.schema).data(self.df)
         
     def tearDown(self):
-        names.clear()        
+        names.clear()                
         
     def testCreate(self):
         s = ItemImplicitSieve(self.table, [])
@@ -85,7 +85,10 @@ class TestAttributeImplicitSieve(unittest.TestCase):
         
         self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
         self.table = Table('census', self.schema).data(self.df)
-            
+    
+    def tearDown(self):
+        names.clear()  
+                    
     def testDomain(self):
         s = AttributeImplicitSieve(self.table, [])
         self.assertSetEqual(s.domain , set(self.table.column_names()))
@@ -107,6 +110,9 @@ class TestItemExplicitSieve(unittest.TestCase):
         
         self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
         self.table = Table('census', self.schema).data(self.df)
+
+    def tearDown(self):
+        names.clear()  
         
     def testCreate(self):
         s = ItemExplicitSieve(self.table, {})
@@ -166,7 +172,10 @@ class TestSieveSet(unittest.TestCase):
         self.impls = ItemImplicitSieve(self.table, ['DC', 'NY'])
         self.expls = ItemExplicitSieve(self.table, {'Information': {'$gt': 200000}})
         self.attrs = AttributeImplicitSieve(self.table, ['Information', 'State'])
-
+    
+    def tearDown(self):
+        names.clear()  
+        
     def testCreate(self):
         ss = SieveSet(self.table)
         self.assertEqual(ss.query,  {u'State': {'$in': []}})
