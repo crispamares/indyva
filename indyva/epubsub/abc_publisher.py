@@ -16,7 +16,11 @@ TESTSUBSCRIPTION = True
 
 def pub_result(topic):
     '''Decorator that publish the result of the decorated function as the msg
-    of the given topic
+    of the given topic.
+    
+    The message is a dict {origin : The id of the publisher,
+                           topic: The topic of the publication
+                           result: The result of the decorated function}
     
     This decorator also adds a kw argument 'pub_options' to the interface of 
     the decorated function. This argument is a dict that configures how the 
@@ -30,7 +34,7 @@ def pub_result(topic):
             pub_options = kwargs.pop('pub_options', {})
             
             result = func (self, *args, **kwargs) 
-            msg = {'origin':self.name, 'topic':topic, 'result': result}
+            msg = {'origin':self.publisher_id, 'topic':topic, 'result': result}
 
             if not pub_options.get('silent', False):
                 self._bus.publish(topic, msg)
@@ -44,7 +48,7 @@ def pub_result(topic):
 class IPublisher(object):
     '''
     This class is useful for publishers that want to provide
-    and an easy way to subscribe to its own topics. 
+    an easy way to subscribe to its own topics. 
     
     Hides the bus and hub classes for the subscribers
     '''
@@ -73,3 +77,14 @@ class IPublisher(object):
             assert topic in self._topics        
         self._bus.unsubscribe(topic, destination)
     
+    @property
+    def publisher_id(self):
+        '''
+        This property is used in the pub_result decorator. The publisher_id
+        will identify the publisher.
+        
+        The id will be the full_name attribute of the instance or '' if not
+        full_name exists.
+        '''
+        return self.full_name if hasattr(self, 'full_name') else '' 
+        
