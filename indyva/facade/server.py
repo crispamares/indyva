@@ -8,7 +8,7 @@ from external.tinyrpc.transports.zmq import ZmqServerTransport
 from external.tinyrpc.transports.wsgi import WsgiServerTransport
 import zmq.green as zmq 
 from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from facade import Front
+from facade.front import Front
 from external.tinyrpc.server.gevent import RPCServerGreenlets
 
 import gevent.wsgi
