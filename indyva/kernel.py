@@ -82,10 +82,13 @@ class Kernel(object):
         :return: [Greenlets]
         '''
         greenlets = []
-        greenlets.append(gevent.spawn(self._init_loop))
-        greenlets.append(gevent.spawn(self._init_render))
         for server in self._servers:
             greenlets.append(server.start())
+        # WARNING: qtgevent has a bug and if the _init_loop is run before servers
+        #     those servers never run 
+        greenlets.append(gevent.spawn(self._init_loop))            
+        greenlets.append(gevent.spawn(self._init_render))
+
         return greenlets
     
     def run_forever(self):
