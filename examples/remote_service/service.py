@@ -9,7 +9,6 @@ import zmq
 import json
 import time
 import datetime
-import sys
 
 service_name = 'DateSrv'
 service_endpoint = 'tcp://127.0.0.1:8095'

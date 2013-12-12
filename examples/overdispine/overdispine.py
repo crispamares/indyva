@@ -6,17 +6,17 @@ Created on 03/09/2013
 '''
 import sys
 from PyQt4 import QtGui, Qt
-from external import qtgevent
+from indyva.external import qtgevent
 qtgevent.install()
-from facade.server import WSServer, ZMQServer
-from facade.front import Front
+from indyva.facade.server import WSServer, ZMQServer
+from indyva.facade.front import Front
 from row_viz import VizListView
 import data_adquisition
 from filters_ui import CategoricalFilterView, CategoricalFilterItemModel
-from dynamics.dfilter import DynFilter
-from dynamics.dselect import DynSelect
+from indyva.dynamics.dfilter import DynFilter
+from indyva.dynamics.dselect import DynSelect
 
-from kernel import Kernel
+from indyva.kernel import Kernel
 
 __version__ = '0.1'
 

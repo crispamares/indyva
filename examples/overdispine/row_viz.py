@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 import StringIO
 
-from epubsub import hub
+from indyva.epubsub import hub
 
 
 class RowSVGViz(QtSvg.QSvgWidget):

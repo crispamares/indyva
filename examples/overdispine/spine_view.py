@@ -10,9 +10,9 @@ import vtk
 import sys, os
 import zmq
 
-from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from external.tinyrpc.transports.zmq import ZmqClientTransport
-from external.tinyrpc import RPCClient
+from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from indyva.external.tinyrpc.transports.zmq import ZmqClientTransport
+from indyva.external.tinyrpc import RPCClient
 import json
 import random
 

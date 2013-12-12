@@ -8,20 +8,19 @@ Created on Jun 27, 2013
 
 
 from PyQt4 import QtGui, Qt
-from external import qtgevent
+from indyva.external import qtgevent
 qtgevent.install()
+
 import sys
-from dataset import RSC_DIR
+from indyva.dataset import RSC_DIR
 import json
 from collections import OrderedDict
 import pandas as pn
-from dataset.table import Table
+from indyva.dataset.table import Table
 from tabular_view import TabularView
 
-
-
 from internal_ipkernel import InternalIPKernel
-import kernel
+from indyva import kernel
 
 class IPWindow(Qt.QWidget, InternalIPKernel):
 
@@ -68,14 +67,14 @@ def getDF():
     return pn.read_csv(RSC_DIR+'/census.csv')
 
 def test_dselect_and_dfilter(tv):
-    from dynamics.dselect import DynSelect
+    from indyva.dynamics.dselect import DynSelect
     d = DynSelect('sel1', tv.table)
     tv.set_highlight(d)
     horizontal2 = d.new_categorical_condition('State', 'horizontal2')
     horizontal2.add_category(['RI','SD', 'NY', 'VT'])
     d.update(horizontal2)
 
-    from dynamics.dfilter import  DynFilter
+    from indyva.dynamics.dfilter import  DynFilter
     f = DynFilter('filt1', tv.table)
     tv.set_dynfilter(f)
     f.new_categorical_condition('State', ['DC','NY'], 'horizontal')

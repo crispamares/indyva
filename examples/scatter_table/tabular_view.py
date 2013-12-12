@@ -6,8 +6,8 @@ Created on Jun 27, 2013
 
 from PyQt4 import QtGui, QtCore
 
-from dataset.table import TableView
-from epubsub import hub
+from indyva.dataset.table import TableView
+from indyva.epubsub import hub
 
 class TDataTableModel(QtCore.QAbstractTableModel):
         

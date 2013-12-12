@@ -9,10 +9,10 @@ import zmq
 import json
 import timeit
 
-from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from external.tinyrpc.transports.zmq import ZmqClientTransport
-from external.tinyrpc import RPCClient, RPCProxy
-from external.tinyrpc.transports.http import HttpPostClientTransport
+from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from indyva.external.tinyrpc.transports.zmq import ZmqClientTransport
+from indyva.external.tinyrpc import RPCClient, RPCProxy
+#from indyva.external.tinyrpc.transports.http import HttpPostClientTransport
 
 
 def raw_call(socket, method, params):
@@ -83,7 +83,7 @@ def main():
     print 'New Categorical Condition', result
 
 def _get_data():
-    from dataset import RSC_DIR
+    from indyva.dataset import RSC_DIR
     import pandas as pn 
 
     df = pn.read_csv(RSC_DIR+'/census.csv')
@@ -99,9 +99,9 @@ def _get_data():
 def get_times():
     print 'measuring time...'
     setup = '''
-from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from external.tinyrpc.transports.zmq import ZmqClientTransport
-from external.tinyrpc import RPCClient
+from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from indyva.external.tinyrpc.transports.zmq import ZmqClientTransport
+from indyva.external.tinyrpc import RPCClient
 
 import zmq
 import json

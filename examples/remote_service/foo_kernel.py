@@ -6,8 +6,8 @@ Created on 09/12/2013
 '''
 import gevent
 
-from kernel import Kernel
-from facade.server import ZMQServer
+from indyva.kernel import Kernel
+from indyva.facade.server import ZMQServer
 zmq_server = ZMQServer(8090)
 kernel = Kernel()
 zmq_server.start()

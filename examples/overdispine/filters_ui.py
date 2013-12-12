@@ -5,7 +5,7 @@ Created on 20/09/2013
 @author: jmorales
 '''
 from PyQt4 import QtGui, QtCore
-from dynamics.dfilter import DynFilter
+from indyva.dynamics.dfilter import DynFilter
 
 class CategoricalFilterView(QtGui.QGroupBox):
     '''

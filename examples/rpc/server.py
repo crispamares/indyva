@@ -6,8 +6,8 @@ Created on 18/07/2013
 '''
 
 
-from kernel import Kernel
-from facade.server import ZMQServer
+from indyva.kernel import Kernel
+from indyva.facade.server import ZMQServer
 
 
 

@@ -6,8 +6,8 @@ Created on 06/09/2013
 '''
 
 import pymongo 
-from dataset.table import Table
-from dataset.schemas import TableSchema, AttributeSchema
+from indyva.dataset.table import Table
+from indyva.dataset.schemas import TableSchema, AttributeSchema
 
 def create_spines_schema():
     # TODO: MultiKey is not yet implemented
