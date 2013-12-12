@@ -6,13 +6,13 @@ Created on Oct 9, 2013
 import unittest
 
 import pandas as pd
-from dataset import RSC_DIR
 import json
 from collections import OrderedDict
-from dataset.table import Table
 
-from dynamics.condition import CategoricalCondition
-import names
+from indyva.dataset.table import Table
+from indyva.dataset import RSC_DIR
+from indyva.dynamics.condition import CategoricalCondition
+from indyva import names
 
 class Test(unittest.TestCase):
 

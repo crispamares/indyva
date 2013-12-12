@@ -5,8 +5,9 @@ Created on 12/07/2013
 @author: jmorales
 '''
 import unittest
-from .. import abc_publisher
-from .. import bus
+
+from indyva.epubsub  import abc_publisher
+from indyva.epubsub  import bus
 
 class MyPublisher(abc_publisher.IPublisher):
     

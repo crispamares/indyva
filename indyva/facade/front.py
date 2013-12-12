@@ -4,12 +4,12 @@ Created on 17/07/2013
 
 @author: jmorales
 '''
-from external.tinyrpc.dispatch import RPCDispatcher
 
-from front_service import FrontService
-from dataset import table_service
-from epubsub import hub_service
-from dynamics import condition_service, dselect_service
+from indyva.external.tinyrpc.dispatch import RPCDispatcher
+from .front_service import FrontService
+from indyva.dataset import table_service
+from indyva.epubsub import hub_service
+from indyva.dynamics import condition_service, dselect_service
 
 
 

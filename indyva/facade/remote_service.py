@@ -9,11 +9,10 @@ Created on 09/12/2013
 from functools import partial
 import zmq.green as zmq 
 
-from external.tinyrpc.transports.zmq import ZmqClientTransport
-from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from external.tinyrpc.client import RPCClient
-
-from names import INamed
+from indyva.external.tinyrpc.transports.zmq import ZmqClientTransport
+from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from indyva.external.tinyrpc.client import RPCClient
+from indyva.names import INamed
 
     
 class RemoteService(INamed):

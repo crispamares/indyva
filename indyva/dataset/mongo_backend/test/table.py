@@ -4,12 +4,15 @@ Created on 26/03/2013
 @author: crispamares
 '''
 import unittest
-from dataset.mongo_backend.table import MongoTable
-from dataset import RSC_DIR
+
 import pandas as pn
 import json
 from collections import OrderedDict
 import exceptions
+
+from indyva.dataset.mongo_backend.table import MongoTable
+from indyva.dataset import RSC_DIR
+
 
 class Test(unittest.TestCase):
 

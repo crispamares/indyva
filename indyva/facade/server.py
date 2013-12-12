@@ -3,18 +3,18 @@ Created on Oct 24, 2013
 
 @author: crispamares
 '''
-
-from external.tinyrpc.transports.zmq import ZmqServerTransport
-from external.tinyrpc.transports.wsgi import WsgiServerTransport
 import zmq.green as zmq 
-from external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from facade.front import Front
-from external.tinyrpc.server.gevent import RPCServerGreenlets
-
 import gevent.wsgi
 import gevent.queue
-from external.tinyrpc.transports.websocket import WSServerTransport
 from geventwebsocket.server import WebSocketServer
+
+from indyva.external.tinyrpc.transports.websocket import WSServerTransport
+from indyva.external.tinyrpc.server.gevent import RPCServerGreenlets
+from indyva.external.tinyrpc.transports.zmq import ZmqServerTransport
+from indyva.external.tinyrpc.transports.wsgi import WsgiServerTransport
+from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
+from .front import Front
+
 
 class ZMQServer(RPCServerGreenlets):
     def __init__(self, port=10111):

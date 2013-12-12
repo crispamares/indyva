@@ -3,12 +3,13 @@ Created on 26/03/2013
 
 @author: crispamares
 '''
-from abc_table import ITable, ITableView
-from epubsub.abc_publisher import IPublisher, pub_result
-from epubsub.bus import Bus
+from indyva.epubsub.abc_publisher import IPublisher, pub_result
+from indyva.epubsub.bus import Bus
+from indyva.names import INamed
 
-from mongo_backend.table import MongoTable
-from names import INamed
+from .abc_table import ITable, ITableView
+from .mongo_backend.table import MongoTable
+
 
 
 class TableView(ITableView, IPublisher, INamed):

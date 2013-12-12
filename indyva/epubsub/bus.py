@@ -4,8 +4,11 @@ Created on 06/06/2013
 
 @author: jmorales
 '''
-import hub
+
 import uuid
+
+from . import hub
+
 DEFAULT_PREFIX_TOPIC = ""
 
 class Bus(object):

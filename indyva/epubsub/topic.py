@@ -3,7 +3,7 @@ Created on Oct 11, 2013
 
 @author: crispamares
 '''
-from external import lazy
+from indyva.external import lazy
 
 class Topic(object):
     '''

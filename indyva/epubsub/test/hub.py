@@ -5,7 +5,8 @@ Created on 06/06/2013
 @author: jmorales
 '''
 import unittest
-from .. import hub 
+
+from indyva.epubsub import hub 
 
 def f(topic, msg):
     Test.result = msg['a'] + msg['b']

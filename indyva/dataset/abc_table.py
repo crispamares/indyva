@@ -5,12 +5,12 @@ Created on 20/03/2013
 @author: jmorales
 '''
 
-import schemas
-
 from abc import ABCMeta, abstractmethod
 import exceptions
 from copy import copy
-from names import INamed
+
+from . import schemas
+
 
 class ITableView(object):
     

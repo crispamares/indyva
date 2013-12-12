@@ -7,8 +7,9 @@ Created on 10/07/2013
 from collections import OrderedDict
 import uuid
 from copy import copy
-from external import lazy
-from external.cached import cached
+
+from indyva.external import lazy
+from indyva.external.cached import cached
 
 class ImplicitSieve(object):
 

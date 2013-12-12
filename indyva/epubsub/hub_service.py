@@ -3,9 +3,10 @@ Created on Nov 5, 2013
 
 @author: crispamares
 '''
-from names import INamed
-from epubsub.hub import Hub
-from facade.gateway import WSGateway, ZMQGateway
+from indyva.names import INamed
+from indyva.facade.gateway import WSGateway, ZMQGateway
+from .hub import Hub
+
 
 class HubService(INamed):
     '''

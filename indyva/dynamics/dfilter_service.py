@@ -4,9 +4,10 @@ Created on 20/11/2013
 
 @author: jmorales
 '''
-from names import INamed
-from dynamics.dfilter import DynFilter
-from facade.showcase import Case, Showcase
+from indyva.facade.showcase import Case, Showcase
+from indyva.names import INamed
+from .dfilter import DynFilter
+
 
 class DynFilterService(INamed):
     '''

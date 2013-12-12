@@ -4,9 +4,8 @@ Created on 05/12/2013
 
 @author: jmorales
 '''
-from names import INamed
-
-from remote_service import RemoteService
+from indyva.names import INamed
+from .remote_service import RemoteService
 
 class FrontService(INamed):
     '''

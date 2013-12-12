@@ -4,9 +4,10 @@ Created on Oct 17, 2013
 @author: crispamares
 '''
 import unittest
+
 import time
 
-from .. import ZMQLoop, QtLoop
+from indyva.eventloop import ZMQLoop, QtLoop
 
 
 class TestLoopBase(object):

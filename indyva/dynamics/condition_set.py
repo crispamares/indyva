@@ -5,11 +5,11 @@ Created on 10/08/2013
 :author: jmorales
 '''
 
-from epubsub import IPublisher, pub_result, Bus
+from indyva.epubsub import IPublisher, pub_result, Bus
+from indyva.names import INamed
+from .sieve import SieveSet
+from .condition import Condition
 
-from sieve import SieveSet
-from dynamics.condition import Condition
-from names import INamed
 
 class ConditionSet(IPublisher, INamed):
     '''

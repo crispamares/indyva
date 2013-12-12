@@ -5,13 +5,14 @@ Created on 16/10/2013
 @author: jmorales
 '''
 
-from epubsub.hub import Hub, PREFIX
 from functools import partial
 import uuid
-
 import types
+
 import gevent
 from gevent.queue import Queue
+
+from indyva.epubsub.hub import Hub, PREFIX
 
 # Total 100 ms to be interactive
 # http://www.nngroup.com/articles/response-times-3-important-limits/

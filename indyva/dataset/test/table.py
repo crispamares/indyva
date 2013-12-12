@@ -5,12 +5,14 @@ Created on 07/06/2013
 @author: jmorales
 '''
 import unittest
-from dataset.table import Table, TableView
+
 import pandas as pn
 import json
 from collections import OrderedDict
-from dataset import RSC_DIR
 import exceptions
+
+from indyva.dataset import RSC_DIR
+from indyva.dataset.table import Table, TableView
 
 class Test(unittest.TestCase):
 

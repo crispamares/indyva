@@ -7,10 +7,10 @@ Created on 20/11/2013
 
 from functools import partial
 
-from names import INamed
-from dynamics.dselect import DynSelect
-from facade.showcase import Showcase
-from dynamics.condition import Condition
+from indyva.names import INamed
+from indyva.facade.showcase import Showcase
+from .dselect import DynSelect
+from .condition import Condition
 
 
 class DynSelectService(INamed):

@@ -5,11 +5,11 @@ Created on Oct 17, 2013
 @author: crispamares
 '''
 
-from .loop import Loop
-
 from zmq.eventloop import IOLoop
 from zmq.eventloop.minitornado.ioloop import PeriodicCallback
 import uuid
+
+from .loop import Loop
 
 class ZMQLoop(Loop):
     

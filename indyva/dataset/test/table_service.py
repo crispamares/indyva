@@ -5,16 +5,18 @@ Created on 07/06/2013
 @author: jmorales
 '''
 import unittest
-from ..table_service import TableService
-from external.tinyrpc.dispatch import RPCDispatcher
-from external.tinyrpc.protocols.jsonrpc import JSONRPCRequest
 
 import pandas as pn
 import json
 from collections import OrderedDict
-from dataset import RSC_DIR
-from dataset.table import TableView, Table
-import names
+
+from indyva.dataset.table_service import TableService
+from indyva.dataset import RSC_DIR
+from indyva.dataset.table import TableView, Table
+from indyva import names
+from indyva.external.tinyrpc.dispatch import RPCDispatcher
+from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCRequest
+
 
 class Test(unittest.TestCase):
 

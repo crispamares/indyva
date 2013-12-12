@@ -5,11 +5,11 @@ Created on Oct 17, 2013
 @author: crispamares
 '''
 
-from .loop import Loop
 from PyQt4.QtGui import QApplication
 from PyQt4.QtCore import QTimer
-
 import uuid
+
+from .loop import Loop
 
 class QtLoop(Loop):
     

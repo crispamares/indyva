@@ -4,11 +4,12 @@ Created on Jul 19, 2013
 @author: crispamares
 '''
 
-from table import Table
 from functools import partial
-from dataset.abc_table import ITableView
-from names import INamed
-from facade.showcase import Case
+
+from indyva.names import INamed
+from indyva.facade.showcase import Case
+from .table import Table
+from .abc_table import ITableView
 
 class TableService(INamed):
     '''

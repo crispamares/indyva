@@ -3,13 +3,15 @@ Created on Nov 5, 2013
 
 @author: crispamares
 '''
-from names import INamed
-from epubsub.bus import Bus
-import zmq.green as zmq
 import json
+import zmq.green as zmq
 from geventwebsocket.server import WebSocketServer
 from geventwebsocket.resource import WebSocketApplication, Resource
 import gevent
+
+from indyva.names import INamed
+from indyva.epubsub.bus import Bus
+
 
 def for_json_bridge(o):
     try:

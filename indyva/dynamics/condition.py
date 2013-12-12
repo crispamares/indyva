@@ -5,13 +5,12 @@ Created on Oct 9, 2013
 @author: crispamares
 '''
 
-from sieve import ItemImplicitSieve, AttributeImplicitSieve
-from external import cached
 import types
 
-from epubsub import IPublisher, Bus, pub_result
-from names import INamed
-
+from indyva.epubsub import IPublisher, Bus, pub_result
+from indyva.names import INamed
+from indyva.external import cached
+from .sieve import ItemImplicitSieve, AttributeImplicitSieve
 
 class Condition(IPublisher, INamed):
     

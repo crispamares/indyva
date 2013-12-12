@@ -6,7 +6,8 @@ Created on 06/06/2013
 '''
 
 import unittest
-from .. import bus
+
+from indyva.epubsub import bus
 
 class Test(unittest.TestCase):
     class A(object):

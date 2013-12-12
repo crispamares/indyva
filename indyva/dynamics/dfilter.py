@@ -5,9 +5,9 @@ Created on 03/07/2013
 :author: jmorales
 '''
 
-from condition_set import ConditionSet
-from dynamics.condition import CategoricalCondition, AttributeCondition
-from epubsub import pub_result
+from indyva.epubsub import pub_result
+from .condition_set import ConditionSet
+from .condition import CategoricalCondition, AttributeCondition
 
 class DynFilter(ConditionSet):
     '''

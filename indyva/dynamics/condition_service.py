@@ -7,9 +7,9 @@ Created on 20/11/2013
 
 from functools import partial
 
-from names import INamed
-from facade.showcase import Case, Showcase
-from dynamics.condition import Condition, CategoricalCondition, AttributeCondition
+from indyva.names import INamed
+from indyva.facade.showcase import Showcase
+from .condition import Condition, CategoricalCondition, AttributeCondition
 
 
 class ConditionService(INamed):

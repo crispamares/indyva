@@ -9,12 +9,11 @@ import pandas as pd
 import json
 from collections import OrderedDict
 
-from dataset import RSC_DIR
-from dataset.table import Table
-
-from dynamics.sieve import (ItemImplicitSieve, AttributeImplicitSieve,
+from indyva.dataset import RSC_DIR
+from indyva.dataset.table import Table
+from indyva.dynamics.sieve import (ItemImplicitSieve, AttributeImplicitSieve,
                              ItemExplicitSieve, SieveSet)
-import names
+from indyva import names
 
 class TestItemImplicitSieve(unittest.TestCase):
 

@@ -1,11 +1,11 @@
-from __future__ import absolute_import
-from ..abc_table import ITable
-from .connection import Connection
-
 import pandas as pn
 import exceptions
 from types import DictType
 from pymongo.cursor import Cursor 
+
+from indyva.dataset.abc_table import ITable
+from .connection import Connection
+
 
 ''' The mongo backend stores each analysis as a different database. And 
 each dataset as a different collection.
