@@ -10,7 +10,7 @@ from indyva.kernel import Kernel
 from indyva.facade.server import ZMQServer
 zmq_server = ZMQServer(8090)
 kernel = Kernel()
-zmq_server.start()
+kernel.add_server(zmq_server)
 
 print 'running -- '     
 server = kernel.start()

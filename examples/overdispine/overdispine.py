@@ -8,6 +8,8 @@ import sys
 from PyQt4 import QtGui, Qt
 from indyva.external import qtgevent
 qtgevent.install()
+
+
 from indyva.facade.server import WSServer, ZMQServer
 from indyva.facade.front import Front
 from row_viz import VizListView
@@ -46,11 +48,10 @@ def main():
     ws_server = WSServer()
     zmq_server = ZMQServer(8090)
     kernel = Kernel()
-    ws_server.start()
-    zmq_server.start()
-    #BUG: kernel.add_server(ws_server)
-    print kernel.start()
-    
+    kernel.add_server(ws_server)
+    kernel.add_server(zmq_server)
+    kernel.start()
+
     spines_table = data_adquisition.create_spines_table()
     dendrites_table = data_adquisition.create_dendrites_table(spines_table)
     Front.instance().get_method('TableSrv.expose_table')(spines_table)
@@ -71,7 +72,7 @@ def main():
     
         view.table = spines_table
         view.dfilter = dfilter
-        view.dselect = dselect
+        view.dselect = dselect    
 
     app.exec_()
         

@@ -14,7 +14,7 @@ from indyva.facade.server import ZMQServer
 def main():
     zmq_server = ZMQServer(10111)
     kernel = Kernel()
-    zmq_server.start()
+    kernel.add_server(zmq_server)
 
     print 'running'    
     print kernel.run_forever()
