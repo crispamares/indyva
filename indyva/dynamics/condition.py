@@ -34,25 +34,26 @@ class Condition(IPublisher, INamed):
     @property
     def sieve(self):
         return self._sieve
+    
+    def _value_in_a_set(self, value):
+        the_set = set( (value,) ) if isinstance(value, [types.StringTypes, types.IntType]) \
+                                else set(value)        
+        return the_set
         
     def _add(self, value):
-        value = set( (value,) ) if isinstance(value, types.StringTypes) \
-                                else set(value)        
+        value = self._value_in_a_set(value)        
         self._sieve.union(value)
         self._cache_clear()
         return dict(included=list(value), excluded=[])
 
     def _remove(self, value):
-        value = set( (value,) ) if isinstance(value, types.StringTypes) \
-                                else set(value)
+        value = self._value_in_a_set(value)        
         self._sieve.substract(value)
         self._cache_clear()
         return dict(included=[], excluded=list(value))
     
     def _toggle_value(self, value):
-        value = set( (value,) ) if isinstance(value, types.StringTypes) \
-                                else set(value)
-                                
+        value = self._value_in_a_set(value)        
         to_add = value - self.sieve.index
         to_remove = self.sieve.index.intersection(value)
         self._sieve.union(to_add)
