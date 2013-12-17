@@ -36,7 +36,7 @@ class Condition(IPublisher, INamed):
         return self._sieve
     
     def _value_in_a_set(self, value):
-        the_set = set( (value,) ) if isinstance(value, [types.StringTypes, types.IntType]) \
+        the_set = set( (value,) ) if isinstance(value, (types.StringTypes, types.IntType)) \
                                 else set(value)        
         return the_set
         
