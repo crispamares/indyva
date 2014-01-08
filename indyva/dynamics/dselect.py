@@ -15,15 +15,15 @@ class DynSelect(ConditionSet):
     This class maintain the state of the Select Interactive Dynamic
     
     All references from each conditions are aggregated with Union set operation
-     (a.k.a. OR)
+     (a.k.a. OR) unless you specify the contrary
     '''
 
-    def __init__(self, name, data):
+    def __init__(self, name, data, setop='OR'):
         '''
         :param str name: unique name
         :param data: the dataset that is going to suffer the conditions
         '''
-        ConditionSet.__init__(self, name, data, namespace='s', setop='OR')
+        ConditionSet.__init__(self, name, data, namespace='s', setop=setop)
 
     @pub_result('change')
     def new_categorical_condition(self, *args, **kwargs):

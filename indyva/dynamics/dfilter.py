@@ -14,15 +14,15 @@ class DynFilter(ConditionSet):
     This class maintain the state of the Filter Interactive Dynamic
     
     All references from each conditions are aggregated with Intersection set 
-    operation (a.k.a. AND)
+    operation (a.k.a. AND) unless you specify the contrary
     '''
 
-    def __init__(self, name, data):
+    def __init__(self, name, data, setop='AND'):
         '''
         :param str name: unique name
         :param data: the dataset that is going to suffer the conditions
         '''
-        ConditionSet.__init__(self, name, data, namespace='f')
+        ConditionSet.__init__(self, name, data, namespace='f', setop=setop)
 
     @pub_result('change')
     def new_categorical_condition(self, *args, **kwargs):
