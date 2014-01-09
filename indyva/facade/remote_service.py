@@ -20,6 +20,12 @@ class RemoteService(INamed):
     def __init__(self, endpoint, srv_description, name):
         '''
         :param str endpoint: The ZeroMQ endpoint definition
+        :param dict srv_description: The description of the exposed methods
+            * Has the form:
+                {method_name: {params: ['name_param', 'data type, description, default=val (if optional)'],
+                               return: 'description with data type, maybe using the same structure (like list or dict)'}}
+            * Currently is used mainly for online documentation proposes, only
+            the method_name has effect on the code behavior      
         :param str name: The unique name of the service
         '''
         self.ctx = zmq.Context.instance()
