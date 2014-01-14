@@ -81,6 +81,13 @@ def main():
 
     result = rpc_client.call('DynSelectSrv.new_categorical_condition', [dselect, 'State',[],'cond1'], kwargs=None)
     print 'New Categorical Condition', result
+    
+    # ==========================================================================
+    #      Batch request is implemented in tinyrpc but not the response.
+    # =========================================================================
+    #result = rpc_client.batch_call([['echo', ['Hello 1']], ['echo', ['Hello 2']]])
+    #print 'Batch result:', result
+                                    
 
 def _get_data():
     from indyva.dataset import RSC_DIR
