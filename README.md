@@ -1,6 +1,6 @@
 # Indyva
 
-Indyva (an acronym for INteractive DYnamics for Visual Analytics) is a new framework for building Visual Analytics prototypes easily and fast. Indyva solves several problems, like the synchronization between components or reusing code by writing each component in different programming language.
+Indyva (an acronym for INteractive DYnamics for Visual Analytics) is a new framework for building Visual Analytics prototypes easily and fast. Indyva solves several problems, like the synchronization between components or reusing code by writing each component in a different programming language.
 
 Powerful visualization and analytical frameworks already exist, but there is no common programming language for all of them, the over-the-network API solves this problem.
 
