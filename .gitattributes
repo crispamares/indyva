@@ -1,0 +1,7 @@
+# Convert every file to LF when committed and to local when checkout
+# Done like this: https://help.github.com/articles/dealing-with-line-endings
+*.py text
+*.js text
+*.html text
+*.css text
+*.md text
