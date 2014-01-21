@@ -4,13 +4,14 @@ Created on Oct 9, 2013
 
 @author: crispamares
 '''
+from __future__ import division
 
 import types
 
 from indyva.epubsub import IPublisher, Bus, pub_result
 from indyva.names import INamed
 from indyva.external import cached
-from .sieve import ItemImplicitSieve, AttributeImplicitSieve
+from .sieve import ItemImplicitSieve, AttributeImplicitSieve, ItemExplicitSieve
 
 class Condition(IPublisher, INamed):
     
@@ -193,6 +194,93 @@ class AttributeCondition(Condition):
     @pub_result('change')
     def toggle(self):
         return self._toggle()
+
+
+
+
+class RangeCondition(Condition):
+    def __init__(self, data, attr, cond_range={}, domain={}, name=None):
+        '''
+        :param data: The dataset that will be queried
+        :param attr: The attribute that will compared with cond_range values. 
+        :param cond_range: {min: val, max: val} The maximum and minimum values 
+            of the condition.
+            All items whose attr value is inside the range are considered as
+            included.
+        :param domain: {min: val, max: val} The domain of the RangeCondition 
+            are the maximum and minimum values that the range can get.
+        :param name: If a name is not provided, an uuid is generated
+        '''
+        Condition.__init__(self, data, name)
+        self._attr = attr
+
+        #=======================================================================
+        #        Handle domain
+        #=======================================================================
+        if not ('max' in domain and 'min' in domain):
+            raise ValueError("Error creating RangeCondition: " +
+                             "domain must be a dict with min and max keys" +
+                             " this was provided: " + str(cond_range))
+        if len(domain == 0):
+            # TODO: Use the max/min of the new schema
+            domain = data.aggregate([{'$group': 
+                                      {'_id':"$"+attr, 
+                                       'min': {'$min': "$"+attr},
+                                       'max': {'$max': "$"+attr}}}]).get_data()
+
+        domain = {'min':domain['min'], 'max':domain['max']}
+        self._domain = domain
+        
+        #=======================================================================
+        #         Handle cond_range
+        #=======================================================================
+        if not ('max' in cond_range and 'min' in cond_range):
+            raise ValueError("Error creating RangeCondition: " +
+                             "cond_range must be a dict with min and max keys" +
+                             " this was provided: " + str(cond_range))
+        if len(cond_range == 0):
+            cond_range = self._domain
+        cond_range = {'min':cond_range['min'], 'max':cond_range['max']}
+        self._cond_range = cond_range
+        
+        query = self._generate_query()
+        self._sieve = ItemExplicitSieve(data, query)
+
+
+    def _generate_query(self):
+        return {'$and': [{"gte": self._cond_range['min']},
+                         {"lte": self._cond_range['max']} ]}
+        
+    def _to_relative(self, abs_val):
+        return ((abs_val - self._domain['min']) / 
+                (self._domain['max'] - self._domain['min'])) 
+
+    def _to_absolute(self, rel_val):
+        return ((self._domain['max'] - self._domain['min']) * rel_val 
+                + self._domain['min']) 
+
+    @property
+    def attr(self):
+        return self._attr
+        
+    @property
+    def range(self):
+        '''
+        :return: {min, max, relative_min, relative_max} Relative values are
+            between 0 and 1
+        '''
+        result = {}.update(self._cond_range)
+        result['relative_min'] = self._to_relative(self._cond_range['min'])
+        result['relative_max'] = self._to_relative(self._cond_range['max'])
+        return self.result
+        
+    @property
+    def domain(self):
+        return self._domain
+                 
+    @pub_result('change')
+    def include_all(self):
+        return self._include_all()
 
 
 
