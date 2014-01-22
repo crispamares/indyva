@@ -11,10 +11,10 @@ from collections import OrderedDict
 
 from indyva.dataset.table import Table
 from indyva.dataset import RSC_DIR
-from indyva.dynamics.condition import CategoricalCondition
+from indyva.dynamics.condition import CategoricalCondition, RangeCondition
 from indyva import names
 
-class Test(unittest.TestCase):
+class CategoricalTest(unittest.TestCase):
 
     def setUp(self):
         self.df = pd.read_csv(RSC_DIR+'/census.csv')
@@ -98,6 +98,92 @@ class Test(unittest.TestCase):
         cc.add_category('C1')
         self.assertSetEqual(set(cc.excluded_items()), set([]))
                             
+
+
+
+
+
+
+
+class RangeTest(unittest.TestCase):
+
+    def setUp(self):
+        self.df = pd.read_csv(RSC_DIR+'/census.csv')
+        with open(RSC_DIR+'/schema_census') as f:
+            schema = json.loads(f.read())
+        
+        self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
+        self.table = Table('census', self.schema).data(self.df)
+                    
+    def tearDown(self):
+        names.clear()
+
+    def testCreation(self):
+        rc = RangeCondition(data=self.table, attr='Information')
+        self.assertEqual(rc.domain['min'], rc.range['min'])
+        self.assertEqual(rc.domain['max'], rc.range['max'])
+        self.assertEqual(rc.range['relative_max'], 1)
+        self.assertEqual(rc.range['relative_min'], 0)
+        self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
+        
+        rc2 = RangeCondition(data=self.table, attr='Information', 
+                             range=dict(min=250000, max=500000))
+        self.assertEqual(rc2.domain['max'], rc2.range['max'])
+        self.assertEqual(250000, rc2.range['min'])
+        self.assertEqual(rc2.range['relative_max'], 1)
+        self.assertNotEqual(rc2.range['relative_min'], 0)
+        self.assertEqual(set(rc2.included_items()), set(['CA', 'NY']))
+
+        rc3 = RangeCondition(data=self.table, attr='Information', 
+                             domain=dict(min=250000, max=500000))
+        self.assertEqual(rc3.domain['min'], rc3.range['min'])
+        self.assertEqual(rc3.domain['max'], rc3.range['max'])
+        self.assertEqual(rc3.range['relative_max'], 1)
+        self.assertEqual(rc3.range['relative_min'], 0)
+        self.assertEqual(set(rc3.included_items()), set(['CA', 'NY']))
+        
+    def testIncludeAll(self):
+        rc = RangeCondition(data=self.table, attr='Information',
+                            range=dict(min=250000, max=500000))
+        self.assertEqual(set(rc.included_items()), set(['CA', 'NY']))
+        rc.include_all()
+        self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
+        
+    def testIncludedItems(self):
+        rc = RangeCondition(data=self.table, attr='Information')
+        self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
+ 
+    def testExcludedItems(self):
+        rc = RangeCondition(data=self.table, attr='Information')
+        self.assertItemsEqual(rc.excluded_items(), [])
+        
+        rc2 = RangeCondition(data=self.table, attr='Information',
+                            range=dict(min=250000, max=500000))
+        excluded = set(rc.included_items()) - set(['CA', 'NY'])
+        self.assertEqual(set(rc2.excluded_items()), excluded)      
+        
+    def testSetRange(self):
+        rc = RangeCondition(data=self.table, attr='Information')
+        self.assertItemsEqual(rc.included_items(), self.table.index_items())
+        rc.set_range(min=250000)
+        self.assertEqual(set(rc.included_items()), set(['CA', 'NY']))
+        change = rc.set_range(max=250000)
+        self.assertItemsEqual(rc.included_items(), [])
+        self.assertEqual(change, {'included': [], 'excluded': [u'NY', u'CA']})
+        with self.assertRaises(ValueError):
+            rc.set_range()
+
+        change = rc.set_range(0,1, relative=True)
+        self.assertItemsEqual(rc.included_items(), self.table.index_items())    
+        self.assertItemsEqual(change['included'], rc.included_items())  
+        self.assertItemsEqual(change['excluded'], [])  
+
+        rc.set_range(0.5, relative=True)
+        self.assertEqual(set(rc.included_items()), set(['CA', 'NY']))
+        self.assertEqual(rc.range, {'max': 492737.0, 'min': 248347.0,
+                                    'relative_max': 1.0, 'relative_min': 0.5})
+
+
                             
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testCreation']

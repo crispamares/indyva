@@ -5,7 +5,7 @@ Created on Oct 9, 2013
 @author: crispamares
 '''
 from __future__ import division
-
+import __builtin__
 import types
 
 from indyva.epubsub import IPublisher, Bus, pub_result
@@ -199,11 +199,11 @@ class AttributeCondition(Condition):
 
 
 class RangeCondition(Condition):
-    def __init__(self, data, attr, cond_range={}, domain={}, name=None):
+    def __init__(self, data, attr, range=None, domain=None, name=None):
         '''
         :param data: The dataset that will be queried
-        :param attr: The attribute that will compared with cond_range values. 
-        :param cond_range: {min: val, max: val} The maximum and minimum values 
+        :param attr: The attribute that will compared with range values. 
+        :param range: {min: val, max: val} The maximum and minimum values 
             of the condition.
             All items whose attr value is inside the range are considered as
             included.
@@ -217,39 +217,47 @@ class RangeCondition(Condition):
         #=======================================================================
         #        Handle domain
         #=======================================================================
-        if not ('max' in domain and 'min' in domain):
-            raise ValueError("Error creating RangeCondition: " +
-                             "domain must be a dict with min and max keys" +
-                             " this was provided: " + str(cond_range))
-        if len(domain == 0):
+        if domain == None:
             # TODO: Use the max/min of the new schema
             domain = data.aggregate([{'$group': 
-                                      {'_id':"$"+attr, 
+                                      {'_id': {}, 
                                        'min': {'$min': "$"+attr},
-                                       'max': {'$max': "$"+attr}}}]).get_data()
+                                       'max': {'$max': "$"+attr}}}]).get_data()[0]
+        elif (not isinstance(domain, dict) 
+              or not ('max' in domain and 'min' in domain)):
+            raise ValueError("Error creating RangeCondition: " +
+                             "domain must be a dict with min and max keys" +
+                             " this was provided: " + str(domain))
 
         domain = {'min':domain['min'], 'max':domain['max']}
         self._domain = domain
         
         #=======================================================================
-        #         Handle cond_range
+        #         Handle range
         #=======================================================================
-        if not ('max' in cond_range and 'min' in cond_range):
+        if range == None:
+            range = self._domain
+        elif (not isinstance(range, dict) 
+              or not ('max' in range and 'min' in range)):
             raise ValueError("Error creating RangeCondition: " +
-                             "cond_range must be a dict with min and max keys" +
-                             " this was provided: " + str(cond_range))
-        if len(cond_range == 0):
-            cond_range = self._domain
-        cond_range = {'min':cond_range['min'], 'max':cond_range['max']}
-        self._cond_range = cond_range
+                             "range must be a dict with min and max keys" +
+                             " this was provided: " + str(range))
+        
+        range = {'min': max(range['min'], domain['min']), 
+                      'max': min(range['max'], domain['max'])}
+        self._range = range
         
         query = self._generate_query()
         self._sieve = ItemExplicitSieve(data, query)
 
 
+    def _cache_clear(self):
+        cached.invalidate(self, 'included_items')
+        cached.invalidate(self, 'excluded_items')
+    
     def _generate_query(self):
-        return {'$and': [{"gte": self._cond_range['min']},
-                         {"lte": self._cond_range['max']} ]}
+        return {'$and': [{self._attr: {"$gte": self._range['min']}},
+                         {self._attr: {"$lte": self._range['max']}} ]}
         
     def _to_relative(self, abs_val):
         return ((abs_val - self._domain['min']) / 
@@ -264,23 +272,67 @@ class RangeCondition(Condition):
         return self._attr
         
     @property
-    def range(self):
+    def range(self): 
         '''
         :return: {min, max, relative_min, relative_max} Relative values are
             between 0 and 1
         '''
-        result = {}.update(self._cond_range)
-        result['relative_min'] = self._to_relative(self._cond_range['min'])
-        result['relative_max'] = self._to_relative(self._cond_range['max'])
-        return self.result
+        result = {}
+        result.update(self._range)
+        result['relative_min'] = self._to_relative(self._range['min'])
+        result['relative_max'] = self._to_relative(self._range['max'])
+        return result
         
     @property
     def domain(self):
         return self._domain
+
+    @cached
+    def included_items(self):
+        return self._data.find(self._sieve.query).index_items()
+    
+    @cached
+    def excluded_items(self):
+        not_query = {'$or': [{self._attr: {"$lt": self._range['min']}},
+                             {self._attr: {"$gt": self._range['max']}} ]}
+        
+        return self._data.find(not_query).index_items()                 
                  
     @pub_result('change')
     def include_all(self):
-        return self._include_all()
+        self._cache_clear()
+        self._range.update(self._domain) 
+        self._sieve.query = self._generate_query()
+        
+        included = self._sieve.domain - self._sieve.index 
+        excluded = self._sieve.index 
+        return dict(included=list(included), excluded=list(excluded))
 
+    @pub_result('change')
+    def set_range(self, min=None, max=None, relative=False):
+        '''
+        :param min: The lower limit of the range
+        :param max: The upper limit of the range
+        :param relative: If True then min and max are provided as 0 to 1 values
+            otherwise are absolute values.
+        '''
+        if min is None and max is None:
+            raise ValueError('You must set at least the min or the max')
+        if min is not None:
+            if not relative:
+                self._range['min'] = min  
+            else:
+                self._range['min'] = self._to_absolute(__builtin__.max(min, 0)) 
+        if max is not None:
+            if not relative:
+                self._range['max'] = max  
+            else:
+                self._range['max'] = self._to_absolute(__builtin__.min(max, 1)) 
 
+        self._cache_clear()
+        old_index = self._sieve.index
+        self._sieve.query = self._generate_query()
 
+        included = self._sieve.index - old_index
+        excluded = old_index - self._sieve.index
+        return dict(included=list(included), excluded=list(excluded))

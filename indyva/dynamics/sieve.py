@@ -131,10 +131,10 @@ class ItemExplicitSieve(object):
         return self._domain
     @property
     def query(self):
-        return self._query
+        return copy(self._query)
     @query.setter
     def query(self, query):
-        self._query = query
+        self._query = copy(query)
         self._cache_clear()
     @property
     def index(self):
