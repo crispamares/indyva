@@ -15,16 +15,19 @@ from .sieve import ItemImplicitSieve, AttributeImplicitSieve, ItemExplicitSieve
 
 class Condition(IPublisher, INamed):
     
-    def __init__(self, data, name=None):
+    def __init__(self, data, name=None, enabled=True):
         '''
-        @param data: The dataset that will be queried
-        @param name: If a name is not provided, an uuid is generated
+        :param data: The dataset that will be queried
+        :param name: If a name is not provided, an uuid is generated
+        :param enabled: If the condition is disabled it will be ignored in the
+            computation of the ConditionSet combination
         '''        
         INamed.__init__(self, name, prefix='c:')
         self._data = data
         self._sieve = None
+        self._enabled = enabled
 
-        topics = ['change']
+        topics = ['change', 'enable']
         bus = Bus(prefix= '{0}:{1}:'.format('c', self.name))
         IPublisher.__init__(self, bus, topics)       
 
@@ -35,6 +38,20 @@ class Condition(IPublisher, INamed):
     @property
     def sieve(self):
         return self._sieve
+    
+    @property
+    def enabled(self):
+        return self._enabled
+        
+    @pub_result('enable')
+    def enable(self, enable=True):
+        self._enabled = enable
+        return self._enabled
+
+    @pub_result('enable')
+    def disable(self, enable=False):
+        self._enabled = enable
+        return self._enabled
     
     def _value_in_a_set(self, value):
         the_set = set( (value,) ) if isinstance(value, (types.StringTypes, types.IntType)) \

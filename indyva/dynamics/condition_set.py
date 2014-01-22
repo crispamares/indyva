@@ -32,11 +32,15 @@ class ConditionSet(IPublisher, INamed):
         bus = Bus(prefix= '{0}:{1}:'.format(namespace, self._name))
         IPublisher.__init__(self, bus, topics)
 
-    def _retransmit(self, topic, msg):
+    def _retransmit_change(self, topic, msg):
         #print "retransmit"
         msg['original_topic'] = topic
         condition_name = msg['origin']
-        self._sieves.set_sieve(condition_name, self._conditions[condition_name].sieve)
+        condition = self._conditions[condition_name]
+        if condition.enabled:
+            self._sieves.set_sieve(condition_name, condition.sieve)
+        elif self._sieves.has_sieve(condition_name):
+            self._sieves.remove_sieve(condition_name)
         self._bus.publish('change', msg)
 
     def _set_condition(self, condition):
@@ -49,8 +53,10 @@ class ConditionSet(IPublisher, INamed):
             raise ValueError("Condition has {0} dataset, {1} expected"
                              .format(condition.data.name, self._data.name))
         self._conditions[condition.name] = condition
-        condition.subscribe('change', self._retransmit)
-        self._sieves.set_sieve(condition.name, condition.sieve)
+        condition.subscribe('change', self._retransmit_change)
+        condition.subscribe('enable', self._retransmit_change)
+        if condition.enabled:
+            self._sieves.set_sieve(condition.name, condition.sieve)
         return condition
 
     @pub_result('change')
