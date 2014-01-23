@@ -33,6 +33,7 @@ class DynFilterService(INamed):
         # DynFilter Methods
         dispatcher.add_method(partial(self._proxy, 'new_categorical_condition'), 'new_categorical_condition')
         dispatcher.add_method(partial(self._proxy, 'new_attribute_condition'), 'new_attribute_condition')
+        dispatcher.add_method(partial(self._proxy, 'new_range_condition'), 'new_range_condition')
         # ConditionSet Methods
         dispatcher.add_method(partial(self._condition_proxy, 'add_condition'), 'add_condition')
         dispatcher.add_method(partial(self._condition_proxy, 'set_condition'), 'set_condition')
@@ -42,6 +43,7 @@ class DynFilterService(INamed):
         dispatcher.add_method(partial(self._proxy, 'get_condition'), 'get_condition')
         # ConditionSet Properties
         dispatcher.add_method(partial(self._proxy_property, 'name'), 'name')
+        dispatcher.add_method(partial(self._proxy_property, 'grammar'), 'grammar')
         dispatcher.add_method(partial(self._proxy_property, 'reference'), 'reference')
         dispatcher.add_method(partial(self._proxy_property, 'projection'), 'projection')
         dispatcher.add_method(partial(self._proxy_property, 'query'), 'query')

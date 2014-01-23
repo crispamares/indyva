@@ -9,7 +9,8 @@ from functools import partial
 
 from indyva.names import INamed
 from indyva.facade.showcase import Showcase
-from .condition import Condition, CategoricalCondition, AttributeCondition
+from .condition import ( Condition, CategoricalCondition, AttributeCondition,
+                         RangeCondition ) 
 
 
 class ConditionService(INamed):
@@ -31,6 +32,7 @@ class ConditionService(INamed):
         # Condition Properties
         dispatcher.add_method(partial(self._proxy_property, 'name'), 'name')
         dispatcher.add_method(partial(self._proxy_property, 'data'), 'data')
+        dispatcher.add_method(partial(self._proxy_property, 'grammar'), 'grammar')
         # Condition Methods
         dispatcher.add_method(partial(self._proxy, 'include_all'), 'include_all')
         dispatcher.add_method(partial(self._proxy, 'exclude_all'), 'exclude_all')
@@ -54,6 +56,11 @@ class ConditionService(INamed):
         dispatcher.add_method(partial(self._proxy, 'remove_attribute'), 'remove_attribute')
         dispatcher.add_method(partial(self._proxy, 'toggle_attribute'), 'toggle_attribute')
 
+        #RangeCondition Properties
+        dispatcher.add_method(partial(self._proxy_property, 'range'), 'range')
+        dispatcher.add_method(partial(self._proxy_property, 'domain'), 'domain')
+        # RangeCondition Methods
+        dispatcher.add_method(partial(self._proxy, 'set_range'), 'set_range')
 
     def _proxy(self, method, condition_name, *args, **kwargs):
         condition = self._conditions[condition_name]
@@ -71,10 +78,12 @@ class ConditionService(INamed):
             
     def new_condition(self, kind, data, *args, **kwargs):
         dataset = Showcase.instance().get(data)
-        if kind == 'Categorical':
+        if kind == 'categorical':
             new_condition = CategoricalCondition(dataset, *args, **kwargs)
-        if kind == 'Attribute':
+        if kind == 'attribute':
             new_condition = AttributeCondition(dataset, *args, **kwargs)
+        if kind == 'range':
+            new_condition = RangeCondition(dataset, *args, **kwargs)
         self._conditions[new_condition.full_name] = new_condition
         return new_condition
 

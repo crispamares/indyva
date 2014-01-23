@@ -6,7 +6,7 @@ Created on 03/07/2013
 '''
 
 from indyva.epubsub import pub_result
-from .condition import CategoricalCondition
+from .condition import CategoricalCondition, RangeCondition
 from .condition_set import ConditionSet
 
 
@@ -41,5 +41,21 @@ class DynSelect(ConditionSet):
         :return: CategoricalCondition The created condition
         '''
         condition = CategoricalCondition(self._data, *args, **kwargs)
+        self._add_condition(condition)
+        return condition
+
+    @pub_result('change')
+    def new_range_condition(self, *args, **kwargs):
+        '''
+        :param attr: The attribute that will compared with range values. 
+        :param range: {min: val, max: val} The maximum and minimum values 
+            of the condition.
+            All items whose attr value is inside the range are considered as
+            included.
+        :param domain: {min: val, max: val} The domain of the RangeCondition 
+            are the maximum and minimum values that the range can get.
+        :param name: If a name is not provided, an uuid is generated
+        '''
+        condition = RangeCondition(self._data, *args, **kwargs)
         self._add_condition(condition)
         return condition
