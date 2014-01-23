@@ -10,10 +10,12 @@ import types
 
 from indyva.epubsub import IPublisher, Bus, pub_result
 from indyva.names import INamed
+from indyva.grava import IDefined
 from indyva.external import cached
 from .sieve import ItemImplicitSieve, AttributeImplicitSieve, ItemExplicitSieve
 
-class Condition(IPublisher, INamed):
+
+class Condition(IPublisher, INamed, IDefined):
     
     def __init__(self, data, name=None, enabled=True):
         '''
@@ -42,6 +44,12 @@ class Condition(IPublisher, INamed):
     @property
     def enabled(self):
         return self._enabled
+        
+    @property
+    def grammar(self):
+        return dict(name = self.name,
+                    data = self.data.name,
+                    enabled = self.enabled)
         
     @pub_result('enable')
     def enable(self, enable=True):
@@ -130,6 +138,16 @@ class CategoricalCondition(Condition):
     def attr(self):
         return self._attr
     
+    @property
+    def grammar(self):
+        grammar = Condition.grammar.fget(self)
+        grammar.update({'type': 'categorical',
+                        'attr': self.attr,
+                        'bins': self._bins,
+                        'included_categories': self.included_categories(),
+                        'excluded_categories': self.excluded_categories()})
+        return grammar 
+    
     def included_categories(self):
         return list(self._sieve.index)
      
@@ -181,6 +199,14 @@ class AttributeCondition(Condition):
         Condition.__init__(self, data, name)
         
         self._sieve = AttributeImplicitSieve(data, attributes)
+
+    @property
+    def grammar(self):
+        grammar = Condition.grammar.fget(self)
+        grammar.update({'type': 'attribute',
+                        'included_attributes': self.included_attributes(),
+                        'excluded_attributes': self.excluded_attributes()})
+        return grammar 
 
     def included_attributes(self):
         return list(self._sieve.index)
@@ -283,6 +309,15 @@ class RangeCondition(Condition):
     def _to_absolute(self, rel_val):
         return ((self._domain['max'] - self._domain['min']) * rel_val 
                 + self._domain['min']) 
+
+    @property
+    def grammar(self):
+        grammar = Condition.grammar.fget(self)
+        grammar.update({'type': 'range',
+                        'attr': self.attr,
+                        'range': self.range,
+                        'domain': self.domain})
+        return grammar 
 
     @property
     def attr(self):

@@ -11,7 +11,8 @@ from collections import OrderedDict
 
 from indyva.dataset.table import Table
 from indyva.dataset import RSC_DIR
-from indyva.dynamics.condition import CategoricalCondition, RangeCondition
+from indyva.dynamics.condition import CategoricalCondition, RangeCondition,\
+    AttributeCondition
 from indyva.dynamics.condition_set import ConditionSet
 from indyva import names
 
@@ -111,8 +112,66 @@ class ConditionSetTest(unittest.TestCase):
         self.assertItemsEqual(cs.reference, self.fake_sets['C3']) 
 
 
-
-
+    def testGrammar(self):
+        cs = ConditionSet(name='condition_set', data=self.table, setop='AND')
+        cc = CategoricalCondition(data=self.table, attr='fake_cat', name='catc')
+        rc = RangeCondition(data=self.table, attr='Information', name='rangec')
+        ac = AttributeCondition(data=self.table, name='attrc')
+        cs.add_condition(cc)
+        cs.add_condition(rc)
+        cs.add_condition(ac)
+        
+        print cs.grammar
+        self.maxDiff = None
+        self.assertEqual(cs.grammar, {'setop': 'AND', 
+                                      'conditions': [{'type': 'range', 
+                                                      'name': 'rangec', 
+                                                      'range': {'max': 492737.0,
+                                                                'min': 3957.0,
+                                                                'relative_min': 0.0,
+                                                                'relative_max': 1.0},
+                                                      'domain': {'max': 492737.0,
+                                                                 'min': 3957.0},
+                                                      'data': 'census',  
+                                                      'enabled': True, 
+                                                      'attr': 'Information'}, 
+                                                     {'included_categories': [],
+                                                      'excluded_categories': ['C3', 'C2', 'C1', 'C4'],
+                                                      'name': 'catc', 
+                                                      'type': 'categorical', 
+                                                      'data': 'census', 
+                                                      'enabled': True, 
+                                                      'bins': None, 
+                                                      'attr': 'fake_cat'},
+                                                      {'data': 'census',
+                                                       'enabled': True,
+                                                       'excluded_attributes': ['Information',
+                                                                               'Other services (except public administration)',
+                                                                               'Total for all sectors',
+                                                                               'State',
+                                                                               'Accommodation and food services',
+                                                                               'Educational services',
+                                                                               'Professional, scientific, and technical services',
+                                                                               'Health care and social assistance',
+                                                                               'Utilities',
+                                                                               'Retail trade',
+                                                                               'Construction',
+                                                                               'Agriculture, forestry, fishing and hunting',
+                                                                               'Arts, entertainment, and recreation',
+                                                                               'Administrative and support and waste management and remediation services',
+                                                                               'Finance and insurance',
+                                                                               'Mining, quarrying, and oil and gas extraction',
+                                                                               'Wholesale trade',
+                                                                               'Management of companies and enterprises',
+                                                                               'Transportation and warehousing',
+                                                                               'Manufacturing',
+                                                                               'Industries not classified',
+                                                                               'Real estate and rental and leasing'],
+                                                      'included_attributes': [],
+                                                      'name': 'attrc',
+                                                      'type': 'attribute'}],
+                                      'data': 'census', 
+                                      'name': 'condition_set'})
                             
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testCreation']

@@ -24,6 +24,12 @@ class DynSelect(ConditionSet):
         :param data: the dataset that is going to suffer the conditions
         '''
         ConditionSet.__init__(self, name, data, namespace='s', setop=setop)
+        
+    @property
+    def grammar(self):
+        grammar = ConditionSet.grammar.fget(self)
+        grammar['type'] = 'select'
+        return grammar
 
     @pub_result('change')
     def new_categorical_condition(self, *args, **kwargs):

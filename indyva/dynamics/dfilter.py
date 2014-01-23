@@ -24,6 +24,12 @@ class DynFilter(ConditionSet):
         '''
         ConditionSet.__init__(self, name, data, namespace='f', setop=setop)
 
+    @property
+    def grammar(self):
+        grammar = ConditionSet.grammar.fget(self)
+        grammar['type'] = 'filter'
+        return grammar
+
     @pub_result('change')
     def new_categorical_condition(self, *args, **kwargs):
         '''

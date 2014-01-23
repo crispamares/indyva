@@ -7,11 +7,12 @@ Created on 10/08/2013
 
 from indyva.epubsub import IPublisher, pub_result, Bus
 from indyva.names import INamed
+from indyva.grava import IDefined
 from .sieve import SieveSet
 from .condition import Condition
 
 
-class ConditionSet(IPublisher, INamed):
+class ConditionSet(IPublisher, INamed, IDefined):
     '''
     This class is a collection of conditions. Is used as the base class for
     DynFilter and DynSelect
@@ -24,6 +25,7 @@ class ConditionSet(IPublisher, INamed):
         '''
         INamed.__init__(self, name, prefix=namespace+':')
         self._data = data
+        self._setop = setop
         self._sieves = SieveSet(data, setop)
         
         self._conditions = {}
@@ -156,6 +158,15 @@ class ConditionSet(IPublisher, INamed):
         :return: dict(query=>query, projection=>projection)
         '''
         return dict(query = self.query, projection= self.projection) 
+    
+    @property
+    def grammar(self):
+        conditions_grammar = [c.grammar for c in self._conditions.values()]
+        
+        return dict(name = self.name,
+                    setop = self._setop,
+                    data = self._data.name,
+                    conditions = conditions_grammar)
     
     def __repr__(self):
         return '{0}: {1} -> {2}'.format(type(self), self._name, self._conditions)
