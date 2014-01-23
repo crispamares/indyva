@@ -33,9 +33,12 @@ class ConditionService(INamed):
         dispatcher.add_method(partial(self._proxy_property, 'name'), 'name')
         dispatcher.add_method(partial(self._proxy_property, 'data'), 'data')
         dispatcher.add_method(partial(self._proxy_property, 'grammar'), 'grammar')
+        dispatcher.add_method(partial(self._proxy_property, 'enabled'), 'enabled')
         # Condition Methods
         dispatcher.add_method(partial(self._proxy, 'include_all'), 'include_all')
         dispatcher.add_method(partial(self._proxy, 'exclude_all'), 'exclude_all')
+        dispatcher.add_method(partial(self._proxy, 'enable'), 'enable')
+        dispatcher.add_method(partial(self._proxy, 'disable'), 'disable')
 
         # CategoricalCondition Properties
         dispatcher.add_method(partial(self._proxy_property, 'attr'), 'attr')
