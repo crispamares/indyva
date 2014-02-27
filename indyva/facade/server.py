@@ -33,7 +33,7 @@ class WSGIServer(RPCServerGreenlets):
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)
         
     def serve_forever(self):
-        wsgi_server = gevent.wsgi.WSGIServer(('127.0.0.1', self.port), 
+        wsgi_server = gevent.wsgi.WSGIServer(('', self.port), 
             self.transport.handle)
         gevent.spawn(wsgi_server.serve_forever)
         RPCServerGreenlets.serve_forever(self)
@@ -50,7 +50,7 @@ class WSServer(RPCServerGreenlets):
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)
         
     def serve_forever(self):
-        ws_server = WebSocketServer(('127.0.0.1', self.port), 
+        ws_server = WebSocketServer(('', self.port), 
             self.transport.handle)
         gevent.spawn(ws_server.serve_forever)
         RPCServerGreenlets.serve_forever(self)    

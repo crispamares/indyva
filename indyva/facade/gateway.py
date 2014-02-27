@@ -63,7 +63,7 @@ class WSGateway(Gateway):
         Gateway.__init__(self, name, port)
         self._ws = None
         self._msg_queue = []
-        self.ws_server = WebSocketServer(('127.0.0.1', port),
+        self.ws_server = WebSocketServer(('', port),
             Resource({'/ws': WSApplicationFactory(self)}))
         gevent.spawn(self.ws_server.serve_forever)
         
