@@ -42,6 +42,9 @@ class Gateway(INamed):
     def unsubscribe(self, topic):
         self._bus.unsubscribe(topic, self.publish)
 
+    def clear(self):
+        self._bus.clear()
+
 
 class ZMQGateway(Gateway):
     def __init__(self, name, port):

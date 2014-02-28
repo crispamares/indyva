@@ -28,6 +28,7 @@ class HubService(INamed):
         dispatcher.add_method(self.subscribe)
         dispatcher.add_method(self.subscribe_once)
         dispatcher.add_method(self.unsubscribe)
+        dispatcher.add_method(self.clear)
         dispatcher.add_method(self.new_gateway)
         dispatcher.add_method(self.del_gateway)
         
@@ -46,6 +47,10 @@ class HubService(INamed):
     def unsubscribe(self, gateway, topic):
         gw = self._gateways[gateway]
         gw.unsubscribe(topic)
+
+    def clear(self, gateway):
+        gw = self._gateways[gateway]
+        gw.clear()
       
     def new_gateway(self, name, transport, port=8081):
         '''
