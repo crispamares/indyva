@@ -127,6 +127,13 @@ class ConditionSet(IPublisher, INamed, IDefined):
         :param str name: The key of the condition. 
         '''
         return self._conditions.get(name, default)
+
+    def clear(self):
+        '''
+        Remove all conditions in the condition set
+        '''
+        for name in self._conditions.keys():
+            self.remove_condition(name)
     
     def is_empty(self):
         return (not self._conditions) and self._sieves.is_empty() 

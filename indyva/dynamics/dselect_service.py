@@ -30,6 +30,7 @@ class DynSelectService(INamed):
         dispatcher.add_method(self.new_dselect)
         dispatcher.add_method(self.expose_dselect)
         dispatcher.add_method(self.del_dselect)
+        dispatcher.add_method(self.clear)
         # DynSelect Methods
         dispatcher.add_method(partial(self._proxy, 'new_categorical_condition'), 'new_categorical_condition')
         dispatcher.add_method(partial(self._proxy, 'new_range_condition'), 'new_range_condition')
@@ -63,7 +64,7 @@ class DynSelectService(INamed):
         return result
     
     def _condition_proxy(self, method, dselect_name, condition):
-        return self._proxy(method, dselect_name, Showcase.instance().get(condition))
+        return self._proxy(method, dselect_name, self._conditions[condition])
         
     def new_dselect(self, name, data, setop='OR'):
         dataset = Showcase.instance().get(data)
@@ -77,3 +78,7 @@ class DynSelectService(INamed):
 
     def del_dselect(self, name):
         self._dselects.pop(name)
+
+    def clear(self):
+        self._dselects.clear()
+        self._conditions.clear()

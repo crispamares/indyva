@@ -30,6 +30,7 @@ class DynFilterService(INamed):
         dispatcher.add_method(self.new_dfilter)
         dispatcher.add_method(self.expose_dfilter)
         dispatcher.add_method(self.del_dfilter)
+        dispatcher.add_method(self.clear)
         # DynFilter Methods
         dispatcher.add_method(partial(self._proxy, 'new_categorical_condition'), 'new_categorical_condition')
         dispatcher.add_method(partial(self._proxy, 'new_attribute_condition'), 'new_attribute_condition')
@@ -64,8 +65,8 @@ class DynFilterService(INamed):
         return result
     
     def _condition_proxy(self, method, dfilter_name, condition):
-        return self._proxy(method, dfilter_name, Showcase.instance().get(condition))
-            
+        return self._proxy(method, dfilter_name,  self._conditions[condition])
+
     def new_dfilter(self, name, data, setop='AND'):
         dataset = Showcase.instance().get(data)
         new_dfilter = DynFilter(name, dataset, setop)
@@ -78,3 +79,7 @@ class DynFilterService(INamed):
 
     def del_dfilter(self, name):
         self._dfilters.pop(name)
+
+    def clear(self):
+        self._dfilters.clear()
+        self._conditions.clear()
