@@ -5,7 +5,7 @@ import Queue
 
 from . import ServerTransport
 from geventwebsocket.resource import WebSocketApplication, Resource
-
+from geventwebsocket.exceptions import WebSocketError
 
 class WSServerTransport(ServerTransport):
     '''
@@ -83,5 +83,12 @@ class WSApplication(WebSocketApplication):
         context = self._queue_class()
         self.messages.put((context, msg))
         response = context.get()
-        self.ws.send(response, *args, **kwargs)
+        try:
+            self.ws.send(response, *args, **kwargs)
+        except WebSocketError, e:
+            print "----------------- socket error ------------"
+            print "response: ", response
+            print "-------------------------------------------"
 
+    def on_close(self, reason):
+        print "**** ON CLOSE - reason:", reason
