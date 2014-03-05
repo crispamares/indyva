@@ -64,7 +64,7 @@ class WSGateway(Gateway):
 
     def __init__(self, name, port):
         Gateway.__init__(self, name, port)
-        self._ws = None
+        self._sockets = []
         self._msg_queue = []
         self.ws_server = WebSocketServer(('', port),
             Resource({'/ws': WSApplicationFactory(self)}))
@@ -72,14 +72,16 @@ class WSGateway(Gateway):
         
     def publish(self, topic, msg):
         msg_json = json.dumps({'topic':topic,'msg':msg}, default=for_json_bridge)
-        if self._ws is not None:
-            self._ws.send(msg_json)
+        if len(self._sockets):
+            for ws in self._sockets:
+                ws.send(msg_json)
         else:
             self._msg_queue.append(msg_json)
 
     def _flush(self):
         for msg_json in self._msg_queue:
-            self._ws.send(msg_json)
+            for ws in self._sockets:
+                ws.send(msg_json)
         self._msg_queue = []
             
 class WSApplication(WebSocketApplication):
@@ -92,13 +94,14 @@ class WSApplication(WebSocketApplication):
 
     def on_open(self):
         print 'on_open'
-        self._gateway._ws = self.ws
+        self._gateway._sockets.append(self.ws)
+        print '\tafter appending the ws:', self._gateway._sockets
         self._gateway._flush()
     
-    def on_close(self):
-        print 'on_close'
-        assert self._gateway._ws is not None
-        self._gateway._ws = None
+    def on_close(self, reason):
+        print 'on_close', self.ws, '\t-> reason:', reason
+        #assert self._gateway._ws is not None
+        self._gateway._sockets.remove(self.ws)
     
 class WSApplicationFactory(object):
     '''
@@ -112,7 +115,7 @@ class WSApplicationFactory(object):
         The fake __init__ for the WSApplication
         '''
         app = WSApplication(ws)
-        app._gateway =self._gateway
+        app._gateway = self._gateway
         return app 
     
     @classmethod
