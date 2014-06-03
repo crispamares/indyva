@@ -15,6 +15,9 @@ from indyva.external.tinyrpc.transports.wsgi import WsgiServerTransport
 from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from .front import Front
 
+import os, sys
+from werkzeug.wsgi import SharedDataMiddleware
+from werkzeug.utils import redirect
 
 class ZMQServer(RPCServerGreenlets):
     def __init__(self, port=10111):
@@ -42,9 +45,18 @@ class WSServer(RPCServerGreenlets):
     '''
     A Server for websockets RPCs
     '''
-    def __init__(self, port=8080):
+    def __init__(self, port=8080, web_dir=None):
         self.port = port
-        self.transport = WSServerTransport(queue_class=gevent.queue.Queue)
+        
+        if web_dir is None:
+            app_root = os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0]
+            web_dir = os.path.join(app_root, 'web')
+            print '**********', web_dir
+                
+        static_app = SharedDataMiddleware(redirect('/s/index.html'), {'/s': web_dir})
+
+        self.transport = WSServerTransport(queue_class=gevent.queue.Queue,
+                                           wsgi_handler=static_app)
         protocol = JSONRPCProtocol()
         dispatcher = Front.instance()
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)

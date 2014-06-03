@@ -9,8 +9,9 @@ from weakref import WeakValueDictionary
 
 class Showcase(object):
     '''
-    This class enables other classes to translate names to actual objects, 
-    previously registered
+    This class enables other classes to translate names previously registered 
+    to actual objects
+    
     '''
 
     def __init__(self):
