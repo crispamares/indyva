@@ -7,8 +7,6 @@ Created on 06/06/2013
 
 from weakref import WeakValueDictionary
 
-PREFIX = dict(control = 'c:', render = 'r:')
-
 class Hub(object):
     '''
     For common uses the Bus is preferred 
