@@ -2,14 +2,14 @@
 '''
 Created on 06/06/2013
 
-@author: jmorales
+:author: jmorales
 '''
 
 from weakref import WeakValueDictionary
 
 class Hub(object):
     '''
-    For common uses the Bus is preferred 
+    For common uses the :class:`~indyva.epubsub.bus.Bus` is preferred 
     
     The broker of the pubsub system. Handles the subscriptions table.
     Deleted object's destinations are unsubscribed automatically.  
@@ -25,7 +25,7 @@ class Hub(object):
 
     @staticmethod
     def instance():
-        """Returns a global `Hub` instance. 
+        """Returns a global ``Hub`` instance. 
         
         :warning: Not ThreadSafe.
         """
@@ -39,11 +39,12 @@ class Hub(object):
         return hasattr(Hub, "_instance")
         
     def install(self):
-        """Installs this `Hub` object as the singleton instance.
+        """Installs this ``Hub`` object as the singleton instance.
 
-        This is normally not necessary as `instance()` will create
-        an `Hub` on demand, but you may want to call `install` to use
-        a custom subclass of `Hub`.
+        This is normally not necessary as :func:`instance()` will
+        create an ``Hub`` on demand, but you may want to call
+        :func:`install` to use a custom subclass of ``Hub``.
+
         """
         assert not Hub.initialized()
         Hub._instance = self
@@ -87,8 +88,9 @@ class Hub(object):
     
     def close(self, topic):
         '''Removes all the subscriptions to a topic. 
-           No error trying to close unexpected topic
-           @param str topic:
+        No error trying to close unexpected topic
+           
+        :param str topic:
         '''
         self._subscriptions.pop(topic, None) 
         

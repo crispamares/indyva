@@ -23,6 +23,13 @@ LOOPINTERVAL = 0.00001      # In seconds
 PREFIX = dict(control = 'c:', render = 'r:')
 
 class KernelHub(Hub):
+    '''A specialization of :class:`~indyva.epubsub.hub.Hub` that instead of executing the
+    callbacks as they arrive, this class defers the callbacks pushing
+    them in the different :class:`Kernel` queues.
+
+    The API is exactly the same of :class:`~indyva.epubsub.hub.Hub`
+
+    '''
     
     def __init__(self, kernel):
         self._kernel = kernel
@@ -82,7 +89,7 @@ class Kernel(object):
 
       Use this queue for 'background' low priority tasks.
     
-    Instead of the plain :class:`epubsub.hub.Hub` the kernel uses a
+    Instead of the plain :class:`~indyva.epubsub.hub.Hub` the kernel uses a
     instance of a KernelHub, so every event message is queued into the
     kernel's queues and processed later. Basically, the execution of
     the callback is deferred (:func:`defer`) on time so the kernel
@@ -151,7 +158,7 @@ class Kernel(object):
     
     def _init_render(self):
         def publish_render():
-            Hub.instance().publish(PREFIX['render'], {'id' : str(uuid.uuid4())})
+            self.hub.publish(PREFIX['render'], {'id' : str(uuid.uuid4())})
         defer_publish = partial(self.defer, self._render, publish_render)
         while True:
             gevent.sleep(self._render_interval)

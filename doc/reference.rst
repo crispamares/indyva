@@ -17,3 +17,16 @@ indyva.names module
     :members:
     :undoc-members:
     :show-inheritance:
+
+indyva.epubsub package
+----------------------
+
+.. automodule:: indyva.epubsub.hub
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: indyva.epubsub.bus
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -2,7 +2,7 @@
 '''
 Created on 06/06/2013
 
-@author: jmorales
+:author: jmorales
 '''
 
 import uuid
@@ -13,12 +13,14 @@ DEFAULT_PREFIX_TOPIC = ""
 
 class Bus(object):
     '''
-    Exposes the PubSub functionality of the Hub in a more convenient way
+    Exposes the ``PUB/SUB`` functionality of the
+    :class:`~indyva.epubsub.bus.Hub` in a more convenient way
+
     '''
 
     def __init__(self, prefix=DEFAULT_PREFIX_TOPIC):
         '''
-        @param prefix: This str is the prefix of all the pubsub topics of
+        :param prefix: This str is the prefix of all the pubsub topics of
          this bus 
         '''
         self._prefix = prefix
