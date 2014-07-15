@@ -22,6 +22,7 @@ User's Guide:
    installation
    intro
    reference
+   roadmap
    
 
 Indices and tables
