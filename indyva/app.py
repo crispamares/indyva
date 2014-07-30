@@ -10,6 +10,12 @@ For more details::
     $ ./app.py --help
 
 '''
+import sys
+try:
+    import indyva
+except:
+    print "indyva is not found in the path. Adding '..' to PYTHONPATH"
+    sys.path.append('..')
 from indyva.kernel import Kernel
 from indyva.facade.server import WSServer, ZMQServer
 from configuration import get_random_port, parse_args_and_config
