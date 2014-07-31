@@ -43,17 +43,17 @@ class Showcase(object):
         assert not Showcase.initialized()
         Showcase._instance = self    
         
-    def get(self, full_name):
+    def get(self, oid):
         '''
-        :param str full_name: the full_name registered in the NameAuthority 
+        :param str oid: the oid registered in the NameAuthority 
         '''
-        return self._objects.get(full_name)    
+        return self._objects.get(oid)    
     
     def put(self, instance):
         '''
-        :param INamed full_name: the exposed object.
+        :param INamed oid: the exposed object.
         '''
-        self._objects[instance.full_name] = instance  
+        self._objects[instance.oid] = instance  
         
     def get_case(self, name):
         case = self._cases.get(name)

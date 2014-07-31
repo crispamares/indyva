@@ -38,7 +38,7 @@ class Test(unittest.TestCase):
         
         # Create a table
         data = self.df
-        self._census = self.service.new_table('_census', data, self.schema).full_name
+        self._census = self.service.new_table('_census', data, self.schema).oid
         
     def tearDown(self):
         names.clear()

@@ -14,23 +14,27 @@ class ExistingNameError(ValueError):
 class INamed(object):
     '''
     Objects that inherit this Class will be created with a trusted unique name  
+
+    Actually, what is unique, is the oid. It is registered in the
+    NameAuthority.
     '''
     def __init__(self, name, prefix=''):
         authority = NameAuthority.instance()
         prefix = str(prefix)
         if name is None:
-            name = authority.new_name(prefix)
-        else:
-            authority.register(prefix+name)
+            name = authority.new_name()
         self._name = name
         self._prefix = prefix
+
+        authority.register(self.oid)
         
     @property
     def name(self):
         return self._name
 
     @property
-    def full_name(self):
+    def oid(self):
+        '''An oid (object id) is a unique identificator based on the name'''
         return self._prefix + self._name
     
     def __del__(self):
@@ -38,11 +42,11 @@ class INamed(object):
         authority.unresgister(self._prefix+self._name)
     
     def for_json(self):
-        return self.full_name
+        return self.oid
 
 class NameAuthority(object):
     '''
-    This class creates or ensures unique names in the space name space  
+    This class creates or ensures unique names in the name space
     '''
 
     def __init__(self):
@@ -50,7 +54,8 @@ class NameAuthority(object):
     
     @staticmethod
     def instance():
-        """Returns a global `NameAuthority` instance. 
+        """
+        Returns a global `NameAuthority` instance.
         
         :warning: Not ThreadSafe.
         """
@@ -64,19 +69,20 @@ class NameAuthority(object):
         return hasattr(NameAuthority, "_instance")
         
     def install(self):
-        """Installs this `NameAuthority` object as the singleton instance.
+        """
+        Installs this `NameAuthority` object as the singleton instance.
 
-        This is normally not necessary as `instance()` will create
-        an `NameAuthority` on demand, but you may want to call `install` to use
-        a custom subclass of `NameAuthority`.
+        This is normally not necessary as `instance()` will create an
+        `NameAuthority` on demand, but you may want to call `install`
+        to use a custom subclass of `NameAuthority`.
         """
         assert not NameAuthority.initialized()
         NameAuthority._instance = self
 
     def register(self, name):
         '''
-        Register a name. This method raises an ExistingNameError if the name
-        is already registered
+        Register a name. This method raises an ExistingNameError if the
+        name is already registered
         '''
         print 'registering', name
         if name in self._names:
@@ -86,18 +92,19 @@ class NameAuthority(object):
 
     def unresgister(self, name):
         '''
-        Unregister the name so the same name can be registered in the future 
+        Unregister the name so the same name can be registered in the
+        future
         '''
         print 'unregistering', name
         self._names.pop(name, None)
 
-    def new_name(self, prefix=''):
+    def new_name(self):
         '''
-        Creates a random uuid and register it
+        Creates a random uuid
+
         :return str name
         '''
         name = str(uuid4())
-        self.register(prefix + name)
         return name
     
     def clear(self):
@@ -110,8 +117,8 @@ def register(name):
 def unregister(name):
     authority = NameAuthority.instance()
     return authority.unregister(name)
-def new_name(prefix=''):
-    authority = NameAuthority.instance(prefix)
+def new_name():
+    authority = NameAuthority.instance()
     return authority.new_name()
 def clear():
     authority = NameAuthority.instance()

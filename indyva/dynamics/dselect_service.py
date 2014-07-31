@@ -49,35 +49,35 @@ class DynSelectService(INamed):
         dispatcher.add_method(partial(self._proxy_property, 'query'), 'query')
         dispatcher.add_method(partial(self._proxy_property, 'view_args'), 'view_args')
 
-    def _proxy(self, method, dselect_name, *args, **kwargs):
-        dselect = self._dselects[dselect_name]
+    def _proxy(self, method, dselect_oid, *args, **kwargs):
+        dselect = self._dselects[dselect_oid]
         result = dselect.__getattribute__(method)(*args, **kwargs)
         if isinstance(result, Condition):
-            self._conditions[result.full_name] = result
+            self._conditions[result.oid] = result
         return result
     
-    def _proxy_property(self, method, dselect_name):
-        dselect = self._dselects[dselect_name]
+    def _proxy_property(self, method, dselect_oid):
+        dselect = self._dselects[dselect_oid]
         result = dselect.__getattribute__(method)
         if isinstance(result, Condition):
-            self._conditions[result.full_name] = result
+            self._conditions[result.oid] = result
         return result
     
-    def _condition_proxy(self, method, dselect_name, condition):
-        return self._proxy(method, dselect_name, self._conditions[condition])
+    def _condition_proxy(self, method, dselect_oid, condition):
+        return self._proxy(method, dselect_oid, self._conditions[condition])
         
     def new_dselect(self, name, data, setop='OR'):
         dataset = Showcase.instance().get(data)
         new_dselect = DynSelect(name, dataset, setop)
-        self._dselects[new_dselect.full_name] = new_dselect
+        self._dselects[new_dselect.oid] = new_dselect
         return new_dselect
 
     def expose_dselect(self, dselect):
-        self._dselects[dselect.full_name] = dselect
+        self._dselects[dselect.oid] = dselect
         return dselect
 
-    def del_dselect(self, name):
-        self._dselects.pop(name)
+    def del_dselect(self, oid):
+        self._dselects.pop(oid)
 
     def clear(self):
         self._dselects.clear()

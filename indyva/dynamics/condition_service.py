@@ -65,18 +65,18 @@ class ConditionService(INamed):
         # RangeCondition Methods
         dispatcher.add_method(partial(self._proxy, 'set_range'), 'set_range')
 
-    def _proxy(self, method, condition_name, *args, **kwargs):
-        condition = self._conditions[condition_name]
+    def _proxy(self, method, condition_oid, *args, **kwargs):
+        condition = self._conditions[condition_oid]
         result = condition.__getattribute__(method)(*args, **kwargs)
         if isinstance(result, Condition):
-            self._conditions[result.full_name] = result
+            self._conditions[result.oid] = result
         return result
     
-    def _proxy_property(self, method, condition_name):
-        condition = self._conditions[condition_name]
+    def _proxy_property(self, method, condition_oid):
+        condition = self._conditions[condition_oid]
         result = condition.__getattribute__(method)
         if isinstance(result, Condition):
-            self._conditions[result.full_name] = result
+            self._conditions[result.oid] = result
         return result
             
     def new_condition(self, kind, data, *args, **kwargs):
@@ -87,12 +87,12 @@ class ConditionService(INamed):
             new_condition = AttributeCondition(dataset, *args, **kwargs)
         if kind == 'range':
             new_condition = RangeCondition(dataset, *args, **kwargs)
-        self._conditions[new_condition.full_name] = new_condition
+        self._conditions[new_condition.oid] = new_condition
         return new_condition
 
     def expose_condition(self, condition):
-        self._conditions[condition.full_name] = condition
+        self._conditions[condition.oid] = condition
         return condition
 
-    def del_condition(self, name):
-        self._conditions.pop(name)
+    def del_condition(self, oid):
+        self._conditions.pop(oid)

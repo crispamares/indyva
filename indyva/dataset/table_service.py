@@ -48,35 +48,34 @@ class TableService(INamed):
         dispatcher.add_method(partial(self._proxy, 'add_column'), 'add_column')
         dispatcher.add_method(partial(self._proxy, 'add_derived_column'), 'add_derived_column')
         
-    def _proxy(self, method, table_name, *args, **kwargs):
-        table = self._tables[table_name]
+    def _proxy(self, method, table_oid, *args, **kwargs):
+        table = self._tables[table_oid]
         result = table.__getattribute__(method)(*args, **kwargs)
         if isinstance(result, ITableView):
-            self._tables[result.full_name] = result
+            self._tables[result.oid] = result
         return result
     
-    def _proxy_property(self, method, table_name):
-        table = self._tables[table_name]
+    def _proxy_property(self, method, table_oid):
+        table = self._tables[table_oid]
         result = table.__getattribute__(method)
         if isinstance(result, ITableView):
-            self._tables[result.full_name] = result
+            self._tables[result.oid] = result
         return result
         
     def new_table(self, name, data, schema=None):
         new_table = Table(name, schema).data(data)
-        name = new_table.full_name
-        self._tables[name] = new_table
+        self._tables[new_table.oid] = new_table
         return new_table
 
     def expose_table(self, table):
-        self._tables[table.full_name] = table
+        self._tables[table.oid] = table
         return table
 
-    def del_table(self, name):
-        self._tables.pop(name)
+    def del_table(self, oid):
+        self._tables.pop(oid)
     
-    def __getattr__(self, name):
-        if name in ['name', 'index', 'view_args']:
-            return partial(self._proxy_property, name)
+    def __getattr__(self, method):
+        if method in ['name', 'index', 'view_args']:
+            return partial(self._proxy_property, method)
         else:
-            return partial(self._proxy, name)
+            return partial(self._proxy, method)

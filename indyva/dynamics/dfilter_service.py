@@ -50,35 +50,35 @@ class DynFilterService(INamed):
         dispatcher.add_method(partial(self._proxy_property, 'query'), 'query')
         dispatcher.add_method(partial(self._proxy_property, 'view_args'), 'view_args')
 
-    def _proxy(self, method, dfilter_name, *args, **kwargs):
-        dfilter = self._dfilters[dfilter_name]
+    def _proxy(self, method, dfilter_oid, *args, **kwargs):
+        dfilter = self._dfilters[dfilter_oid]
         result = dfilter.__getattribute__(method)(*args, **kwargs)
         if isinstance(result, Condition):
-            self._conditions[result.full_name] = result
+            self._conditions[result.oid] = result
         return result
     
-    def _proxy_property(self, method, dfilter_name):
-        dfilter = self._dfilters[dfilter_name]
+    def _proxy_property(self, method, dfilter_oid):
+        dfilter = self._dfilters[dfilter_oid]
         result = dfilter.__getattribute__(method)
         if isinstance(result, Condition):
-            self._conditions[result.full_name] = result
+            self._conditions[result.oid] = result
         return result
     
-    def _condition_proxy(self, method, dfilter_name, condition):
-        return self._proxy(method, dfilter_name,  self._conditions[condition])
+    def _condition_proxy(self, method, dfilter_oid, condition):
+        return self._proxy(method, dfilter_oid,  self._conditions[condition])
 
     def new_dfilter(self, name, data, setop='AND'):
         dataset = Showcase.instance().get(data)
         new_dfilter = DynFilter(name, dataset, setop)
-        self._dfilters[new_dfilter.full_name] = new_dfilter
+        self._dfilters[new_dfilter.oid] = new_dfilter
         return new_dfilter
 
     def expose_dfilter(self, dfilter):
-        self._dfilters[dfilter.full_name] = dfilter
+        self._dfilters[dfilter.oid] = dfilter
         return dfilter
 
-    def del_dfilter(self, name):
-        self._dfilters.pop(name)
+    def del_dfilter(self, oid):
+        self._dfilters.pop(oid)
 
     def clear(self):
         self._dfilters.clear()
