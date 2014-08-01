@@ -20,7 +20,7 @@ FPS = 30
 RENDERINTERVAL = 1.0 / FPS  # In seconds
 LOOPINTERVAL = 0.00001      # In seconds
 
-PREFIX = dict(control = 'c:', render = 'r:')
+PREFIX = dict(control = 'ctr:', render = 'r:')
 
 class KernelHub(Hub):
     '''A specialization of :class:`~indyva.epubsub.hub.Hub` that instead of executing the

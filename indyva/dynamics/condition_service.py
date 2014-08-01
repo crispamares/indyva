@@ -10,7 +10,7 @@ from functools import partial
 from indyva.names import INamed
 from indyva.facade.showcase import Showcase
 from .condition import ( Condition, CategoricalCondition, AttributeCondition,
-                         RangeCondition ) 
+                         RangeCondition )
 
 
 class ConditionService(INamed):
@@ -24,7 +24,7 @@ class ConditionService(INamed):
         '''
         self._conditions = Showcase.instance().get_case(name)
         INamed.__init__(self, name)
-    
+
     def register_in(self, dispatcher):
         dispatcher.add_method(self.new_condition)
         dispatcher.add_method(self.expose_condition)
@@ -71,14 +71,14 @@ class ConditionService(INamed):
         if isinstance(result, Condition):
             self._conditions[result.oid] = result
         return result
-    
+
     def _proxy_property(self, method, condition_oid):
         condition = self._conditions[condition_oid]
         result = condition.__getattribute__(method)
         if isinstance(result, Condition):
             self._conditions[result.oid] = result
         return result
-            
+
     def new_condition(self, kind, data, *args, **kwargs):
         dataset = Showcase.instance().get(data)
         if kind == 'categorical':

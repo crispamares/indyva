@@ -10,9 +10,9 @@ from .hub import Hub
 
 class HubService(INamed):
     '''
-    This class provide a facade for the pub/sub mechanism. This class also 
+    This class provide a facade for the pub/sub mechanism. This class also
     allows remote clients to create gateways so the connection can be done
-    between different transports.  
+    between different transports.
     '''
 
     def __init__(self, name='HubSrv'):
@@ -22,7 +22,7 @@ class HubService(INamed):
         self._gateways = {}
         self.hub = None
         INamed.__init__(self, name)
-    
+
     def register_in(self, dispatcher):
         dispatcher.add_method(self.publish)
         dispatcher.add_method(self.subscribe)
@@ -31,11 +31,11 @@ class HubService(INamed):
         dispatcher.add_method(self.clear)
         dispatcher.add_method(self.new_gateway)
         dispatcher.add_method(self.del_gateway)
-        
+
     def publish(self, topic, msg):
         self.hub = self.hub if self.hub is not None else Hub.instance()
         self.hub.publish(topic, msg)
-    
+
     def subscribe(self, gateway, topic):
         gw = self._gateways[gateway]
         gw.subscribe(topic)
@@ -51,14 +51,14 @@ class HubService(INamed):
     def clear(self, gateway):
         gw = self._gateways[gateway]
         gw.clear()
-      
+
     def new_gateway(self, name, transport, port=8081):
         '''
         If the gateway already exists nothing is done.
-        
+
         :param str name: The unique name of the gateway
         :param str transport: ['zmq' | 'ws'] The kind of transport to use
-        :param int port: The port where clients has to connect 
+        :param int port: The port where clients has to connect
         '''
         if name not in self._gateways:
             if transport == 'zmq':
@@ -69,7 +69,6 @@ class HubService(INamed):
                 raise ValueError('{0} Transport not identified. Supported: "zmq", "ws"'
                     .format(transport))
         return self._gateways[name]
-            
+
     def del_gateway(self, name):
         self._gateways.pop(name)
-    

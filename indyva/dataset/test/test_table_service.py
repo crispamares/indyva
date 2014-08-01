@@ -142,7 +142,7 @@ class Test(unittest.TestCase):
 
     def testUpdateEvent(self):
         # TODO: ¿Do the table service provide subscribing facilities
-        table = Table('_census', self.schema).data(self.df)
+        table = self._census
         table.subscribe_once('update', self.callback)
         self.callback_executed = False
         table.update({'State': 'DC'}, {'$set': {'Information':2000}})

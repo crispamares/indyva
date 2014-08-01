@@ -17,20 +17,21 @@ from .sieve import ItemImplicitSieve, AttributeImplicitSieve, ItemExplicitSieve
 
 class Condition(IPublisher, INamed, IDefined):
 
-    def __init__(self, data, name=None, enabled=True):
+    def __init__(self, data, name=None, enabled=True, prefix='c:'):
         '''
         :param data: The dataset that will be queried
-        :param name: If a name is not provided, an uuid is generated
-        :param enabled: If the condition is disabled it will be ignored in the
+        :param str name: If a name is not provided, an uuid is generated
+        :param bool enabled: If the condition is disabled it will be ignored in the
             computation of the ConditionSet combination
+        :param str prefix: Prepended to the name creates the oid 
         '''
-        INamed.__init__(self, name, prefix='c:')
+        INamed.__init__(self, name, prefix=prefix)
         self._data = data
         self._sieve = None
         self._enabled = enabled
 
         topics = ['change', 'enable']
-        bus = Bus(prefix= '{0}:{1}:'.format('c', self.name))
+        bus = Bus(prefix= '{0}{1}:'.format(prefix, self.name))
         IPublisher.__init__(self, bus, topics)
 
     @property
@@ -110,16 +111,17 @@ class Condition(IPublisher, INamed, IDefined):
 
 class CategoricalCondition(Condition):
 
-    def __init__(self, data, attr, categories=[], name=None, bins=None):
+    def __init__(self, data, attr, categories=[], name=None, bins=None, prefix='c:'):
         '''
         :param data: The dataset that will be queried
         :param attr: The attribute that will be used as the category
         :param categories: The categories initially included
         :param name: If a name is not provided, an uuid is generated
         :param bins: If provided, the attribute will be coerced to be
-        categorical by grouping in this number of bins
+                     categorical by grouping in this number of bins
+        :param str prefix: Prepended to the name creates the oid 
         '''
-        Condition.__init__(self, data, name)
+        Condition.__init__(self, data, name, prefix=prefix)
         self._attr = attr
         self._bins = bins
 
@@ -190,13 +192,14 @@ class CategoricalCondition(Condition):
 
 
 class AttributeCondition(Condition):
-    def __init__(self, data, attributes=[], name=None):
+    def __init__(self, data, attributes=[], name=None, prefix='c:'):
         '''
         :param data: The dataset that will be queried
         :param attributes: The attributes initially included
         :param name: If a name is not provided, an uuid is generated
+        :param str prefix: Prepended to the name creates the oid 
         '''
-        Condition.__init__(self, data, name)
+        Condition.__init__(self, data, name, prefix=prefix)
 
         self._sieve = AttributeImplicitSieve(data, attributes)
 
@@ -242,7 +245,7 @@ class AttributeCondition(Condition):
 
 
 class RangeCondition(Condition):
-    def __init__(self, data, attr, range=None, domain=None, name=None):
+    def __init__(self, data, attr, range=None, domain=None, name=None, prefix='c:'):
         '''
         :param data: The dataset that will be queried
         :param attr: The attribute that will compared with range values.
@@ -253,8 +256,9 @@ class RangeCondition(Condition):
         :param domain: {min: val, max: val} The domain of the RangeCondition
             are the maximum and minimum values that the range can get.
         :param name: If a name is not provided, an uuid is generated
+        :param str prefix: Prepended to the name creates the oid 
         '''
-        Condition.__init__(self, data, name)
+        Condition.__init__(self, data, name, prefix=prefix)
         self._attr = attr
 
         #=======================================================================

@@ -31,10 +31,10 @@ class ITableView(object):
                 view_args.append(new_args)
         return view_args
         
-    def _new_name(self, prefix=''):
+    def _new_name(self, table_name=''):
         cls = self.__class__
         cls._id_counter += 1
-        return prefix+':v{0}'.format(cls._id_counter)
+        return table_name+':v{0}'.format(cls._id_counter)
     
     @property
     def index(self):

@@ -25,7 +25,7 @@ class DynSelectService(INamed):
         self._dselects = Showcase.instance().get_case(name)
         self._conditions = Showcase.instance().get_case(condition_srv_name)
         INamed.__init__(self, name)
-    
+
     def register_in(self, dispatcher):
         dispatcher.add_method(self.new_dselect)
         dispatcher.add_method(self.expose_dselect)
@@ -55,20 +55,20 @@ class DynSelectService(INamed):
         if isinstance(result, Condition):
             self._conditions[result.oid] = result
         return result
-    
+
     def _proxy_property(self, method, dselect_oid):
         dselect = self._dselects[dselect_oid]
         result = dselect.__getattribute__(method)
         if isinstance(result, Condition):
             self._conditions[result.oid] = result
         return result
-    
+
     def _condition_proxy(self, method, dselect_oid, condition):
         return self._proxy(method, dselect_oid, self._conditions[condition])
-        
-    def new_dselect(self, name, data, setop='OR'):
+
+    def new_dselect(self, name, data, setop='OR', prefix='s:'):
         dataset = Showcase.instance().get(data)
-        new_dselect = DynSelect(name, dataset, setop)
+        new_dselect = DynSelect(name, dataset, setop, prefix=prefix)
         self._dselects[new_dselect.oid] = new_dselect
         return new_dselect
 

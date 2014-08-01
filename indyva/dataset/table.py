@@ -15,14 +15,17 @@ from .mongo_backend.table import MongoTable
 class TableView(ITableView, IPublisher, INamed):
     _backend = MongoTable
 
-    def __init__(self, parent, view_args):
+    def __init__(self, parent, view_args, prefix='ds:'):
+        '''
+        :param str prefix: Prepended to the name creates the oid 
+        '''
         if parent is not None:
             self._backend = parent._backend
             self._schema = parent._schema
             bus = parent._bus
-            INamed.__init__(self, self._new_name(parent.name), prefix='ds:')
+            INamed.__init__(self, self._new_name(parent.name), prefix=prefix)
         else:
-            bus = Bus(prefix= '{0}:{1}:'.format('ds', self.name))
+            bus = Bus(prefix= '{0}{1}:'.format(prefix, self.name))
         
         topics = ['add', 'update', 'remove']
         IPublisher.__init__(self, bus, topics)
@@ -67,11 +70,16 @@ class TableView(ITableView, IPublisher, INamed):
 class Table(ITable, TableView, INamed):
     _backend = MongoTable
 
-    def __init__(self, name=None, schema=None):
-        self._backend = self._backend(name, schema)
-        INamed.__init__(self, name, prefix='ds:')
+    def __init__(self, name=None, schema=None, prefix='ds:'):
+        '''
+        :param str name: If a name is not provided, an uuid is generated
+        :param schema: The schema associated to the data.  
+        :param str prefix: Prepended to the name creates the oid 
+        '''
+        self._backend = self._backend(name, schema, prefix=prefix)
+        INamed.__init__(self, name, prefix=prefix)
         ITable.__init__(self, schema)
-        TableView.__init__(self, None, None)
+        TableView.__init__(self, None, None, prefix)
         
     def _check_index(self, row_or_rows):
         '''Raise a ValueError if any row does not have valid index keys'''
