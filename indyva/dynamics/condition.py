@@ -17,7 +17,7 @@ from .sieve import ItemImplicitSieve, AttributeImplicitSieve, ItemExplicitSieve
 
 class Condition(IPublisher, INamed, IDefined):
 
-    def __init__(self, data, name=None, enabled=True, prefix='c:'):
+    def __init__(self, data, name=None, enabled=True, prefix=''):
         '''
         :param data: The dataset that will be queried
         :param str name: If a name is not provided, an uuid is generated
@@ -111,7 +111,7 @@ class Condition(IPublisher, INamed, IDefined):
 
 class CategoricalCondition(Condition):
 
-    def __init__(self, data, attr, categories=[], name=None, bins=None, prefix='c:'):
+    def __init__(self, data, attr, categories=[], name=None, bins=None, prefix=''):
         '''
         :param data: The dataset that will be queried
         :param attr: The attribute that will be used as the category
@@ -192,7 +192,7 @@ class CategoricalCondition(Condition):
 
 
 class AttributeCondition(Condition):
-    def __init__(self, data, attributes=[], name=None, prefix='c:'):
+    def __init__(self, data, attributes=[], name=None, prefix=''):
         '''
         :param data: The dataset that will be queried
         :param attributes: The attributes initially included
@@ -245,7 +245,7 @@ class AttributeCondition(Condition):
 
 
 class RangeCondition(Condition):
-    def __init__(self, data, attr, range=None, domain=None, name=None, prefix='c:'):
+    def __init__(self, data, attr, range=None, domain=None, name=None, prefix=''):
         '''
         :param data: The dataset that will be queried
         :param attr: The attribute that will compared with range values.

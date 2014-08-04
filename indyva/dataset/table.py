@@ -15,7 +15,7 @@ from .mongo_backend.table import MongoTable
 class TableView(ITableView, IPublisher, INamed):
     _backend = MongoTable
 
-    def __init__(self, parent, view_args, prefix='ds:'):
+    def __init__(self, parent, view_args, prefix=''):
         '''
         :param str prefix: Prepended to the name creates the oid 
         '''
@@ -70,7 +70,7 @@ class TableView(ITableView, IPublisher, INamed):
 class Table(ITable, TableView, INamed):
     _backend = MongoTable
 
-    def __init__(self, name=None, schema=None, prefix='ds:'):
+    def __init__(self, name=None, schema=None, prefix=''):
         '''
         :param str name: If a name is not provided, an uuid is generated
         :param schema: The schema associated to the data.  

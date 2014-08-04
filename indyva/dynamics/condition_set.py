@@ -18,7 +18,7 @@ class ConditionSet(IPublisher, INamed, IDefined):
     DynFilter and DynSelect
     '''
 
-    def __init__(self, name, data, setop='AND', prefix='cs:'):
+    def __init__(self, name, data, setop='AND', prefix=''):
         '''
         :param str name: unique name
         :param data: the dataset that is going to suffer the conditions

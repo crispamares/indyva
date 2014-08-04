@@ -17,7 +17,7 @@ class DynFilter(ConditionSet):
     operation (a.k.a. AND) unless you specify the contrary
     '''
 
-    def __init__(self, name, data, setop='AND', prefix='f:'):
+    def __init__(self, name, data, setop='AND', prefix=''):
         '''
         :param str name: unique name
         :param data: the dataset that is going to suffer the conditions

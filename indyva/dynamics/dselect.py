@@ -18,7 +18,7 @@ class DynSelect(ConditionSet):
      (a.k.a. OR) unless you specify the contrary
     '''
 
-    def __init__(self, name, data, setop='OR', prefix='s:'):
+    def __init__(self, name, data, setop='OR', prefix=''):
         '''
         :param str name: unique name
         :param data: the dataset that is going to suffer the conditions

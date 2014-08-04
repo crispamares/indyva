@@ -67,7 +67,7 @@ class DynFilterService(INamed):
     def _condition_proxy(self, method, dfilter_oid, condition):
         return self._proxy(method, dfilter_oid,  self._conditions[condition])
 
-    def new_dfilter(self, name, data, setop='AND', prefix='f:'):
+    def new_dfilter(self, name, data, setop='AND', prefix=''):
         dataset = Showcase.instance().get(data)
         new_dfilter = DynFilter(name, dataset, setop, prefix=prefix)
         self._dfilters[new_dfilter.oid] = new_dfilter

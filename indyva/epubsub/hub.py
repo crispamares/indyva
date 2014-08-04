@@ -111,6 +111,7 @@ class Hub(object):
         
     def publish(self, topic, msg):
         ''' TODO: publish No one subscribe through meta topic'''
+        #if topic != 'r:':   print '*** publish: ', topic, msg
         oids_to_remove = []
         oids = self._subscriptions.get(topic, {})
         for oid, destinations in oids.items():

@@ -62,7 +62,7 @@ class TableService(INamed):
             self._tables[result.oid] = result
         return result
         
-    def new_table(self, name, data, schema=None, prefix='ds:'):
+    def new_table(self, name, data, schema=None, prefix=''):
         '''
         :param str name: If a name is not provided, an uuid is generated
         :param dict data: A list of dicts, each dict is a row. 

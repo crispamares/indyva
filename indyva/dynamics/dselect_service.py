@@ -66,7 +66,7 @@ class DynSelectService(INamed):
     def _condition_proxy(self, method, dselect_oid, condition):
         return self._proxy(method, dselect_oid, self._conditions[condition])
 
-    def new_dselect(self, name, data, setop='OR', prefix='s:'):
+    def new_dselect(self, name, data, setop='OR', prefix=''):
         dataset = Showcase.instance().get(data)
         new_dselect = DynSelect(name, dataset, setop, prefix=prefix)
         self._dselects[new_dselect.oid] = new_dselect
