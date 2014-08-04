@@ -83,8 +83,8 @@ class IPublisher(object):
         This property is used in the pub_result decorator. The publisher_id
         will identify the publisher.
         
-        The id will be the name attribute of the instance or '' if not
+        The id will be the oid attribute of the instance or '' if not
         name exists.
         '''
-        return self.name if hasattr(self, 'name') else '' 
+        return self.oid if hasattr(self, 'name') else '' 
         

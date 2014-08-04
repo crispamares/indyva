@@ -36,11 +36,11 @@ class DynFilterService(INamed):
         dispatcher.add_method(partial(self._proxy, 'new_attribute_condition'), 'new_attribute_condition')
         dispatcher.add_method(partial(self._proxy, 'new_range_condition'), 'new_range_condition')
         # ConditionSet Methods
-        dispatcher.add_method(partial(self._condition_proxy, 'add_condition'), 'add_condition')
-        dispatcher.add_method(partial(self._condition_proxy, 'set_condition'), 'set_condition')
-        dispatcher.add_method(partial(self._condition_proxy, 'update'), 'update')
-        dispatcher.add_method(partial(self._condition_proxy, 'remove_condition'), 'remove_condition')
-        dispatcher.add_method(partial(self._condition_proxy, 'has_condition'), 'has_condition')
+        dispatcher.add_method(partial(self._proxy, 'add_condition'), 'add_condition')
+        dispatcher.add_method(partial(self._proxy, 'set_condition'), 'set_condition')
+        dispatcher.add_method(partial(self._proxy, 'update'), 'update')
+        dispatcher.add_method(partial(self._proxy, 'remove_condition'), 'remove_condition')
+        dispatcher.add_method(partial(self._proxy, 'has_condition'), 'has_condition')
         dispatcher.add_method(partial(self._proxy, 'get_condition'), 'get_condition')
         # ConditionSet Properties
         dispatcher.add_method(partial(self._proxy_property, 'name'), 'name')
@@ -63,9 +63,6 @@ class DynFilterService(INamed):
         if isinstance(result, Condition):
             self._conditions[result.oid] = result
         return result
-
-    def _condition_proxy(self, method, dfilter_oid, condition):
-        return self._proxy(method, dfilter_oid,  self._conditions[condition])
 
     def new_dfilter(self, name, data, setop='AND', prefix=''):
         dataset = Showcase.instance().get(data)

@@ -39,12 +39,12 @@ class ConditionSet(IPublisher, INamed, IDefined):
     def _retransmit_change(self, topic, msg):
         #print "retransmit"
         msg['original_topic'] = topic
-        condition_name = msg['origin']
-        condition = self._conditions[condition_name]
+        condition_oid = msg['origin']
+        condition = self._conditions[condition_oid]
         if condition.enabled:
-            self._sieves.set_sieve(condition_name, condition.sieve)
-        elif self._sieves.has_sieve(condition_name):
-            self._sieves.remove_sieve(condition_name)
+            self._sieves.set_sieve(condition_oid, condition.sieve)
+        elif self._sieves.has_sieve(condition_oid):
+            self._sieves.remove_sieve(condition_oid)
         self._bus.publish('change', msg)
 
     def _set_condition(self, condition):
@@ -56,17 +56,17 @@ class ConditionSet(IPublisher, INamed, IDefined):
         if condition.data != self._data:
             raise ValueError("Condition has {0} dataset, {1} expected"
                              .format(condition.data.name, self._data.name))
-        self._conditions[condition.name] = condition
+        self._conditions[condition.oid] = condition
         condition.subscribe('change', self._retransmit_change)
         condition.subscribe('enable', self._retransmit_change)
         if condition.enabled:
-            self._sieves.set_sieve(condition.name, condition.sieve)
+            self._sieves.set_sieve(condition.oid, condition.sieve)
         return condition
 
     @pub_result('change')
     def add_condition(self, condition):
         '''
-        If the condition (name) already exists a ValueError is raised.
+        If the condition (oid) already exists a ValueError is raised.
         Every condition has to share the same data as this dynamic otherwise
          a ValueError is raised
         :param Condition condition: A Condition
@@ -75,12 +75,12 @@ class ConditionSet(IPublisher, INamed, IDefined):
 
     def _add_condition(self, condition):
         '''
-        If the condition (name) already exists a ValueError is raised.
+        If the condition (oid) already exists a ValueError is raised.
         Every condition has to share the same data as this dynamic otherwise
          a ValueError is raised
         :param Condition condition: A Condition
         '''
-        if self.has_condition(condition.name):
+        if self.has_condition(condition.oid):
             raise ValueError(
                 "Already exists a condition with the given name: {0}"
                 .format(condition.name))
@@ -101,7 +101,7 @@ class ConditionSet(IPublisher, INamed, IDefined):
         '''
         :param Condition condition: A previously added Condition
         '''
-        if not self.has_condition(condition.name):
+        if not self.has_condition(condition.oid):
             raise ValueError("There are no conditions with the given name: {0}"
                              .format(condition.name))
         return self._set_condition(condition)
@@ -109,33 +109,33 @@ class ConditionSet(IPublisher, INamed, IDefined):
     @pub_result('remove')
     def remove_condition(self, condition):
         '''
-        :param condition: Could be a the name of the condition itself
+        :param condition: Could be a the oid of the condition itself
         '''
-        name = condition.name if isinstance(condition, Condition) else condition
-        self._conditions.pop(name)
-        self._sieves.remove_sieve(name)
-        return name
+        oid = condition.oid if isinstance(condition, Condition) else condition
+        self._conditions.pop(oid)
+        self._sieves.remove_sieve(oid)
+        return oid
 
     def has_condition(self, condition):
         '''
-        :param condition: Could be a the name of the condition itself
+        :param condition: Could be a the oid of the condition itself
         '''
 
-        name = condition.name if isinstance(condition, Condition) else condition
-        return name in self._conditions and self._sieves.has_sieve(name)
+        oid = condition.oid if isinstance(condition, Condition) else condition
+        return oid in self._conditions and self._sieves.has_sieve(oid)
 
-    def get_condition(self, name, default=None):
+    def get_condition(self, oid, default=None):
         '''
-        :param str name: The key of the condition.
+        :param str oid: The key of the condition.
         '''
-        return self._conditions.get(name, default)
+        return self._conditions.get(oid, default)
 
     def clear(self):
         '''
         Remove all conditions in the condition set
         '''
-        for name in self._conditions.keys():
-            self.remove_condition(name)
+        for oid in self._conditions.keys():
+            self.remove_condition(oid)
 
     def is_empty(self):
         return (not self._conditions) and self._sieves.is_empty()
