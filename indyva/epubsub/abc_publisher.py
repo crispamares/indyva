@@ -55,12 +55,13 @@ class IPublisher(object):
     
     __metaclass__ = ABCMeta
 
-    def __init__(self, bus, topics=[]):
+    def __init__(self, bus, topics=None):
         '''
-        @param bus: epubsub.bus.Bus
+        :param epubsub.bus.Bus bus: The bus to publish thought 
+        :param list topics: A list of possible topics to use
         '''
         self._bus = bus
-        self._topics = topics
+        self._topics = topics if topics is not None else []
         
     def subscribe(self, topic, destination):
         if TESTSUBSCRIPTION:
