@@ -9,10 +9,10 @@ import unittest
 import pandas as pn
 import json
 from collections import OrderedDict
-import exceptions
 
 from indyva.dataset import RSC_DIR
 from indyva.dataset.table import Table, TableView
+
 
 class Test(unittest.TestCase):
 
@@ -21,27 +21,27 @@ class Test(unittest.TestCase):
         self.callback_executed = True
 
     def setUp(self):
-        self.df = pn.read_csv(RSC_DIR+'/census.csv')
-        with open(RSC_DIR+'/schema_census') as f:
+        self.df = pn.read_csv(RSC_DIR + '/census.csv')
+        with open(RSC_DIR + '/schema_census') as f:
             schema = json.loads(f.read())
-        
-        self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
+
+        self.schema = OrderedDict(attributes=schema['attributes'], index=schema['index'])
         self.callback_executed = False
-        
+
     def testCreationAsList(self):
         data = []
         for i in range(len(self.df)):
             data.append(self.df.ix[i].to_dict())
-           
+
         Table('census', self.schema).data(data)
 
     def testCreationAsDataFrame(self):
         data = self.df
         Table('census', self.schema).data(data)
-        
+
     def testCreationWithoutSchema(self):
-        self.assertRaises(exceptions.NotImplementedError, lambda: Table('census'))
-        
+        Table('census')
+
     def testGetData(self):
         table = Table('census', self.schema).data(self.df)
         self.assertEqual(len(table.get_data()), len(self.df))
@@ -58,11 +58,11 @@ class Test(unittest.TestCase):
         self.assertIsInstance(view, TableView)
         for result in view.get_data():
             self.assertIn(result['State'], ['DC','NY'])
-            
+
     def testMultiFind(self):
         table = Table('census', self.schema).data(self.df)
         view = table.find({'$or':[{'State': 'NY'},{'State': 'DC'}]})
-        view2 = view.find({'Information':{'$gt':  200000}})
+        view2 = view.find({'Information':{'$gt': 200000}})
         self.assertIsInstance(view, TableView)
         for result in view.get_data():
             self.assertIn(result['State'], ['DC','NY'])
@@ -78,16 +78,16 @@ class Test(unittest.TestCase):
         self.assertEqual(len(distincts), 3)
         for result in distincts:
             self.assertIn(result, ['DC','NY','CA'])
-            
+
         distinct_view = view.distinct('State', as_view=True)
         self.assertIsInstance(distinct_view, TableView)
         result = distinct_view.get_data(outtype='c_list')
         self.assertEqual(result, {'State': ['NY', 'DC', 'CA']})
-        
-        view2 = view.find({'Information':{'$gt':  200000}})
+
+        view2 = view.find({'Information':{'$gt': 200000}})
         result = view2.distinct('State')
         self.assertEqual(result, ['NY', 'CA'])
-        
+
     def testIndexItems(self):
         table = Table('census', self.schema).data(self.df)
         table.insert({'State': 'DC', 'life_meaning':42})
@@ -113,7 +113,7 @@ class Test(unittest.TestCase):
         self.assertEqual(view.column_count(), 2)
         view2 = view.find({}, {'State':True})
         self.assertEqual(view2.column_count(), 1)
-        
+
     def testColumnNames(self):
         table = Table('census', self.schema).data(self.df)
         self.assertEqual(len(table.column_names()), 22)
@@ -121,17 +121,17 @@ class Test(unittest.TestCase):
         self.assertEqual(view.column_names(), ['Information', 'State'])
         view2 = view.find({}, {'State':True})
         self.assertEqual(view2.column_names(), ['State'])
-        
+
     def testCheckIndex(self):
         table = Table('census', self.schema).data(self.df)
         with self.assertRaises(ValueError):
             table._check_index({'life_meaning':42})
         table._check_index({'State': 'ES', 'life_meaning':42})
-        
+
     def testIndex(self):
         table = Table('census', self.schema).data(self.df)
         self.assertEqual(table.index, 'State')
-                
+
     def testInsert(self):
         table = Table('census', self.schema).data(self.df)
         c1 = table.row_count()
@@ -142,18 +142,18 @@ class Test(unittest.TestCase):
         table.insert([{'State': 'ES', 'life_meaning':42},
                       {'State': 'ES2', 'life_meaning':42},])
         self.assertEqual(table.row_count() - c2, 2)
-        
+
         view = table.find({'life_meaning': {'$exists':True}})
         self.assertEqual(view.row_count(), 3)
-        self.assertEqual( table.find_one({'life_meaning': {'$exists':True}})['life_meaning'], 42)
-        
+        self.assertEqual(table.find_one({'life_meaning': {'$exists':True}})['life_meaning'], 42)
+
     def testAddEvent(self):
         table = Table('census', self.schema).data(self.df)
         table.subscribe_once('add', self.callback)
         self.callback_executed = False
         table.insert({'State': 'ES', 'life_meaning':42})
         self.assertTrue(self.callback_executed)
-        
+
     def testUpdate(self):
         table = Table('census', self.schema).data(self.df)
         val = table.find_one({'State': 'DC'}, {'Information':True})['Information']
@@ -167,14 +167,14 @@ class Test(unittest.TestCase):
         self.callback_executed = False
         table.update({'State': 'DC'}, {'$set': {'Information':2000}})
         self.assertTrue(self.callback_executed)
-        
+
     def testRemove(self):
         table = Table('census', self.schema).data(self.df)
         query = {'State': 'DC'}
         c1 = table.find(query).row_count()
         table.remove(query)
         self.assertGreater(c1, table.find(query).row_count())
-    
+
     def testRemoveEvent(self):
         table = Table('census', self.schema).data(self.df)
         query = {'State': 'DC'}
@@ -182,11 +182,6 @@ class Test(unittest.TestCase):
         self.callback_executed = False
         table.remove(query)
         self.assertTrue(self.callback_executed)
-        
-        
-        
-        
-        
+
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testConstructor']
     unittest.main()

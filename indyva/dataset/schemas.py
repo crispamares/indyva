@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
 Any dataset in indyva must be coupled with a description. This
-description is what we call a Schema. 
+description is what we call a Schema.
 
 There are two level of descriptions in a dataset. The first one is
 composed by the features of the dataset itself and, more interesting,
@@ -17,6 +17,8 @@ import types
 from copy import copy
 
 import pandas as pd
+import json
+from indyva import for_json_bridge
 
 DataSetTypes = type("DataSetTypes", (),
                     dict(TABLE='TABLE', NETWORK='NETWORK', TREE='TREE'))
@@ -26,7 +28,8 @@ AttributeTypes = type("AttributeTypes", (),
                            QUANTITATIVE='QUANTITATIVE',
                            UNKNOWN='UNKNOWN'))
 
-class DataSetSchema:
+
+class DataSetSchema(object):
     '''
     A DataSet Schema is the definition of the related DataSet. At least, inside the
     schema are defined the DataSetType and Index.
@@ -37,9 +40,9 @@ class DataSetSchema:
     def __init__(self, index):
         self._schema = OrderedDict()
         self._schema['dataset_type'] = None
-        
+
         if index is None:
-            raise ValueError, "Every DataSetSchema needs an index, None provided"
+            raise ValueError("Every DataSetSchema needs an index, None provided")
         elif isinstance(index, types.StringTypes):
             self._schema['index'] = index
         else:
@@ -88,9 +91,16 @@ class DataSetSchema:
         '''
         return self._schema['index']
 
+    def __repr__(self):
+        return json.dumps(dict(attributes=dict(self._schema['attributes']),
+                               index=self._schema['index']),
+                          default=for_json_bridge,
+                          indent=True)
+
+
 class TableSchema(DataSetSchema):
     '''
-    The TableSchema describes the schema of a Table Dataset.  
+    The TableSchema describes the schema of a Table Dataset.
 
     Adds a field called attributes which is an ordered dict of
     AttributeSchemas
@@ -111,7 +121,7 @@ class TableSchema(DataSetSchema):
     def is_spatial(self):
         '''
         A DataSet is spatial iff one of its components has spatial semantics
-        
+
         :returns: bool
         '''
         return any( (a.is_spatial() for a in self.attributes) )
@@ -119,12 +129,12 @@ class TableSchema(DataSetSchema):
     def add_attribute(self, name, attribute_schema):
         '''
         Add a new attribute to the schema of the table
-        
+
         :param name: str must be unique in the schema of the table
         :param attribute_schema: AttributeSchema, AttributeType or
         kwargs of AttributeSchema's __init__ .
         '''
-        if self._schema['attributes'].has_key(name):
+        if name in self._schema['attributes']:
             raise ValueError('Name must be unique in the schema')
         if isinstance(attribute_schema, types.StringTypes):
             attribute_schema = AttributeSchema(attribute_schema)
@@ -153,13 +163,14 @@ class TableSchema(DataSetSchema):
         elif isinstance(data, list):
             df = pd.DataFrame(data)
             # Key needs to be infered
-        
+
         schemas = OrderedDict()
         index = None
         for column in df.columns:
-             schemas[column] = AttributeSchema.infer_from_data(df[column])
-             index = column if index == None and schemas[column].is_key() else None
-        
+            schemas[column] = AttributeSchema.infer_from_data(df[column])
+            if index is None:
+                index = column if schemas[column].is_key() else None
+
         return TableSchema(schemas, index)
 
 
@@ -168,6 +179,7 @@ def negation(f):
     def wrapper(*args, **kwargs):
         return not f(*args, **kwargs)
     return wrapper
+
 
 class AttributeSchema(object):
     '''The AttributeSchema describes the schema of any Attribute in any item '''
@@ -195,7 +207,7 @@ class AttributeSchema(object):
     def to_dict(self):
         '''
         Returns a serial representation of the schema. Use the output of
-        this method as the input of a serializer like json 
+        this method as the input of a serializer like json
 
         :returns: OrderedDict
         '''
@@ -254,6 +266,8 @@ class AttributeSchema(object):
     def __repr__(self):
         return 'AttributeSchema({0})'.format(self._schema)
 
+    for_json = to_dict
+
     @staticmethod
     def infer_from_data(data):
         '''
@@ -308,8 +322,8 @@ class AttributeSchema(object):
 
         if series.nunique() <= series.size * 0.25:
             schema.update(attribute_type=AttributeTypes.CATEGORICAL)
-        elif (series.unique() == series.size and
-              series.max() - series.min() == series.size -1):
+        elif (series.nunique() == series.size and
+              series.max() - series.min() == series.size - 1):
             schema.update(attribute_type= AttributeTypes.ORDINAL,
                           key= True)
 
@@ -325,7 +339,7 @@ class AttributeSchema(object):
                       infered = True)
 
         if series.nunique() == series.size:
-            schema.update(key= True)
+            schema.update(key=True)
 
         return AttributeSchema(**schema)
 

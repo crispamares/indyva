@@ -114,8 +114,9 @@ class ITable(ITableView):
         '''
         
         if schema is None:
-            raise exceptions.NotImplementedError("Inferring the schema is not yet implemented") 
-        
+            # The schema will be infered from data when provided
+            self._schema = None
+      
         if isinstance(schema, dict):
             self._schema = schemas.TableSchema(schema['attributes'], schema['index'])
         elif isinstance(schema, schemas.TableSchema):

@@ -9,7 +9,7 @@ from indyva.names import INamed
 
 from .abc_table import ITable, ITableView
 from .mongo_backend.table import MongoTable
-
+from . import schemas
 
 
 class TableView(ITableView, IPublisher, INamed):
@@ -94,6 +94,8 @@ class Table(ITable, TableView, INamed):
         @param data: Tabular data. Supported forms are: dict, DataFrame
         @return: self
         '''
+        if self._schema is None:
+            self._schema = schemas.TableSchema.infer_from_data(data)
         self._backend.data(data)
         return self
 

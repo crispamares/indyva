@@ -6,8 +6,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Accommodation and food services":
 	{
@@ -15,8 +14,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Administrative and support and waste management and remediation services": 
 	{
@@ -24,8 +22,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Agriculture, forestry, fishing and hunting":
 	{
@@ -33,8 +30,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Arts, entertainment, and recreation":
 		{
@@ -42,8 +38,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Construction":
 	{
@@ -51,8 +46,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	}, 
 	"Educational services":
 	{
@@ -60,8 +54,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Finance and insurance":
 	{
@@ -69,8 +62,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Health care and social assistance":
 	{
@@ -78,8 +70,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Industries not classified":
 	{
@@ -87,8 +78,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Information":
 	{
@@ -96,8 +86,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},	
 	"Management of companies and enterprises":
 	{
@@ -105,8 +94,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Manufacturing":
 	{
@@ -114,8 +102,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Mining, quarrying, and oil and gas extraction":
 	{
@@ -123,8 +110,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Other services (except public administration)":
 	{
@@ -132,8 +118,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Professional, scientific, and technical services":
 	{
@@ -141,8 +126,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Real estate and rental and leasing":
 	{
@@ -150,8 +134,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},	
 	"Retail trade":
 	{
@@ -159,8 +142,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Total for all sectors":
 	{
@@ -168,8 +150,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Transportation and warehousing":
 	{
@@ -177,8 +158,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Utilities":
 	{
@@ -186,8 +166,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	},
 	"Wholesale trade":
 	{
@@ -195,8 +174,7 @@
 	 "spatial": false, 
 	 "key": false, 
 	 "shape": [], 
-	 "continuous": false, 
-	 "multivaluated": false
+	 "continuous": false
 	}
 },
 "index": "State"	

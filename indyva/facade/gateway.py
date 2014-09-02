@@ -11,13 +11,7 @@ import gevent
 
 from indyva.names import INamed
 from indyva.epubsub.bus import Bus
-
-
-def for_json_bridge(o):
-    try:
-        return o.for_json()
-    except AttributeError, e:
-        raise TypeError('{0} is not JSON serializable'.format(o))
+from indyva import for_json_bridge
 
 
 class Gateway(INamed):
