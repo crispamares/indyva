@@ -10,7 +10,7 @@ from .front_service import FrontService
 from indyva.dataset import table_service
 from indyva.epubsub import hub_service
 from indyva.dynamics import condition_service, dselect_service, dfilter_service
-
+from indyva.IO import io_service
 
 
 class Front(RPCDispatcher):
@@ -52,6 +52,7 @@ class Front(RPCDispatcher):
         self.add_service(condition_service.ConditionService('ConditionSrv'))
         self.add_service(dselect_service.DynSelectService('DynSelectSrv', 'ConditionSrv'))
         self.add_service(dfilter_service.DynFilterService('DynFilterSrv', 'ConditionSrv'))
+        self.add_service(io_service.IOService('IOSrv', 'TableSrv'))
         
     def add_service(self, service):
         subdispatcher = RPCDispatcher()
