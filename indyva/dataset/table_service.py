@@ -11,6 +11,7 @@ from indyva.facade.showcase import Case
 from .table import Table
 from .abc_table import ITableView
 
+
 class TableService(INamed):
     '''
     This class provide a facade for managing table objects
@@ -22,7 +23,7 @@ class TableService(INamed):
         '''
         self._tables = Case()
         INamed.__init__(self, name)
-    
+
     def register_in(self, dispatcher):
         dispatcher.add_method(self.new_table)
         dispatcher.add_method(self.expose_table)
@@ -30,6 +31,7 @@ class TableService(INamed):
         # TableView properties
         dispatcher.add_method(partial(self._proxy_property, 'name'), 'name')
         dispatcher.add_method(partial(self._proxy_property, 'index'), 'index')
+        dispatcher.add_method(partial(self._proxy_property, 'schema'), 'schema')
         dispatcher.add_method(partial(self._proxy_property, 'view_args'), 'view_args')
         # TableView methods
         dispatcher.add_method(partial(self._proxy, 'get_data'), 'get_data')
@@ -47,27 +49,27 @@ class TableService(INamed):
         dispatcher.add_method(partial(self._proxy, 'remove'), 'remove')
         dispatcher.add_method(partial(self._proxy, 'add_column'), 'add_column')
         dispatcher.add_method(partial(self._proxy, 'add_derived_column'), 'add_derived_column')
-        
+
     def _proxy(self, method, table_oid, *args, **kwargs):
         table = self._tables[table_oid]
         result = table.__getattribute__(method)(*args, **kwargs)
         if isinstance(result, ITableView):
             self._tables[result.oid] = result
         return result
-    
+
     def _proxy_property(self, method, table_oid):
         table = self._tables[table_oid]
         result = table.__getattribute__(method)
         if isinstance(result, ITableView):
             self._tables[result.oid] = result
         return result
-        
+
     def new_table(self, name, data, schema=None, prefix=''):
         '''
         :param str name: If a name is not provided, an uuid is generated
-        :param dict data: A list of dicts, each dict is a row. 
-        :param schema: The schema associated to the data.  
-        :param str prefix: Prepended to the name creates the oid 
+        :param dict data: A list of dicts, each dict is a row.
+        :param schema: The schema associated to the data.
+        :param str prefix: Prepended to the name creates the oid
         '''
         new_table = Table(name, schema, prefix=prefix).data(data)
         self._tables[new_table.oid] = new_table
@@ -79,9 +81,9 @@ class TableService(INamed):
 
     def del_table(self, oid):
         self._tables.pop(oid)
-    
+
     def __getattr__(self, method):
-        if method in ['name', 'index', 'view_args']:
+        if method in ['name', 'index', 'view_args', 'schema']:
             return partial(self._proxy_property, method)
         else:
             return partial(self._proxy, method)
