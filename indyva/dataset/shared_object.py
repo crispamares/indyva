@@ -3,11 +3,46 @@ from indyva.epubsub.bus import Bus
 from indyva.names import INamed
 from indyva.grava import IDefined
 
+from copy import copy
+
+
+class VersionError(Exception):
+    '''
+    This Exception is raised when there is a modification
+    conflict. Prevents silent data races.
+    '''
+
+
 class SharedObject(INamed, IPublisher, IDefined):
     '''
-    A SharedObject (SOs) is a base class for flexible containers that might
-    contain application state, be shared between process or described
-    with a grammar.
+    A SharedObject (SOs) is a flexible container for application state.
+
+    * All changes are published under a "change" topic.
+    * It can be described with a grammar.
+    * It is designed to be shared between processes.
+
+    Version Control
+    ---------------
+
+    It does not provide any high level API for modification, instead
+    the contained data is pulled by clients, modified and pushed back
+    again. The push method can fail if the SO had been modified in
+    between pull and push.
+
+    To support this conflict-aware behavior the SO maintains a simple
+    version control. The contained data is pulled coupled with a
+    version tag, then the client might modify the data and eventually
+    the client might pushes the modified data back along with the
+    given version tag. This push process can fail if the pushed
+    version tag is older than the internal version. Every modification
+    generates a new version.
+
+    When to use them
+    ----------------
+
+    They are designed to contain small amount of data. A SO has one
+    collection inside, either a dictionary or a list. No other
+    data types are allowed.
 
     The flexibility of this objects comes at a price. Usually the
     reusability of modules depending on shared objects is compromised
@@ -18,38 +53,61 @@ class SharedObject(INamed, IPublisher, IDefined):
 
     Also, take a look to the dynamics and use them instead if can find
     something that feet your needs.
+
     '''
-    def __init__(self, name, topics=None, prefix=''):
+    def __init__(self, name, data, topics=None, prefix=''):
         INamed.__init__(self, name, prefix=prefix)
 
-        self._sos = {}
+        self._check_data(data)
 
-        default_topics = ['change', 'attach', 'detach']
+        self._data = data
+        self._version = 1
+
+        default_topics = ['change']
         topics = default_topics if topics is None else default_topics.append(topics)
-        bus = Bus(prefix= '{0}{1}:'.format(prefix, self.name))
+        bus = Bus(prefix='{0}{1}:'.format(prefix, self.name))
         IPublisher.__init__(self, bus, topics)
+
+    def pull(self):
+        '''
+        Returns the inner state of the SharedObject and the current
+        version. You should keep the version tag because is needed for
+        pushing back the changes.
+
+        :returns: (data, version)
+        '''
+        return (copy(self._data), copy(self._version))
+
+    @pub_result('change')
+    def push(self, data, version):
+        '''
+        Modify the inner state of the SharedObject. Will fail if detects
+        conflicts with the version tag.
+
+        :raises `VersionError`: When the provided version is older than the current
+
+        :param data: list or dict. The updated data.
+        :param version: This should be the returned by pull or push methods.
+
+        :returns: The version generated after the modification.
+                  Becomes the current one.
+        '''
+        self._check_data(data)
+        if version < self._version:
+            raise VersionError("Version confict ocurred in SharedObject '{0}'"
+                               .format(self.name))
+
+        self._data = data
+        self._version += 1
+
+        return copy(self._version)
 
     @property
     def grammar(self):
-        gv = dict(name = self.name)
-        if self._sos:
-            gv.update(dict(sos = {so.oid : so.grammar for so in self._sos.values}))
+        gv = dict(name=self.name, data=self._data)
         return gv
 
-    def _retransmit_change(self, topic, msg):
-        msg['original_topic'] = topic
-        self._bus.publish('change', msg)
-
-    @pub_result('attach')
-    def attach_so(self, so):
-        
-        self._sos[so.oid] = so
-        so.subscribe('change', self._retransmit_change)
-        return so
-
-    @pub_result('detach')
-    def detach_so(self, so):
-        so = self._sos.pop(so)
-        so.unsubscribe('change', self._retransmit_change)
-        return so
-
+    def _check_data(self, data):
+        if not isinstance(data, (dict, list)):
+            raise ValueError("SharedObject only support dict or list data types:\n"
+                             + "\t {0} provided".format(data))
