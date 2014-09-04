@@ -1,7 +1,7 @@
 '''
 Created on Jul 19, 2013
 
-@author: crispamares
+:author: Juan Morales
 '''
 
 from functools import partial
