@@ -22,7 +22,7 @@ from werkzeug.utils import redirect
 class ZMQServer(RPCServerGreenlets):
     def __init__(self, port=10111):
         ctx = zmq.Context.instance()
-        transport = ZmqServerTransport.create(ctx, 'tcp://127.0.0.1:'+str(port))
+        transport = ZmqServerTransport.create(ctx, 'tcp://*:'+str(port))
         protocol = JSONRPCProtocol()
         dispatcher = Front.instance()
         RPCServerGreenlets.__init__(self, transport, protocol, dispatcher)
