@@ -46,9 +46,10 @@ class ZMQGateway(Gateway):
         
         ctx = zmq.Context.instance()
         self.socket = ctx.socket(zmq.PUB)
-        self.socket.bind('tcp://127.0.0.1:'+str(port))
+        self.socket.bind('tcp://*:'+str(port))
         
     def publish(self, topic, msg):
+        print self.name + " ---- publishing --- "
         msg_json = json.dumps(msg, default=for_json_bridge)
         self.socket.send_multipart([str(topic), msg_json])
 
