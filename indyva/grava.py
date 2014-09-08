@@ -11,7 +11,7 @@ class IDefined(object):
     '''
     An IDefined has a grammar that represents its configuration and state
 
-    It also has the ability to build an instace from a gramar 
+    It also has the ability to build an instace from a grammar 
 
      In other to chain the creation of every node of the grammar it is
      useful to register the IDefined like this:

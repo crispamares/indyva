@@ -104,7 +104,9 @@ class SharedObject(INamed, IPublisher, IDefined):
 
     @property
     def grammar(self):
-        gv = dict(name=self.name, data=self._data)
+        gv = {"type":"shared_object",
+              "name":self.name, 
+              "data":self._data}
         return gv
 
     def _check_data(self, data):

@@ -6,6 +6,7 @@ Created on 26/03/2013
 from indyva.epubsub.abc_publisher import IPublisher, pub_result
 from indyva.epubsub.bus import Bus
 from indyva.names import INamed
+from indyva.grava import IDefined
 
 from .abc_table import ITable, ITableView
 from .mongo_backend.table import MongoTable
@@ -67,7 +68,7 @@ class TableView(ITableView, IPublisher, INamed):
 
 
 
-class Table(ITable, TableView, INamed):
+class Table(ITable, TableView, INamed, IDefined):
     _backend = MongoTable
 
     def __init__(self, name=None, schema=None, prefix=''):
@@ -97,7 +98,7 @@ class Table(ITable, TableView, INamed):
         if self._schema is None:
             self._schema = schemas.TableSchema.infer_from_data(data)
         self._backend.data(data)
-        self._backend._schema = self._schema  ###### TODOOOOOOOOOOO
+        self._backend._schema = self._schema  ######TODOOOOOOOOOOO-----------------------------
         return self
 
     @pub_result('add')
@@ -117,6 +118,12 @@ class Table(ITable, TableView, INamed):
         msg = self._backend.remove(query)
         return msg
 
+    @property
+    def grammar(self):
+        gv = {"type":"table",
+              "name":self.name,
+              "schema":self.schema.for_json()}
+        return gv
 
     def add_column(self, name, attribute_schema):
         ''' Add a new column schema to the table
