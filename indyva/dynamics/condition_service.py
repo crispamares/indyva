@@ -59,7 +59,7 @@ class ConditionService(INamed):
         dispatcher.add_method(partial(self._proxy, 'remove_attribute'), 'remove_attribute')
         dispatcher.add_method(partial(self._proxy, 'toggle_attribute'), 'toggle_attribute')
 
-        #RangeCondition Properties
+        # RangeCondition Properties
         dispatcher.add_method(partial(self._proxy_property, 'range'), 'range')
         dispatcher.add_method(partial(self._proxy_property, 'domain'), 'domain')
         # RangeCondition Methods

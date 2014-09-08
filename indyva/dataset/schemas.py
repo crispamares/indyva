@@ -48,7 +48,7 @@ class DataSetSchema(object):
         else:
             self._schema['index'] = tuple(index)
 
-    def to_dict(self):
+    def for_json(self):
         '''
         Returns a serial representation of the schema. Use the output of
         this method as the input of a serializer like json
@@ -204,7 +204,7 @@ class AttributeSchema(object):
 
         self._infered = kwargs.get('infered', False)
 
-    def to_dict(self):
+    def for_json(self):
         '''
         Returns a serial representation of the schema. Use the output of
         this method as the input of a serializer like json
@@ -266,7 +266,6 @@ class AttributeSchema(object):
     def __repr__(self):
         return 'AttributeSchema({0})'.format(self._schema)
 
-    for_json = to_dict
 
     @staticmethod
     def infer_from_data(data):

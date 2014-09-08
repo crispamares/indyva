@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
-:@author: jmespadero
-:@author: Juan Morales
+:author: jmespadero
+:author: Juan Morales
 '''
 import unittest
 
