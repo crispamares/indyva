@@ -20,6 +20,7 @@ User's Guide:
    :maxdepth: 2
 
    installation
+   quickstart
    intro
    reference
    roadmap

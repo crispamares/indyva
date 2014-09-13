@@ -69,6 +69,11 @@ Now you can install all the dependencies inside your virtualenv::
 
 A few minutes later and you are ready.
 
+The final step is downloading the indiva project (eventually this step
+could be completed with pip as well) inside our project directory::
+
+    git clone git@bb13.cesvima.upm.es:jmorales/indyva.git
+
 System-Wide Installation
 ------------------------
 
