@@ -23,7 +23,7 @@ class Condition(IPublisher, INamed, IDefined):
         :param str name: If a name is not provided, an uuid is generated
         :param bool enabled: If the condition is disabled it will be ignored in the
             computation of the ConditionSet combination
-        :param str prefix: Prepended to the name creates the oid 
+        :param str prefix: Prepended to the name creates the oid
         '''
         INamed.__init__(self, name, prefix=prefix)
         self._data = data
@@ -119,7 +119,7 @@ class CategoricalCondition(Condition):
         :param name: If a name is not provided, an uuid is generated
         :param bins: If provided, the attribute will be coerced to be
                      categorical by grouping in this number of bins
-        :param str prefix: Prepended to the name creates the oid 
+        :param str prefix: Prepended to the name creates the oid
         '''
         Condition.__init__(self, data, name, prefix=prefix)
         self._attr = attr
@@ -197,7 +197,7 @@ class AttributeCondition(Condition):
         :param data: The dataset that will be queried
         :param attributes: The attributes initially included
         :param name: If a name is not provided, an uuid is generated
-        :param str prefix: Prepended to the name creates the oid 
+        :param str prefix: Prepended to the name creates the oid
         '''
         Condition.__init__(self, data, name, prefix=prefix)
 
@@ -256,7 +256,7 @@ class RangeCondition(Condition):
         :param domain: {min: val, max: val} The domain of the RangeCondition
             are the maximum and minimum values that the range can get.
         :param name: If a name is not provided, an uuid is generated
-        :param str prefix: Prepended to the name creates the oid 
+        :param str prefix: Prepended to the name creates the oid
         '''
         Condition.__init__(self, data, name, prefix=prefix)
         self._attr = attr
@@ -388,6 +388,67 @@ class RangeCondition(Condition):
         self._cache_clear()
         old_index = self._sieve.index
         self._sieve.query = self._generate_query()
+
+        included = self._sieve.index - old_index
+        excluded = old_index - self._sieve.index
+        return dict(included=list(included), excluded=list(excluded))
+
+
+
+
+class RawCondition(Condition):
+    def __init__(self, data, query=None, name=None, prefix=''):
+        '''
+        :param data: The dataset that will be queried
+        :param query: A MongoDB query
+        :param name: If a name is not provided, an uuid is generated
+        :param str prefix: Prepended to the name creates the oid
+        '''
+        Condition.__init__(self, data, name, prefix=prefix)
+
+        self._query = query if query is not None else {}
+        self._attr = self._data.index
+        self._sieve = ItemExplicitSieve(data, self._query)
+
+
+    def _cache_clear(self):
+        cached.invalidate(self, 'included_items')
+        cached.invalidate(self, 'excluded_items')
+
+    @property
+    def grammar(self):
+        grammar = Condition.grammar.fget(self)
+        grammar.update({'type': 'query',
+                        'attr': self.attr,
+                        'query': self.query})
+        return grammar
+
+    @property
+    def attr(self):
+        return self._attr
+
+    @property
+    def query(self):
+        return self._query
+
+    @cached
+    def included_items(self):
+        return self._data.find(self._sieve.query).index_items()
+
+    @cached
+    def excluded_items(self):
+        return self._data.find(
+           {self._attr : {'$nin' : list(self._sieve.index) }}).index_items()
+
+    @pub_result('change')
+    def set_query(self, query):
+        '''
+        :param query: A MongoDB query
+        '''
+        self._query = query
+        self._cache_clear()
+        old_index = self._sieve.index
+        self._sieve.query = query
 
         included = self._sieve.index - old_index
         excluded = old_index - self._sieve.index

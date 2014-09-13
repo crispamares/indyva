@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from indyva.dataset.table import Table
 from indyva.dataset import RSC_DIR
-from indyva.dynamics.condition import CategoricalCondition, RangeCondition
+from indyva.dynamics.condition import CategoricalCondition, RangeCondition, RawCondition
 from indyva import names
 
 class CategoricalTest(unittest.TestCase):
@@ -20,26 +20,26 @@ class CategoricalTest(unittest.TestCase):
         self.df = pd.read_csv(RSC_DIR+'/census.csv')
         with open(RSC_DIR+'/schema_census') as f:
             schema = json.loads(f.read())
-        
+
         self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
         self.table = Table('census', self.schema).data(self.df)
-        
+
         self.table.add_column('fake_cat', 'CATEGORICAL')
         items = self.table.index_items()
         fake_cat = ['C1','C2','C3','C4']
         for i, item in enumerate(items):
             self.table.update({'State':item}, {'$set': {'fake_cat': fake_cat[ i % 4]}})
-            
+
     def tearDown(self):
         names.clear()
 
     def testCreation(self):
         cc = CategoricalCondition(data=self.table, attr='fake_cat')
         self.assertEqual(cc.included_categories(), [])
-        
+
         with self.assertRaises(NotImplementedError):
             cc = CategoricalCondition(data=self.table, attr='Information')
-        
+
     def testAdd(self):
         cc = CategoricalCondition(data=self.table, attr='fake_cat')
         cc.add_category('C1')
@@ -52,7 +52,7 @@ class CategoricalTest(unittest.TestCase):
         cc.add_category(['C1', 'C3'])
         cc.remove_category('C1')
         self.assertEqual(set(cc.included_categories()), set(['C3']))
-        
+
     def testToggleItem(self):
         cc = CategoricalCondition(data=self.table, attr='fake_cat')
         cc.add_category(['C1', 'C3'])
@@ -73,13 +73,13 @@ class CategoricalTest(unittest.TestCase):
         cc.add_category('C1')
         cc.exclude_all()
         self.assertEqual(cc.included_categories(),[])
-        
+
     def testToggle(self):
         cc = CategoricalCondition(data=self.table, attr='fake_cat')
         cc.add_category('C1')
         cc.toggle()
         self.assertEqual(set(cc.included_categories()), set(['C2', 'C3', 'C4']))
-        
+
     def testIncludedItems(self):
         cc = CategoricalCondition(data=self.table, attr='fake_cat')
         cc.add_category('C1')
@@ -97,7 +97,7 @@ class CategoricalTest(unittest.TestCase):
                            'ND', 'NM', 'OK', 'SC', 'UT', 'WI']))
         cc.add_category('C1')
         self.assertSetEqual(set(cc.excluded_items()), set([]))
-                            
+
 
 
 
@@ -111,10 +111,10 @@ class RangeTest(unittest.TestCase):
         self.df = pd.read_csv(RSC_DIR+'/census.csv')
         with open(RSC_DIR+'/schema_census') as f:
             schema = json.loads(f.read())
-        
+
         self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
         self.table = Table('census', self.schema).data(self.df)
-                    
+
     def tearDown(self):
         names.clear()
 
@@ -125,8 +125,8 @@ class RangeTest(unittest.TestCase):
         self.assertEqual(rc.range['relative_max'], 1)
         self.assertEqual(rc.range['relative_min'], 0)
         self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
-        
-        rc2 = RangeCondition(data=self.table, attr='Information', 
+
+        rc2 = RangeCondition(data=self.table, attr='Information',
                              range=dict(min=250000, max=500000))
         self.assertEqual(rc2.domain['max'], rc2.range['max'])
         self.assertEqual(250000, rc2.range['min'])
@@ -134,34 +134,34 @@ class RangeTest(unittest.TestCase):
         self.assertNotEqual(rc2.range['relative_min'], 0)
         self.assertEqual(set(rc2.included_items()), set(['CA', 'NY']))
 
-        rc3 = RangeCondition(data=self.table, attr='Information', 
+        rc3 = RangeCondition(data=self.table, attr='Information',
                              domain=dict(min=250000, max=500000))
         self.assertEqual(rc3.domain['min'], rc3.range['min'])
         self.assertEqual(rc3.domain['max'], rc3.range['max'])
         self.assertEqual(rc3.range['relative_max'], 1)
         self.assertEqual(rc3.range['relative_min'], 0)
         self.assertEqual(set(rc3.included_items()), set(['CA', 'NY']))
-        
+
     def testIncludeAll(self):
         rc = RangeCondition(data=self.table, attr='Information',
                             range=dict(min=250000, max=500000))
         self.assertEqual(set(rc.included_items()), set(['CA', 'NY']))
         rc.include_all()
         self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
-        
+
     def testIncludedItems(self):
         rc = RangeCondition(data=self.table, attr='Information')
         self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
- 
+
     def testExcludedItems(self):
         rc = RangeCondition(data=self.table, attr='Information')
         self.assertItemsEqual(rc.excluded_items(), [])
-        
+
         rc2 = RangeCondition(data=self.table, attr='Information',
                             range=dict(min=250000, max=500000))
         excluded = set(rc.included_items()) - set(['CA', 'NY'])
-        self.assertEqual(set(rc2.excluded_items()), excluded)      
-        
+        self.assertEqual(set(rc2.excluded_items()), excluded)
+
     def testSetRange(self):
         rc = RangeCondition(data=self.table, attr='Information')
         self.assertItemsEqual(rc.included_items(), self.table.index_items())
@@ -174,9 +174,9 @@ class RangeTest(unittest.TestCase):
             rc.set_range()
 
         change = rc.set_range(0,1, relative=True)
-        self.assertItemsEqual(rc.included_items(), self.table.index_items())    
-        self.assertItemsEqual(change['included'], rc.included_items())  
-        self.assertItemsEqual(change['excluded'], [])  
+        self.assertItemsEqual(rc.included_items(), self.table.index_items())
+        self.assertItemsEqual(change['included'], rc.included_items())
+        self.assertItemsEqual(change['excluded'], [])
 
         rc.set_range(0.5, relative=True)
         self.assertEqual(set(rc.included_items()), set(['CA', 'NY']))
@@ -184,7 +184,42 @@ class RangeTest(unittest.TestCase):
                                     'relative_max': 1.0, 'relative_min': 0.5})
 
 
-                            
+
+
+
+
+class RawTest(unittest.TestCase):
+
+    def setUp(self):
+        self.df = pd.read_csv(RSC_DIR + '/census.csv')
+        with open(RSC_DIR + '/schema_census') as f:
+            schema = json.loads(f.read())
+
+        self.schema = OrderedDict(attributes=schema['attributes'], index=schema['index'])
+        self.table = Table('census', self.schema).data(self.df)
+
+    def tearDown(self):
+        names.clear()
+
+    def testCreation(self):
+        rc = RawCondition(data=self.table)
+        self.assertEqual(rc.query, {})
+        self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
+
+        rc2 = RawCondition(data=self.table, query={'State':'NY'})
+        self.assertEqual(set(rc2.included_items()), set(['NY']))
+
+    def testIncludedItems(self):
+        rc = RawCondition(data=self.table)
+        self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
+
+    def testExcludedItems(self):
+        rc = RawCondition(data=self.table)
+        self.assertItemsEqual(rc.excluded_items(), [])
+
+        rc2 = RawCondition(data=self.table, query={'State':'NY'})
+        excluded = set(rc.included_items()) - set(['NY'])
+        self.assertEqual(set(rc2.excluded_items()), excluded)
+
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testCreation']
     unittest.main()

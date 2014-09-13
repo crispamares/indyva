@@ -10,7 +10,7 @@ from functools import partial
 from indyva.names import INamed
 from indyva.facade.showcase import Showcase
 from .condition import ( Condition, CategoricalCondition, AttributeCondition,
-                         RangeCondition )
+                         RangeCondition, RawCondition )
 
 
 class ConditionService(INamed):
@@ -65,6 +65,11 @@ class ConditionService(INamed):
         # RangeCondition Methods
         dispatcher.add_method(partial(self._proxy, 'set_range'), 'set_range')
 
+        # RawCondition Properties
+        dispatcher.add_method(partial(self._proxy_property, 'query'), 'query')
+        # RawCondition Methods
+        dispatcher.add_method(partial(self._proxy, 'set_query'), 'set_query')
+
     def _proxy(self, method, condition_oid, *args, **kwargs):
         condition = self._conditions[condition_oid]
         result = condition.__getattribute__(method)(*args, **kwargs)
@@ -87,6 +92,9 @@ class ConditionService(INamed):
             new_condition = AttributeCondition(dataset, *args, **kwargs)
         if kind == 'range':
             new_condition = RangeCondition(dataset, *args, **kwargs)
+        if kind == 'raw':
+            new_condition = RawCondition(dataset, *args, **kwargs)
+
         self._conditions[new_condition.oid] = new_condition
         return new_condition
 

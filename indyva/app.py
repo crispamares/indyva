@@ -13,8 +13,8 @@ For more details::
 import sys
 try:
     import indyva
+    print "indyva is found in the PYTHONPATH. Running version:", indyva.__version__
 except:
-    print "indyva is not found in the path. Adding '..' to PYTHONPATH"
     sys.path.append('..')
 from indyva.kernel import Kernel
 from indyva.facade.server import WSServer, ZMQServer
@@ -40,7 +40,7 @@ class App(object):
         if config is None:
             config = parse_args_and_config()
         self.config_services(config)
-            
+
 
     def config_services(self, config):
         '''Usually you don't have to invoke this method, is invoked in the
@@ -64,7 +64,7 @@ class App(object):
         if config.ws_server:
             ws_port = self._guess_port(config, config.ws_port)
             ws_server = WSServer(port=ws_port, web_dir=config.web_dir)
-            self.kernel.add_server(ws_server)      
+            self.kernel.add_server(ws_server)
 
             print "* WebSocket Server listening on port: {0}".format(ws_port)
             print "* Serving web from: {0}".format(config.web_dir)
@@ -79,11 +79,11 @@ class App(object):
         else:
             raise Exception("Is impossible to get a free port")
 
-        return port    
+        return port
 
-    def run(self):        
+    def run(self):
         self.kernel.run_forever()
-    
+
 
 if __name__ == '__main__':
     app = App()

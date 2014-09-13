@@ -33,11 +33,11 @@ class ConditionSet(IPublisher, INamed, IDefined):
         self._conditions = {}
 
         topics = ['change', 'remove']
-        bus = Bus(prefix= '{0}{1}:'.format(prefix, self._name))
+        bus = Bus(prefix='{0}{1}:'.format(prefix, self._name))
         IPublisher.__init__(self, bus, topics)
 
     def _retransmit_change(self, topic, msg):
-        #print "retransmit"
+        # print "retransmit"
         msg['original_topic'] = topic
         condition_oid = msg['origin']
         condition = self._conditions[condition_oid]
