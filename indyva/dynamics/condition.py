@@ -396,7 +396,7 @@ class RangeCondition(Condition):
 
 
 
-class RawCondition(Condition):
+class QueryCondition(Condition):
     def __init__(self, data, query=None, name=None, prefix=''):
         '''
         :param data: The dataset that will be queried

@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from indyva.dataset.table import Table
 from indyva.dataset import RSC_DIR
-from indyva.dynamics.condition import CategoricalCondition, RangeCondition, RawCondition
+from indyva.dynamics.condition import CategoricalCondition, RangeCondition, QueryCondition
 from indyva import names
 
 class CategoricalTest(unittest.TestCase):
@@ -188,7 +188,7 @@ class RangeTest(unittest.TestCase):
 
 
 
-class RawTest(unittest.TestCase):
+class QueryTest(unittest.TestCase):
 
     def setUp(self):
         self.df = pd.read_csv(RSC_DIR + '/census.csv')
@@ -202,24 +202,24 @@ class RawTest(unittest.TestCase):
         names.clear()
 
     def testCreation(self):
-        rc = RawCondition(data=self.table)
-        self.assertEqual(rc.query, {})
-        self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
+        qc = QueryCondition(data=self.table)
+        self.assertEqual(qc.query, {})
+        self.assertEqual(set(qc.included_items()), set(self.table.index_items()))
 
-        rc2 = RawCondition(data=self.table, query={'State':'NY'})
-        self.assertEqual(set(rc2.included_items()), set(['NY']))
+        qc2 = QueryCondition(data=self.table, query={'State':'NY'})
+        self.assertEqual(set(qc2.included_items()), set(['NY']))
 
     def testIncludedItems(self):
-        rc = RawCondition(data=self.table)
-        self.assertEqual(set(rc.included_items()), set(self.table.index_items()))
+        qc = QueryCondition(data=self.table)
+        self.assertEqual(set(qc.included_items()), set(self.table.index_items()))
 
     def testExcludedItems(self):
-        rc = RawCondition(data=self.table)
-        self.assertItemsEqual(rc.excluded_items(), [])
+        qc = QueryCondition(data=self.table)
+        self.assertItemsEqual(qc.excluded_items(), [])
 
-        rc2 = RawCondition(data=self.table, query={'State':'NY'})
-        excluded = set(rc.included_items()) - set(['NY'])
-        self.assertEqual(set(rc2.excluded_items()), excluded)
+        qc2 = QueryCondition(data=self.table, query={'State':'NY'})
+        excluded = set(qc.included_items()) - set(['NY'])
+        self.assertEqual(set(qc2.excluded_items()), excluded)
 
 if __name__ == "__main__":
     unittest.main()

@@ -7,9 +7,11 @@ Created on 03/07/2013
 
 from indyva.epubsub import pub_result
 from .condition_set import ConditionSet
-from .condition import CategoricalCondition, AttributeCondition, RangeCondition, RawCondition
+from .condition import CategoricalCondition, AttributeCondition, RangeCondition, QueryCondition
+from indyva.grava import register
 
 
+@register("filter")
 class DynFilter(ConditionSet):
     '''
     This class maintain the state of the Filter Interactive Dynamic
@@ -79,13 +81,13 @@ class DynFilter(ConditionSet):
 
 
     @pub_result('change')
-    def new_raw_condition(self, *args, **kwargs):
+    def new_query_condition(self, *args, **kwargs):
         '''
         :param data: The dataset that will be queried
         :param query: A MongoDB query
         :param name: If a name is not provided, an uuid is generated
         :param str prefix: Prepended to the name creates the oid
         '''
-        condition = RawCondition(self._data, *args, **kwargs)
+        condition = QueryCondition(self._data, *args, **kwargs)
         self._add_condition(condition)
         return condition

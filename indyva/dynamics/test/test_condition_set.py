@@ -123,7 +123,7 @@ class ConditionSetTest(unittest.TestCase):
         
         print cs.grammar
         self.maxDiff = None
-        self.assertEqual(cs.grammar, {'setop': 'AND', 
+        self.assertDictEqual(cs.grammar, {'setop': 'AND', 
                                       'conditions': [{'type': 'range', 
                                                       'name': 'rangec', 
                                                       'range': {'max': 492737.0,

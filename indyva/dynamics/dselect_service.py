@@ -34,7 +34,7 @@ class DynSelectService(INamed):
         # DynSelect Methods
         dispatcher.add_method(partial(self._proxy, 'new_categorical_condition'), 'new_categorical_condition')
         dispatcher.add_method(partial(self._proxy, 'new_range_condition'), 'new_range_condition')
-        dispatcher.add_method(partial(self._proxy, 'new_raw_condition'), 'new_raw_condition')
+        dispatcher.add_method(partial(self._proxy, 'new_query_condition'), 'new_query_condition')
         # ConditionSet Methods
         dispatcher.add_method(partial(self._proxy, 'add_condition'), 'add_condition')
         dispatcher.add_method(partial(self._proxy, 'set_condition'), 'set_condition')
