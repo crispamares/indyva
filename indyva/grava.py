@@ -7,22 +7,23 @@ from indyva.names import INamed
 
 GRAVAVERSION = '1.0'
 
+
 class IDefined(object):
     '''
     An IDefined has a grammar that represents its configuration and state
 
-    It also has the ability to build an instace from a grammar 
+    It also has the ability to build an instace from a grammar
 
      In other to chain the creation of every node of the grammar it is
      useful to register the IDefined like this:
 
-	```
-	@register("TypeA")
-	class A(IDefined):
-	    @classmethod
-	    def build(cls, grammar):
-	        return A()
-	```
+    ```
+    @register("TypeA")
+    class A(IDefined):
+        @classmethod
+        def build(cls, grammar):
+            return A()
+    ```
     '''
 
     @property

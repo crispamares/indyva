@@ -1,7 +1,7 @@
 from indyva.epubsub.abc_publisher import IPublisher, pub_result
 from indyva.epubsub.bus import Bus
 from indyva.names import INamed
-from indyva.grava import IDefined
+from indyva.grava import IDefined, register
 
 from copy import copy
 
@@ -13,6 +13,7 @@ class VersionError(Exception):
     '''
 
 
+@register("shared_object")
 class SharedObject(INamed, IPublisher, IDefined):
     '''
     A SharedObject (SOs) is a flexible container for application state.
@@ -105,7 +106,7 @@ class SharedObject(INamed, IPublisher, IDefined):
     @property
     def grammar(self):
         gv = {"type":"shared_object",
-              "name":self.name, 
+              "name":self.name,
               "data":self._data}
         return gv
 

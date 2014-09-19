@@ -8,8 +8,10 @@ Created on 03/07/2013
 from indyva.epubsub import pub_result
 from .condition import CategoricalCondition, RangeCondition, QueryCondition
 from .condition_set import ConditionSet
+from indyva.grava import register
 
 
+@register('select')
 class DynSelect(ConditionSet):
     '''
     This class maintain the state of the Select Interactive Dynamic

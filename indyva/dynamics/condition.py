@@ -10,7 +10,7 @@ import types
 
 from indyva.epubsub import IPublisher, Bus, pub_result
 from indyva.names import INamed
-from indyva.grava import IDefined
+from indyva.grava import IDefined, register
 from indyva.external import cached
 from .sieve import ItemImplicitSieve, AttributeImplicitSieve, ItemExplicitSieve
 
@@ -109,6 +109,7 @@ class Condition(IPublisher, INamed, IDefined):
 
 
 
+@register('categorical')
 class CategoricalCondition(Condition):
 
     def __init__(self, data, attr, categories=[], name=None, bins=None, prefix=''):
@@ -191,6 +192,7 @@ class CategoricalCondition(Condition):
 
 
 
+@register('attribute')
 class AttributeCondition(Condition):
     def __init__(self, data, attributes=[], name=None, prefix=''):
         '''
@@ -242,8 +244,7 @@ class AttributeCondition(Condition):
         return self._toggle()
 
 
-
-
+@register('range')
 class RangeCondition(Condition):
     def __init__(self, data, attr, range=None, domain=None, name=None, prefix=''):
         '''
@@ -395,7 +396,7 @@ class RangeCondition(Condition):
 
 
 
-
+@register('query')
 class QueryCondition(Condition):
     def __init__(self, data, query=None, name=None, prefix=''):
         '''
