@@ -9,6 +9,9 @@ Indyva (Interactive Dynamics for Visual Analytics) project
 
 __version__ = '0.1.1'
 
+import logbook
+logbook.default_handler.level = logbook.INFO
+
 
 # Some auxiliary functions that should be provided by external
 # libraries They are somehow hidden here, so I don't need an "utils"
