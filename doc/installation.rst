@@ -66,6 +66,7 @@ Now you can install all the dependencies inside your virtualenv::
     pip install pyzmq
     pip install pandas
     pip install Werkzeug
+    pip install logbook
 
 A few minutes later and you are ready.
 
@@ -80,4 +81,4 @@ System-Wide Installation
 This is possible as well, though I do not recommend it.  Just run
 `pip` with root privileges::
 
-    sudo pip install gevent pymongo pyzmq pandas Werkzeug
+    sudo pip install gevent pymongo pyzmq pandas Werkzeug logbook
