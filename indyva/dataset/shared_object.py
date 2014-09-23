@@ -110,6 +110,14 @@ class SharedObject(INamed, IPublisher, IDefined):
               "data":self._data}
         return gv
 
+
+    @classmethod
+    def build(cls, grammar, objects=None):
+        self = cls(name=grammar['name'],
+                   data=grammar['data'])
+        return self
+
+
     def _check_data(self, data):
         if not isinstance(data, (dict, list)):
             raise ValueError("SharedObject only support dict or list data types:\n"

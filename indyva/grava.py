@@ -4,8 +4,13 @@ Created on 22/01/2014
 :author: Juan Morales
 '''
 from indyva.names import INamed
+from logbook import debug
 
 GRAVAVERSION = '1.0'
+
+
+class GrammarException(Exception):
+    pass
 
 
 class IDefined(object):
@@ -31,7 +36,7 @@ class IDefined(object):
         raise NotImplementedError('The grammar property has to be implemented')
 
     @classmethod
-    def build(cls, grammar):
+    def build(cls, grammar, objects=None):
         raise NotImplementedError('The build static method has to be implemented')
 
 
@@ -68,6 +73,9 @@ class Root(IDefined, INamed):
     def add_dynamic(self, dynamic):
         self._add_node('dynamics', dynamic)
 
+    def add_condition(self, condition):
+        self._add_node('conditions', condition)
+
     @property
     def grammar(self):
         gv = {'_grava_version': GRAVAVERSION}
@@ -77,19 +85,50 @@ class Root(IDefined, INamed):
         return gv
 
     @classmethod
-    def build(cls, grammar):
-        objects = {}
-        for list_name, node_list in grammar.items():
-            objects[list_name] = []
-            for node in node_list:
-                instance = cls._builders[node["type"]](node)
-                objects[list_name].append(instance)
-        return objects
+    def build(cls, grammar, objects=None):
+
+        nodes = cls._flat_grammar(grammar)
+        dirty_nodes = []
+        objects = {} if objects is None else objects
+        build_objects = {}
+
+        any_progress = True
+
+        while any_progress:
+            any_progress = False
+            while nodes:
+                node = nodes.pop(0)
+                try:
+                    debug('building:\t{0}\t{1}', node["type"], node["name"])
+                    all_objects = dict(build_objects.items() + objects.items())
+                    instance = cls._builders[node["type"]](node, all_objects)
+                    build_objects[instance.name] = instance
+                    any_progress = True
+                except KeyError:
+                    dirty_nodes.append(node)
+                    debug('dirty:\t{0}\t{1}', node["type"], node["name"])
+
+            if not any_progress:
+                raise GrammarException("Imposible to build nodes:", dirty_nodes)
+            if dirty_nodes:
+                nodes = dirty_nodes
+                dirty_nodes = []
+            else:
+                return build_objects
+
+
 
     def _add_node(self, list_name, node):
         node_list = self._nodes.setdefault(list_name, [])
         node_list.append(node)
 
+    @staticmethod
+    def _flat_grammar(grammar):
+        gv = []
+        for list_name, node_list in grammar.items():
+            if isinstance(node_list, list):
+                gv.extend(node_list)
+        return gv
 
 
 if __name__ == '__main__':
@@ -97,7 +136,7 @@ if __name__ == '__main__':
     @register("TypeA")
     class A(IDefined):
         @classmethod
-        def build(cls, grammar):
+        def build(cls, grammar, objects=None):
             return A()
 
     instances = Root.build({"datasets":[{"type":"TypeA"}, {"type":"TypeA"}]})

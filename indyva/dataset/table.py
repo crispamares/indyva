@@ -125,6 +125,12 @@ class Table(ITable, TableView, INamed, IDefined):
               "schema":self.schema.for_json()}
         return gv
 
+    @classmethod
+    def build(cls, grammar, objects=None):
+        self = cls(name=grammar['name'],
+                   schema=grammar['schema'])
+        return self
+
     def add_column(self, name, attribute_schema):
         ''' Add a new column schema to the table
         @param name: str The name of the new column. Two columns with the same

@@ -112,7 +112,7 @@ class Condition(IPublisher, INamed, IDefined):
 @register('categorical')
 class CategoricalCondition(Condition):
 
-    def __init__(self, data, attr, categories=[], name=None, bins=None, prefix=''):
+    def __init__(self, data, attr, categories=None, name=None, bins=None, enabled=True, prefix=''):
         '''
         :param data: The dataset that will be queried
         :param attr: The attribute that will be used as the category
@@ -122,7 +122,7 @@ class CategoricalCondition(Condition):
                      categorical by grouping in this number of bins
         :param str prefix: Prepended to the name creates the oid
         '''
-        Condition.__init__(self, data, name, prefix=prefix)
+        Condition.__init__(self, data, name, enabled=enabled, prefix=prefix)
         self._attr = attr
         self._bins = bins
 
@@ -131,6 +131,7 @@ class CategoricalCondition(Condition):
         if bins is not None:
             raise NotImplementedError('Bins not yet implemented')
 
+        categories = [] if categories is None else categories
         self._sieve = ItemImplicitSieve(data, categories, data_index=attr)
 
     def _cache_clear(self):
@@ -150,6 +151,17 @@ class CategoricalCondition(Condition):
                         'included_categories': self.included_categories(),
                         'excluded_categories': self.excluded_categories()})
         return grammar
+
+    @classmethod
+    def build(cls, grammar, objects):
+        dataset = objects[grammar['data']]
+        self = cls(data=dataset,
+                   attr=grammar['attr'],
+                   categories=grammar['included_categories'],
+                   name=grammar['name'],
+                   bins=grammar['bins'],
+                   enabled=grammar['enabled'])
+        return self
 
     def included_categories(self):
         return list(self._sieve.index)
@@ -194,15 +206,16 @@ class CategoricalCondition(Condition):
 
 @register('attribute')
 class AttributeCondition(Condition):
-    def __init__(self, data, attributes=[], name=None, prefix=''):
+    def __init__(self, data, attributes=None, name=None, enabled=True, prefix=''):
         '''
         :param data: The dataset that will be queried
         :param attributes: The attributes initially included
         :param name: If a name is not provided, an uuid is generated
         :param str prefix: Prepended to the name creates the oid
         '''
-        Condition.__init__(self, data, name, prefix=prefix)
+        Condition.__init__(self, data, name, enabled=enabled, prefix=prefix)
 
+        attributes = [] if attributes is None else attributes
         self._sieve = AttributeImplicitSieve(data, attributes)
 
     @property
@@ -212,6 +225,15 @@ class AttributeCondition(Condition):
                         'included_attributes': self.included_attributes(),
                         'excluded_attributes': self.excluded_attributes()})
         return grammar
+
+    @classmethod
+    def build(cls, grammar, objects):
+        dataset = objects[grammar['data']]
+        self = cls(data=dataset,
+                   attributes=grammar['included_attributes'],
+                   name=grammar['name'],
+                   enabled=grammar['enabled'])
+        return self
 
     def included_attributes(self):
         return list(self._sieve.index)
@@ -246,7 +268,7 @@ class AttributeCondition(Condition):
 
 @register('range')
 class RangeCondition(Condition):
-    def __init__(self, data, attr, range=None, domain=None, name=None, prefix=''):
+    def __init__(self, data, attr, range=None, domain=None, name=None, enabled=True, prefix=''):
         '''
         :param data: The dataset that will be queried
         :param attr: The attribute that will compared with range values.
@@ -259,7 +281,7 @@ class RangeCondition(Condition):
         :param name: If a name is not provided, an uuid is generated
         :param str prefix: Prepended to the name creates the oid
         '''
-        Condition.__init__(self, data, name, prefix=prefix)
+        Condition.__init__(self, data, name, enabled=enabled, prefix=prefix)
         self._attr = attr
 
         #=======================================================================
@@ -323,6 +345,17 @@ class RangeCondition(Condition):
                         'range': self.range,
                         'domain': self.domain})
         return grammar
+
+    @classmethod
+    def build(cls, grammar, objects):
+        dataset = objects[grammar['data']]
+        self = cls(data=dataset,
+                   attr=grammar['attr'],
+                   range=grammar['range'],
+                   domain=grammar['domain'],
+                   name=grammar['name'],
+                   enabled=grammar['enabled'])
+        return self
 
     @property
     def attr(self):
@@ -398,14 +431,14 @@ class RangeCondition(Condition):
 
 @register('query')
 class QueryCondition(Condition):
-    def __init__(self, data, query=None, name=None, prefix=''):
+    def __init__(self, data, query=None, name=None, enabled=True, prefix=''):
         '''
         :param data: The dataset that will be queried
         :param query: A MongoDB query
         :param name: If a name is not provided, an uuid is generated
         :param str prefix: Prepended to the name creates the oid
         '''
-        Condition.__init__(self, data, name, prefix=prefix)
+        Condition.__init__(self, data, name, enabled=enabled, prefix=prefix)
 
         self._query = query if query is not None else {}
         self._attr = self._data.index
@@ -423,6 +456,15 @@ class QueryCondition(Condition):
                         'attr': self.attr,
                         'query': self.query})
         return grammar
+
+    @classmethod
+    def build(cls, grammar, objects):
+        dataset = objects[grammar['data']]
+        self = cls(data=dataset,
+                   query=grammar['query'],
+                   name=grammar['name'],
+                   enabled=grammar['enabled'])
+        return self
 
     @property
     def attr(self):

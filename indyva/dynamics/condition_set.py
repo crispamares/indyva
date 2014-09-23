@@ -7,7 +7,7 @@ Created on 10/08/2013
 
 from indyva.epubsub import IPublisher, pub_result, Bus
 from indyva.names import INamed
-from indyva.grava import IDefined
+from indyva.grava import IDefined, Root
 from .sieve import SieveSet
 from .condition import Condition
 
@@ -170,12 +170,27 @@ class ConditionSet(IPublisher, INamed, IDefined):
 
     @property
     def grammar(self):
-        conditions_grammar = [c.grammar for c in self._conditions.values()]
+        conditions = [c.name for c in self._conditions.values()]
 
         return dict(name = self.name,
                     setop = self._setop,
                     data = self._data.name,
-                    conditions = conditions_grammar)
+                    conditions = conditions)
+
+    @classmethod
+    def build(cls, grammar, objects):
+        dataset = objects[grammar['data']]
+        conditions = [objects[c] for c in grammar['conditions']]
+
+        self = cls(name=grammar['name'],
+                   data=dataset,
+                   setop=grammar['setop'])
+
+        for c in conditions:
+            self.add_condition(c)
+
+        return self
+
 
     def __repr__(self):
         return '{0}: {1} -> {2}'.format(type(self), self._name, self._conditions)

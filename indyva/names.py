@@ -13,7 +13,7 @@ class ExistingNameError(ValueError):
 
 class INamed(object):
     '''
-    Objects that inherit this Class will be created with a trusted unique name  
+    Objects that inherit this Class will be created with a trusted unique name
 
     Actually, what is unique, is the oid. It is registered in the
     NameAuthority.
@@ -27,7 +27,7 @@ class INamed(object):
         self._prefix = prefix
 
         authority.register(self.oid)
-        
+
     @property
     def name(self):
         return self._name
@@ -36,11 +36,11 @@ class INamed(object):
     def oid(self):
         '''An oid (object id) is a unique identificator based on the name'''
         return self._prefix + self._name
-    
+
     def __del__(self):
         authority = NameAuthority.instance()
         authority.unresgister(self._prefix+self._name)
-    
+
     def for_json(self):
         return self.oid
 
@@ -51,15 +51,15 @@ class NameAuthority(object):
 
     def __init__(self):
         self._names = {}
-    
+
     @staticmethod
     def instance():
         """
         Returns a global `NameAuthority` instance.
-        
+
         :warning: Not ThreadSafe.
         """
-        if not hasattr(NameAuthority, "_instance"):        
+        if not hasattr(NameAuthority, "_instance"):
             NameAuthority._instance = NameAuthority()
         return NameAuthority._instance
 
@@ -67,7 +67,7 @@ class NameAuthority(object):
     def initialized():
         """Returns true if the singleton instance has been created."""
         return hasattr(NameAuthority, "_instance")
-        
+
     def install(self):
         """
         Installs this `NameAuthority` object as the singleton instance.
@@ -106,11 +106,11 @@ class NameAuthority(object):
         '''
         name = str(uuid4())
         return name
-    
+
     def clear(self):
         self._names.clear()
-        
-        
+
+
 def register(name):
     authority = NameAuthority.instance()
     return authority.register(name)
