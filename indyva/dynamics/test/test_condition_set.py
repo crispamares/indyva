@@ -20,11 +20,11 @@ from indyva.core import names
 class ConditionSetTest(unittest.TestCase):
 
     def setUp(self):
-        self.df = pd.read_csv(RSC_DIR+'/census.csv')
-        with open(RSC_DIR+'/schema_census') as f:
+        self.df = pd.read_csv(RSC_DIR + '/census.csv')
+        with open(RSC_DIR + '/schema_census') as f:
             schema = json.loads(f.read())
 
-        self.schema = OrderedDict(attributes = schema['attributes'], index = schema['index'])
+        self.schema = OrderedDict(attributes=schema['attributes'], index=schema['index'])
         self.table = Table('census', self.schema).data(self.df)
 
         self.table.add_column('fake_cat', 'CATEGORICAL')
@@ -34,8 +34,8 @@ class ConditionSetTest(unittest.TestCase):
         for k in fake_cat:
             self.fake_sets.setdefault(k, [])
         for i, item in enumerate(items):
-            self.table.update({'State':item}, {'$set': {'fake_cat': fake_cat[ i % 4]}})
-            self.fake_sets[fake_cat[ i % 4]].append(item)
+            self.table.update({'State':item}, {'$set': {'fake_cat': fake_cat[i % 4]}})
+            self.fake_sets[fake_cat[i % 4]].append(item)
 
     def tearDown(self):
         names.clear()
@@ -125,55 +125,9 @@ class ConditionSetTest(unittest.TestCase):
         print cs.grammar
         self.maxDiff = None
         self.assertDictEqual(cs.grammar, {'setop': 'AND',
-                                      'conditions': [{'type': 'range',
-                                                      'name': 'rangec',
-                                                      'range': {'max': 492737.0,
-                                                                'min': 3957.0,
-                                                                'relative_min': 0.0,
-                                                                'relative_max': 1.0},
-                                                      'domain': {'max': 492737.0,
-                                                                 'min': 3957.0},
-                                                      'data': 'census',
-                                                      'enabled': True,
-                                                      'attr': 'Information'},
-                                                     {'included_categories': [],
-                                                      'excluded_categories': ['C3', 'C2', 'C1', 'C4'],
-                                                      'name': 'catc',
-                                                      'type': 'categorical',
-                                                      'data': 'census',
-                                                      'enabled': True,
-                                                      'bins': None,
-                                                      'attr': 'fake_cat'},
-                                                      {'data': 'census',
-                                                       'enabled': True,
-                                                       'excluded_attributes': ['Information',
-                                                                               'Other services (except public administration)',
-                                                                               'Total for all sectors',
-                                                                               'State',
-                                                                               'Accommodation and food services',
-                                                                               'Educational services',
-                                                                               'Professional, scientific, and technical services',
-                                                                               'Health care and social assistance',
-                                                                               'Utilities',
-                                                                               'Retail trade',
-                                                                               'Construction',
-                                                                               'Agriculture, forestry, fishing and hunting',
-                                                                               'Arts, entertainment, and recreation',
-                                                                               'Administrative and support and waste management and remediation services',
-                                                                               'Finance and insurance',
-                                                                               'Mining, quarrying, and oil and gas extraction',
-                                                                               'Wholesale trade',
-                                                                               'Management of companies and enterprises',
-                                                                               'Transportation and warehousing',
-                                                                               'Manufacturing',
-                                                                               'Industries not classified',
-                                                                               'Real estate and rental and leasing'],
-                                                      'included_attributes': [],
-                                                      'name': 'attrc',
-                                                      'type': 'attribute'}],
-                                      'data': 'census',
-                                      'name': 'condition_set'})
+                                          'conditions': ['rangec','catc','attrc'],
+                                          'data': 'census',
+                                          'name': 'condition_set'})
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testCreation']
     unittest.main()
