@@ -8,7 +8,7 @@ Created on 03/07/2013
 from indyva.epubsub import pub_result
 from .condition import CategoricalCondition, RangeCondition, QueryCondition
 from .condition_set import ConditionSet
-from indyva.grava import register
+from indyva.core.grava import register
 
 
 @register('select')

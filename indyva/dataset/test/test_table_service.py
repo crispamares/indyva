@@ -14,7 +14,7 @@ from indyva.dataset.table_service import TableService
 from indyva.dataset import RSC_DIR
 from indyva.dataset.table import TableView, Table
 from indyva.dataset.schemas import TableSchema
-from indyva import names
+from indyva.core import names
 from indyva.external.tinyrpc.dispatch import RPCDispatcher
 from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCRequest
 

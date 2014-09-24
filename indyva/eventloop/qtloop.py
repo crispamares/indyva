@@ -11,8 +11,9 @@ import uuid
 
 from .loop import Loop
 
+
 class QtLoop(Loop):
-    
+
     def __init__(self):
         self.loop = QApplication.instance()
         if self.loop is None:
@@ -28,9 +29,9 @@ class QtLoop(Loop):
             self.stop_periodic(periodic)
         self.loop.quit()
 
-    def add_periodic_callback (self, callback, interval, name=None, start=False):
+    def add_periodic_callback(self, callback, interval, name=None, start=False):
         '''
-        :param callback callable: 
+        :param callback callable:
         :param interval float: Interval time in ms
         '''
         name = name if name else uuid.uuid4()
@@ -41,20 +42,18 @@ class QtLoop(Loop):
         timer.setInterval(interval)
 
         self._periodics[name] = timer
-        
-        if start: self.start_periodic(name)
-        
+
+        if start:
+            self.start_periodic(name)
+
         return name
-    
+
     def stop_periodic(self, name):
         periodic = self._periodics.get(name, None)
         if periodic is not None:
             periodic.stop()
-    
+
     def start_periodic(self, name):
         periodic = self._periodics.get(name, None)
         if periodic is not None and not periodic.isActive():
             periodic.start()
-    
-    
-            

@@ -12,7 +12,7 @@ from collections import OrderedDict
 from indyva.dataset.table import Table
 from indyva.dataset import RSC_DIR
 from indyva.dynamics.condition import CategoricalCondition, RangeCondition, QueryCondition
-from indyva import names
+from indyva.core import names
 
 class CategoricalTest(unittest.TestCase):
 

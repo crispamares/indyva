@@ -14,7 +14,7 @@ from indyva.dataset import RSC_DIR
 from indyva.dynamics.condition import CategoricalCondition, RangeCondition,\
     AttributeCondition
 from indyva.dynamics.condition_set import ConditionSet
-from indyva import names
+from indyva.core import names
 
 
 class ConditionSetTest(unittest.TestCase):

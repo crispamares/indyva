@@ -7,7 +7,7 @@ Created on 20/11/2013
 
 from functools import partial
 
-from indyva.names import INamed
+from indyva.core.names import INamed
 from indyva.facade.showcase import Showcase
 from .condition import ( Condition, CategoricalCondition, AttributeCondition,
                          RangeCondition, QueryCondition )

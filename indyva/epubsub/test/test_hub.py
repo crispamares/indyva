@@ -6,15 +6,17 @@ Created on 06/06/2013
 '''
 import unittest
 
-from indyva.epubsub import hub 
+from indyva.epubsub import hub
+
 
 def f(topic, msg):
     Test.result = msg['a'] + msg['b']
 
+
 class Test(unittest.TestCase):
-    
+
     result = 0
-    
+
     class A(object):
         def __init__(self):
             self.result = 0
@@ -42,7 +44,7 @@ class Test(unittest.TestCase):
         self.bus.publish("topicA", {'a':2,'b':5})
         self.assertEqual(self.a.result, 7)
         self.assertEqual(Test.result, 7)
-    
+
     def testMultiSubscribers(self):
         self.a2 = self.A()
         self.bus.subscribe("topicA", self.a.sumAB)
@@ -52,7 +54,7 @@ class Test(unittest.TestCase):
         self.assertEqual(self.a.result, 7)
         self.assertEqual(self.a2.result, 7)
         self.assertEqual(Test.result, 7)
-        
+
     def testLostMsgs(self):
         self.a2 = self.A()
         self.bus.subscribe("topicA", self.a.sumAcum)
@@ -69,7 +71,7 @@ class Test(unittest.TestCase):
         self.bus.publish("topicA", {'a':2})
         self.bus.publish("topicA", {'a':3})
         self.assertEqual(self.a.result, 2)
-        self.assertEqual(self.a2.result, 5)  
+        self.assertEqual(self.a2.result, 5)
 
     def testUnsubscribe(self):
         self.bus.subscribe("topicA", self.a.sumAB)
@@ -79,7 +81,7 @@ class Test(unittest.TestCase):
         self.bus.publish("topicA", {'a':2,'b':5})
         self.assertEqual(self.a.result, 0)
         self.assertEqual(Test.result, 0)
-        
+
         with self.assertRaises(KeyError):
             self.bus.unsubscribe("topicA", self.a.sumAB)
         with self.assertRaises(KeyError):
@@ -88,7 +90,7 @@ class Test(unittest.TestCase):
             self.bus.unsubscribe("topicB", self.a.sumAB)
         with self.assertRaises(KeyError):
             self.bus.unsubscribe("topicA", self.a.sumAcum)
-    
+
     def testClose(self):
         self.a2 = self.A()
         self.bus.subscribe("topicA", self.a.sumAB)
@@ -100,21 +102,21 @@ class Test(unittest.TestCase):
         self.assertEqual(self.a.result, 0)
         self.assertEqual(self.a2.result, 0)
         self.assertEqual(Test.result, 0)
-        
+
         self.bus.close("topicA")
-        
-    def testDelDestination(self):                        
+
+    def testDelDestination(self):
         self.bus.subscribe("topicA", self.a.sumABExt)
         self.bus.publish("topicA", {'a':2,'b':5})
         self.assertEqual(self.A.result, 7)
-        
+
         self.A.result = 0
         self.assertEqual(self.A.result, 0)
         del self.a
         self.bus.publish("topicA", {'a':2,'b':5})
         self.assertEqual(self.A.result, 0)
-        
-        
+
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

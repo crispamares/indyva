@@ -6,8 +6,8 @@ Created on 10/08/2013
 '''
 
 from indyva.epubsub import IPublisher, pub_result, Bus
-from indyva.names import INamed
-from indyva.grava import IDefined, Root
+from indyva.core.names import INamed
+from indyva.core.grava import IDefined
 from .sieve import SieveSet
 from .condition import Condition
 

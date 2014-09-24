@@ -1,7 +1,7 @@
 '''
 '''
 
-from indyva.names import INamed
+from indyva.core.names import INamed
 from .table_io import read_csv
 
 

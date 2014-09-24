@@ -3,7 +3,7 @@ Created on Oct 24, 2013
 
 @author: crispamares
 '''
-import zmq.green as zmq 
+import zmq.green as zmq
 import gevent.wsgi
 import gevent.queue
 from geventwebsocket.server import WebSocketServer
@@ -15,17 +15,20 @@ from indyva.external.tinyrpc.transports.wsgi import WsgiServerTransport
 from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from .front import Front
 
-import os, sys
+import os
+import sys
 from werkzeug.wsgi import SharedDataMiddleware
 from werkzeug.utils import redirect
+
 
 class ZMQServer(RPCServerGreenlets):
     def __init__(self, port=10111):
         ctx = zmq.Context.instance()
-        transport = ZmqServerTransport.create(ctx, 'tcp://*:'+str(port))
+        transport = ZmqServerTransport.create(ctx, 'tcp://*:' + str(port))
         protocol = JSONRPCProtocol()
         dispatcher = Front.instance()
         RPCServerGreenlets.__init__(self, transport, protocol, dispatcher)
+
 
 class WSGIServer(RPCServerGreenlets):
     def __init__(self, port=8080):
@@ -34,12 +37,13 @@ class WSGIServer(RPCServerGreenlets):
         protocol = JSONRPCProtocol()
         dispatcher = Front.instance()
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)
-        
+
     def serve_forever(self):
-        wsgi_server = gevent.wsgi.WSGIServer(('', self.port), 
-            self.transport.handle)
+        wsgi_server = gevent.wsgi.WSGIServer(('', self.port),
+                                             self.transport.handle)
         gevent.spawn(wsgi_server.serve_forever)
         RPCServerGreenlets.serve_forever(self)
+
 
 class WSServer(RPCServerGreenlets):
     '''
@@ -47,12 +51,12 @@ class WSServer(RPCServerGreenlets):
     '''
     def __init__(self, port=8080, web_dir=None):
         self.port = port
-        
+
         if web_dir is None:
             app_root = os.path.split(os.path.abspath(os.path.realpath(sys.argv[0])))[0]
             web_dir = os.path.join(app_root, 'web')
             print '**********', web_dir
-                
+
         static_app = SharedDataMiddleware(redirect('/s/index.html'), {'/s': web_dir})
 
         self.transport = WSServerTransport(queue_class=gevent.queue.Queue,
@@ -60,9 +64,9 @@ class WSServer(RPCServerGreenlets):
         protocol = JSONRPCProtocol()
         dispatcher = Front.instance()
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)
-        
+
     def serve_forever(self):
-        ws_server = WebSocketServer(('', self.port), 
-            self.transport.handle)
+        ws_server = WebSocketServer(('', self.port),
+                                    self.transport.handle)
         gevent.spawn(ws_server.serve_forever)
-        RPCServerGreenlets.serve_forever(self)    
+        RPCServerGreenlets.serve_forever(self)

@@ -5,8 +5,8 @@ Created on 26/03/2013
 '''
 from indyva.epubsub.abc_publisher import IPublisher, pub_result
 from indyva.epubsub.bus import Bus
-from indyva.names import INamed
-from indyva.grava import IDefined, register
+from indyva.core.names import INamed
+from indyva.core.grava import IDefined, register
 
 from .abc_table import ITable, ITableView
 from .mongo_backend.table import MongoTable

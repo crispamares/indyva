@@ -9,6 +9,7 @@ import unittest
 
 from indyva.epubsub import bus
 
+
 class Test(unittest.TestCase):
     class A(object):
         def __init__(self):
@@ -21,7 +22,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.a = self.A()
         self.bus = bus.Bus()
-        
+
     def tearDown(self):
         self.bus.close("topicA")
         self.bus.close("topicB")
@@ -31,7 +32,7 @@ class Test(unittest.TestCase):
         self.bus.subscribe("topicA", self.a.sumAB)
         self.bus.publish("topicA", {'a':2,'b':5})
         self.assertEqual(self.a.result, 7)
-    
+
     def testMultiSubscribers(self):
         self.a2 = self.A()
         self.bus.subscribe("topicA", self.a.sumAB)
@@ -56,21 +57,21 @@ class Test(unittest.TestCase):
         self.bus.publish("topicA", {'a':2})
         self.bus.publish("topicA", {'a':3})
         self.assertEqual(self.a.result, 2)
-        self.assertEqual(self.a2.result, 5)  
+        self.assertEqual(self.a2.result, 5)
 
     def testUnsubscribe(self):
         self.bus.subscribe("topicA", self.a.sumAB)
         self.bus.unsubscribe("topicA", self.a.sumAB)
         self.bus.publish("topicA", {'a':2,'b':5})
         self.assertEqual(self.a.result, 0)
-        
+
         with self.assertRaises(KeyError):
             self.bus.unsubscribe("topicA", self.a.sumAB)
         with self.assertRaises(KeyError):
             self.bus.unsubscribe("topicB", self.a.sumAB)
         with self.assertRaises(KeyError):
             self.bus.unsubscribe("topicA", self.a.sumAcum)
-    
+
     def testClose(self):
         self.a2 = self.A()
         self.bus.subscribe("topicA", self.a.sumAB)
@@ -80,11 +81,11 @@ class Test(unittest.TestCase):
         self.bus.publish("topicA", {'a':2,'b':5})
         self.assertEqual(self.a.result, 0)
         self.assertEqual(self.a2.result, 0)
-        
+
         self.bus.close("topicA")
-        
-        
-        
+
+
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

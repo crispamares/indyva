@@ -6,7 +6,7 @@ Created on Jul 19, 2013
 
 from functools import partial
 
-from indyva.names import INamed
+from indyva.core.names import INamed
 from indyva.facade.showcase import Case
 from .table import Table
 from .abc_table import ITableView

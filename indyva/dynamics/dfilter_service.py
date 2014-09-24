@@ -9,7 +9,7 @@ Created on 20/11/2013
 from functools import partial
 
 from indyva.facade.showcase import Showcase
-from indyva.names import INamed
+from indyva.core.names import INamed
 from .dfilter import DynFilter
 from .condition import Condition
 

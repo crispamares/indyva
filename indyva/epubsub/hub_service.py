@@ -3,7 +3,7 @@ Created on Nov 5, 2013
 
 @author: crispamares
 '''
-from indyva.names import INamed
+from indyva.core.names import INamed
 from indyva.facade.gateway import WSGateway, ZMQGateway
 from .hub import Hub
 

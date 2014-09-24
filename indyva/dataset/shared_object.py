@@ -1,7 +1,7 @@
 from indyva.epubsub.abc_publisher import IPublisher, pub_result
 from indyva.epubsub.bus import Bus
-from indyva.names import INamed
-from indyva.grava import IDefined, register
+from indyva.core.names import INamed
+from indyva.core.grava import IDefined, register
 
 from copy import copy
 

@@ -11,6 +11,7 @@ from copy import copy
 from indyva.external import lazy
 from indyva.external.cached import cached
 
+
 class ImplicitSieve(object):
 
     def __init__(self, data, index, data_index=None):

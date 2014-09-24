@@ -16,9 +16,9 @@ try:
     print "indyva is found in the PYTHONPATH. Running version:", indyva.__version__
 except:
     sys.path.append('..')
-from indyva.kernel import Kernel
+from indyva.core.kernel import Kernel
 from indyva.facade.server import WSServer, ZMQServer
-from configuration import get_random_port, parse_args_and_config
+from indyva.core.configuration import get_random_port, parse_args_and_config
 
 
 class App(object):

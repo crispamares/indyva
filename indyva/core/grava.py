@@ -3,7 +3,7 @@ Created on 22/01/2014
 
 :author: Juan Morales
 '''
-from indyva.names import INamed
+from indyva.core.names import INamed
 from logbook import debug
 
 GRAVAVERSION = '1.0'

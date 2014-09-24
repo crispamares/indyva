@@ -5,8 +5,8 @@ import json
 from collections import OrderedDict
 
 
-from indyva import names
-from indyva.grava import Root
+from indyva.core import names
+from indyva.core.grava import Root
 
 from indyva.dataset.table import Table
 from indyva.dataset.shared_object import SharedObject

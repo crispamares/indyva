@@ -9,8 +9,8 @@ import __builtin__
 import types
 
 from indyva.epubsub import IPublisher, Bus, pub_result
-from indyva.names import INamed
-from indyva.grava import IDefined, register
+from indyva.core.names import INamed
+from indyva.core.grava import IDefined, register
 from indyva.external import cached
 from .sieve import ItemImplicitSieve, AttributeImplicitSieve, ItemExplicitSieve
 

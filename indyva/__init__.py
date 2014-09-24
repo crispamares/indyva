@@ -8,6 +8,11 @@ Indyva (Interactive Dynamics for Visual Analytics) project
 '''
 
 __version__ = '0.1.1'
+__all__ = ['names', 'grava', 'kernel', 'for_json_bridge']
+
+from indyva.core import names
+from indyva.core import grava
+from indyva.core import kernel
 
 import logbook
 logbook.default_handler.level = logbook.INFO
