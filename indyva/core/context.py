@@ -21,6 +21,13 @@ class Context(Singleton):
         self._open_sessions = {}
         self._active_session = None
 
+        self.add_session(Session('default'), as_active=True)
+
+    def add_session(self, session, as_active=False):
+        self._open_sessions[session.session_id] = session
+        if as_active:
+            self.activate_session(session.session_id)
+
     def has_session(self, session_id):
         return session_id in self._open_sessions
 
@@ -69,16 +76,16 @@ class SessionSingleton(object):
         :warning: Not ThreadSafe.
         """
         session = Context.instance().active_session
-        class_name = cls.__class__.__name__
+        class_name = cls.__name__
         if not hasattr(session, class_name):
-            session[class_name] = cls(*args, **kwargs)
-        return session[class_name]
+            setattr(session, class_name, cls(*args, **kwargs))
+        return getattr(session, class_name)
 
     @classmethod
     def initialized(cls):
         """Returns true if the singleton instance has been created."""
         session = Context.instance().active_session
-        class_name = cls.__class__.__name__
+        class_name = cls.__name__
         return hasattr(session, class_name)
 
     def install(self):
@@ -96,5 +103,5 @@ class SessionSingleton(object):
         assert not singleton_cls.initialized()
 
         session = Context.instance().active_session
-        class_name = singleton_cls.__class__.__name__
-        session[class_name] = self
+        class_name = singleton_cls.__name__
+        setattr(session, class_name, self)
