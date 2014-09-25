@@ -6,10 +6,10 @@ Created on 06/06/2013
 '''
 
 from weakref import WeakValueDictionary
-from indyva.core import Singleton
+from indyva.core.context import SessionSingleton
 
 
-class Hub(Singleton):
+class Hub(SessionSingleton):
     '''
     For common uses the :class:`~indyva.epubsub.bus.Bus` is preferred
 

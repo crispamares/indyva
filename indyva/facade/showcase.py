@@ -6,10 +6,10 @@ Created on 20/11/2013
 '''
 
 from weakref import WeakValueDictionary
-from indyva.core import Singleton
+from indyva.core.context import SessionSingleton
 
 
-class Showcase(Singleton):
+class Showcase(SessionSingleton):
     '''
     This class enables other classes to translate names previously registered
     to actual objects
