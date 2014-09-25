@@ -47,6 +47,7 @@ class DynFilterService(INamed):
         # ConditionSet Properties
         dispatcher.add_method(partial(self._proxy_property, 'name'), 'name')
         dispatcher.add_method(partial(self._proxy_property, 'grammar'), 'grammar')
+        dispatcher.add_method(partial(self._proxy_property, 'grammar_of_conditions'), 'grammar_of_conditions')
         dispatcher.add_method(partial(self._proxy_property, 'reference'), 'reference')
         dispatcher.add_method(partial(self._proxy_property, 'projection'), 'projection')
         dispatcher.add_method(partial(self._proxy_property, 'query'), 'query')

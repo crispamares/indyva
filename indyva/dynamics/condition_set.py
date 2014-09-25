@@ -192,5 +192,10 @@ class ConditionSet(IPublisher, INamed, IDefined):
         return self
 
 
+    @property
+    def grammar_of_conditions(self):
+        return [c.grammar for c in self._conditions.values()]
+
+
     def __repr__(self):
         return '{0}: {1} -> {2}'.format(type(self), self._name, self._conditions)
