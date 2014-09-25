@@ -14,38 +14,54 @@ class inside indyva.
 from indyva.core import Singleton
 
 
+
 class Context(Singleton):
 
     def __init__(self):
 
         self._open_sessions = {}
-        self._active_session = None
+        self._active_session_queue = []
+
+        self.stacking = False
 
         self.add_session(Session('default'), as_active=True)
 
+    def open(self, context_info):
+        if context_info is not None:
+            session_name = context_info['session']
+            if self.active_session.name != session_name:
+                self.activate_session(session_name)
+                self.stacking = True
+        return self
+
+    def close(self):
+        if self.stacking:
+            self._active_session_queue.pop()
+            self.stacking = False
+
     def add_session(self, session, as_active=False):
-        self._open_sessions[session.session_id] = session
+        self._open_sessions[session.name] = session
         if as_active:
-            self.activate_session(session.session_id)
+            self.activate_session(session.name)
 
-    def has_session(self, session_id):
-        return session_id in self._open_sessions
+    def has_session(self, name):
+        return name in self._open_sessions
 
-    def get_session(self, session_id):
-        return self._open_sessions[session_id]
+    def get_session(self, name):
+        return self._open_sessions[name]
 
     @property
     def active_session(self):
-        return self._active_session
+        return self._active_session_queue[-1]
 
-    def activate_session(self, session_id):
-        self._active_session = self.get_session(session_id)
+    def activate_session(self, name):
+        self._active_session_queue.append(self.get_session(name))
 
 
 
 class Session(object):
 
-    def __init__(self, session_id):
+    def __init__(self, name):
         """
         Holds all the Session dependent objects
 
@@ -56,9 +72,9 @@ class Session(object):
         - Hub
         - Showcase
 
-        :param str session_id: The identifier aka `sid` of the session
+        :param str name: The identifier of the session
         """
-        self.session_id = session_id
+        self.name = name
         self.root = None
 
 

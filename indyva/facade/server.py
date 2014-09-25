@@ -13,7 +13,7 @@ from indyva.external.tinyrpc.server.gevent import RPCServerGreenlets
 from indyva.external.tinyrpc.transports.zmq import ZmqServerTransport
 from indyva.external.tinyrpc.transports.wsgi import WsgiServerTransport
 from indyva.external.tinyrpc.protocols.jsonrpc import JSONRPCProtocol
-from .front import Front
+from .dispatcher import Dispatcher
 
 import os
 import sys
@@ -26,7 +26,7 @@ class ZMQServer(RPCServerGreenlets):
         ctx = zmq.Context.instance()
         transport = ZmqServerTransport.create(ctx, 'tcp://*:' + str(port))
         protocol = JSONRPCProtocol()
-        dispatcher = Front.instance()
+        dispatcher = Dispatcher.instance()
         RPCServerGreenlets.__init__(self, transport, protocol, dispatcher)
 
 
@@ -35,7 +35,7 @@ class WSGIServer(RPCServerGreenlets):
         self.port = port
         self.transport = WsgiServerTransport(queue_class=gevent.queue.Queue)
         protocol = JSONRPCProtocol()
-        dispatcher = Front.instance()
+        dispatcher = Dispatcher.instance()
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)
 
     def serve_forever(self):
@@ -62,7 +62,7 @@ class WSServer(RPCServerGreenlets):
         self.transport = WSServerTransport(queue_class=gevent.queue.Queue,
                                            wsgi_handler=static_app)
         protocol = JSONRPCProtocol()
-        dispatcher = Front.instance()
+        dispatcher = Dispatcher.instance()
         RPCServerGreenlets.__init__(self, self.transport, protocol, dispatcher)
 
     def serve_forever(self):

@@ -39,7 +39,7 @@ class RPCServer(object):
         while True:
             print 'listening'
             context, message = self.transport.receive_message()
-            print 'recived', message
+            print '\nreceived', message
             # assuming protocol is threadsafe and dispatcher is theadsafe, as
             # long as its immutable
 

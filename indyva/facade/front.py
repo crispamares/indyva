@@ -11,10 +11,10 @@ from indyva.dataset import table_service, shared_object_service
 from indyva.epubsub import hub_service
 from indyva.dynamics import condition_service, dselect_service, dfilter_service
 from indyva.IO import io_service
-from indyva.core import Singleton
+from indyva.core.context import SessionSingleton
 
 
-class Front(RPCDispatcher, Singleton):
+class Front(RPCDispatcher, SessionSingleton):
     '''
     This class centralizes the access to the provided services
     '''
