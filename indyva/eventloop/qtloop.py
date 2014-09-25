@@ -14,6 +14,8 @@ from .loop import Loop
 
 class QtLoop(Loop):
 
+    _singleton_cls = Loop
+
     def __init__(self):
         self.loop = QApplication.instance()
         if self.loop is None:

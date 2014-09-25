@@ -5,6 +5,7 @@ Created on 23/10/2013
 @author: jmorales
 '''
 from uuid import uuid4
+from indyva.core import Singleton
 
 
 class ExistingNameError(ValueError):
@@ -39,45 +40,19 @@ class INamed(object):
 
     def __del__(self):
         authority = NameAuthority.instance()
-        authority.unresgister(self._prefix+self._name)
+        authority.unresgister(self._prefix + self._name)
 
     def for_json(self):
         return self.oid
 
-class NameAuthority(object):
+
+class NameAuthority(Singleton):
     '''
     This class creates or ensures unique names in the name space
     '''
 
     def __init__(self):
         self._names = {}
-
-    @staticmethod
-    def instance():
-        """
-        Returns a global `NameAuthority` instance.
-
-        :warning: Not ThreadSafe.
-        """
-        if not hasattr(NameAuthority, "_instance"):
-            NameAuthority._instance = NameAuthority()
-        return NameAuthority._instance
-
-    @staticmethod
-    def initialized():
-        """Returns true if the singleton instance has been created."""
-        return hasattr(NameAuthority, "_instance")
-
-    def install(self):
-        """
-        Installs this `NameAuthority` object as the singleton instance.
-
-        This is normally not necessary as `instance()` will create an
-        `NameAuthority` on demand, but you may want to call `install`
-        to use a custom subclass of `NameAuthority`.
-        """
-        assert not NameAuthority.initialized()
-        NameAuthority._instance = self
 
     def register(self, name):
         '''
@@ -86,7 +61,7 @@ class NameAuthority(object):
         '''
         print 'registering', name
         if name in self._names:
-            raise ExistingNameError('"{0}" already registered'.format(name) )
+            raise ExistingNameError('"{0}" already registered'.format(name))
         else:
             self._names[name] = None
 
@@ -114,12 +89,18 @@ class NameAuthority(object):
 def register(name):
     authority = NameAuthority.instance()
     return authority.register(name)
+
+
 def unregister(name):
     authority = NameAuthority.instance()
     return authority.unregister(name)
+
+
 def new_name():
     authority = NameAuthority.instance()
     return authority.new_name()
+
+
 def clear():
     authority = NameAuthority.instance()
     return authority.clear()

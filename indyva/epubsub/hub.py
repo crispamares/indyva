@@ -6,9 +6,10 @@ Created on 06/06/2013
 '''
 
 from weakref import WeakValueDictionary
+from indyva.core import Singleton
 
 
-class Hub(object):
+class Hub(Singleton):
     '''
     For common uses the :class:`~indyva.epubsub.bus.Bus` is preferred
 
@@ -23,32 +24,6 @@ class Hub(object):
     def __init__(self):
         self._subscriptions = {}
         self._subscribers = WeakValueDictionary()
-
-    @staticmethod
-    def instance():
-        """Returns a global ``Hub`` instance.
-
-        :warning: Not ThreadSafe.
-        """
-        if not hasattr(Hub, "_instance"):
-            Hub._instance = Hub()
-        return Hub._instance
-
-    @staticmethod
-    def initialized():
-        """Returns true if the singleton instance has been created."""
-        return hasattr(Hub, "_instance")
-
-    def install(self):
-        """Installs this ``Hub`` object as the singleton instance.
-
-        This is normally not necessary as :func:`instance()` will
-        create an ``Hub`` on demand, but you may want to call
-        :func:`install` to use a custom subclass of ``Hub``.
-
-        """
-        assert not Hub.initialized()
-        Hub._instance = self
 
     def _subscribe(self, topic, destination, only_once=False, group_id=None):
         ''' TODO: publish new subscriptions and new topics through meta topic'''
@@ -112,7 +87,7 @@ class Hub(object):
 
     def publish(self, topic, msg):
         ''' TODO: publish No one subscribe through meta topic'''
-        #if topic != 'r:':   print '*** publish: ', topic, msg
+        # if topic != 'r:':   print '*** publish: ', topic, msg
         oids_to_remove = []
         oids = self._subscriptions.get(topic, {})
         for oid, destinations in oids.items():

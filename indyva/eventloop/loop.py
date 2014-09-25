@@ -7,42 +7,19 @@ Created on 11/07/2013
 
 import time
 
+from indyva.core import Singleton
 
-class Loop(object):
+
+class Loop(Singleton):
     '''
     An asynchronous scheduler
     '''
 
-    @staticmethod
-    def instance():
-        """Returns a global `Loop` instance.
-
-        :warning: Not ThreadSafe.
-        """
-        if not hasattr(Loop, "_instance"):
-            Loop._instance = Loop()
-        return Loop._instance
-
-    @staticmethod
-    def clear():
-        if hasattr(Loop, "_instance"):
-            Loop._instance.stop()
-            del Loop._instance
-
-    @staticmethod
-    def initialized():
-        """Returns true if the singleton instance has been created."""
-        return hasattr(Loop, "_instance")
-
-    def install(self):
-        """Installs this `Loop` object as the singleton instance.
-
-        This is normally not necessary as `instance()` will create
-        an `IOLoop` on demand, but you may want to call `install` to use
-        a custom subclass of `Loop`.
-        """
-        assert not Loop.initialized()
-        Loop._instance = self
+    @classmethod
+    def clear(cls):
+        if hasattr(cls, "_instance"):
+            cls._instance.stop()
+            del cls._instance
 
     def start(self):
         raise NotImplementedError()

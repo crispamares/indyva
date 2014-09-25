@@ -2,13 +2,14 @@
 '''
 Created on 20/11/2013
 
-@author: jmorales
+:author: jmorales
 '''
 
 from weakref import WeakValueDictionary
+from indyva.core import Singleton
 
 
-class Showcase(object):
+class Showcase(Singleton):
     '''
     This class enables other classes to translate names previously registered
     to actual objects
@@ -18,31 +19,6 @@ class Showcase(object):
     def __init__(self):
         self._objects = WeakValueDictionary()
         self._cases = WeakValueDictionary()
-
-    @staticmethod
-    def instance():
-        """Returns a global `Showcase` instance.
-
-        :warning: Not ThreadSafe.
-        """
-        if not hasattr(Showcase, "_instance"):
-            Showcase._instance = Showcase()
-        return Showcase._instance
-
-    @staticmethod
-    def initialized():
-        """Returns true if the singleton instance has been created."""
-        return hasattr(Showcase, "_instance")
-
-    def install(self):
-        """Installs this `Showcase` object as the singleton instance.
-
-        This is normally not necessary as `instance()` will create
-        an `Showcase` on demand, but you may want to call `install` to use
-        a custom subclass of `Showcase`.
-        """
-        assert not Showcase.initialized()
-        Showcase._instance = self
 
     def get(self, oid):
         '''

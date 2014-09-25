@@ -14,6 +14,8 @@ from .loop import Loop
 
 class ZMQLoop(Loop):
 
+    _singleton_cls = Loop
+
     def __init__(self):
         self.loop = IOLoop.instance()
         self._periodics = {}
