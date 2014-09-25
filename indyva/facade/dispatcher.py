@@ -29,6 +29,9 @@ class Dispatcher(RPCDispatcher, Singleton):
     def _dispatch(self, request):
         try:
             _context = request.kwargs.pop('_context', None)
+            _params = request.kwargs.pop('_params', None)
+            if _params:
+                request.args = _params
             with closing(Context.instance().open(_context)):
                 for middleware in self._middlewares:
                     middleware.run(_context)
@@ -38,4 +41,5 @@ class Dispatcher(RPCDispatcher, Singleton):
             return response
         except Exception:
             # unexpected error, do not let client know what happened
-            return request.error_respond(ServerError("Error processing the context"))
+            return request.error_respond(ServerError("Error processing the context:\n"
+                                                     + str(_context)))
