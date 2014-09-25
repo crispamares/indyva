@@ -33,7 +33,7 @@ class Singleton(object):
         need to define a class attribute `_singleton_cls` with the
         `Singleton` class that the subclasses want to be attached to.
         """
-        cls = type(self)
+        cls = self.__class__
         singleton_cls = cls if not hasattr(cls, "_singleton_cls") else cls._singleton_cls
         assert not singleton_cls.initialized()
         singleton_cls._instance = self
