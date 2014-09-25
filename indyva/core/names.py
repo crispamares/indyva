@@ -5,7 +5,7 @@ Created on 23/10/2013
 @author: jmorales
 '''
 from uuid import uuid4
-from indyva.core import Singleton
+from indyva.core.context import SessionSingleton
 
 
 class ExistingNameError(ValueError):
@@ -46,7 +46,7 @@ class INamed(object):
         return self.oid
 
 
-class NameAuthority(Singleton):
+class NameAuthority(SessionSingleton):
     '''
     This class creates or ensures unique names in the name space
     '''
