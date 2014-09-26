@@ -24,7 +24,7 @@ class Context(Singleton):
 
         self.stacking = False
 
-        self.add_session(Session('default'), as_active=True)
+        self.add_session(Session('_default'), as_active=True)
 
     def open(self, context_info):
         if context_info is not None:
@@ -34,9 +34,10 @@ class Context(Singleton):
                 self.stacking = True
         return self
 
+
     def close(self):
         if self.stacking:
-            self._active_session_queue.pop()
+            self.pop_active_session()
             self.stacking = False
 
     def add_session(self, session, as_active=False):
@@ -50,12 +51,24 @@ class Context(Singleton):
     def get_session(self, name):
         return self._open_sessions[name]
 
+    def remove_session(self, name):
+        if name in self._active_session_queue[:-1]:
+            raise ValueError("The session '{}' can't be removed because is currently in use"
+                             .format(name))
+        self._open_sessions.pop(name)
+
     @property
     def active_session(self):
         return self._active_session_queue[-1]
 
     def activate_session(self, name):
         self._active_session_queue.append(self.get_session(name))
+
+    def activate_default(self):
+        self._active_session_queue.append(self.get_session('_default'))
+
+    def pop_active_session(self):
+        self._active_session_queue.pop()
 
 
 
@@ -76,6 +89,9 @@ class Session(object):
         """
         self.name = name
         self.root = None
+
+    def __str__(self):
+        return "{} @ {}".format(self.name, id(self))
 
 
 class SessionSingleton(object):
