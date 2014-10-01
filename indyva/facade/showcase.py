@@ -32,14 +32,18 @@ class Showcase(SessionSingleton):
         '''
         self._objects[instance.oid] = instance
 
-    def get_case(self, name):
-        case = self._cases.get(name)
-        if case is None:
-            case = self._cases[name] = Case()
-        return case
+    def get_case(self, tag, default=None):
+        '''
+        :param str tag: The tag that the returned case should have
+        '''
+        return self._cases.get(tag, default)
 
 
 class Case(dict):
     def __setitem__(self, *args, **kwargs):
         Showcase.instance().put(args[1])
         return dict.__setitem__(self, *args, **kwargs)
+
+    def tag(self, tag):
+        Showcase.instance()._cases[tag] = self
+        return self

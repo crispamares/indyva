@@ -8,7 +8,7 @@ from functools import partial
 
 from indyva.core.names import INamed
 from indyva.facade.showcase import Case
-from .table import Table
+from .table import Table, TableView
 from .abc_table import ITableView
 
 
@@ -21,7 +21,9 @@ class TableService(INamed):
         '''
         @param name: The unique name of the service
         '''
-        self._tables = Case()
+        self._tables = Case().tag(name) \
+                             .tag(Table.__name__) \
+                             .tag(TableView.__name__)
         INamed.__init__(self, name)
 
     def register_in(self, dispatcher):

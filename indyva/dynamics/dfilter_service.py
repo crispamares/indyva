@@ -8,7 +8,7 @@ Created on 20/11/2013
 
 from functools import partial
 
-from indyva.facade.showcase import Showcase
+from indyva.facade.showcase import Showcase, Case
 from indyva.core.names import INamed
 from .dfilter import DynFilter
 from .condition import Condition
@@ -23,7 +23,7 @@ class DynFilterService(INamed):
         '''
         @param name: The unique name of the service
         '''
-        self._dfilters = Showcase.instance().get_case(name)
+        self._dfilters = Case().tag(name).tag(DynFilter.__name__)
         self._conditions = Showcase.instance().get_case(condition_srv_name)
         INamed.__init__(self, name)
 

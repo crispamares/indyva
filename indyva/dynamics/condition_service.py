@@ -8,7 +8,7 @@ Created on 20/11/2013
 from functools import partial
 
 from indyva.core.names import INamed
-from indyva.facade.showcase import Showcase
+from indyva.facade.showcase import Showcase, Case
 from .condition import ( Condition, CategoricalCondition, AttributeCondition,
                          RangeCondition, QueryCondition )
 
@@ -22,7 +22,12 @@ class ConditionService(INamed):
         '''
         @param name: The unique name of the service
         '''
-        self._conditions = Showcase.instance().get_case(name)
+        self._conditions = Case().tag(name) \
+                                 .tag(Condition.__name__) \
+                                 .tag(CategoricalCondition.__name__) \
+                                 .tag(AttributeCondition.__name__) \
+                                 .tag(RangeCondition.__name__) \
+                                 .tag(QueryCondition.__name__)
         INamed.__init__(self, name)
 
     def register_in(self, dispatcher):

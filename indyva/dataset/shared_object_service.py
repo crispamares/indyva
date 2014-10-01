@@ -20,7 +20,7 @@ class SharedObjectService(INamed):
         '''
         @param name: The unique name of the service
         '''
-        self._shared_objects = Case()
+        self._shared_objects = Case().tag(name).tag(SharedObject.__name__)
         INamed.__init__(self, name)
 
     def register_in(self, dispatcher):
