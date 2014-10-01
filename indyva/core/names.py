@@ -27,7 +27,9 @@ class INamed(object):
         self._name = name
         self._prefix = prefix
 
+        self._initializing = True
         authority.register(self.oid)
+        self._initializing = False
 
     @property
     def name(self):
@@ -39,8 +41,9 @@ class INamed(object):
         return self._prefix + self._name
 
     def __del__(self):
-        authority = NameAuthority.instance()
-        authority.unresgister(self._prefix + self._name)
+        if not self._initializing:
+            authority = NameAuthority.instance()
+            authority.unresgister(self._prefix + self._name)
 
     def for_json(self):
         return self.oid
