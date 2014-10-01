@@ -68,13 +68,28 @@ class Root(IDefined, INamed):
         cls._builders[node_type] = builder
 
     def add_dataset(self, dataset):
+        '''
+        Accepts one dataset or a list of them
+        '''
         self._add_node('datasets', dataset)
 
     def add_dynamic(self, dynamic):
+        '''
+        Accepts one dynamic or a list of them
+        '''
         self._add_node('dynamics', dynamic)
 
     def add_condition(self, condition):
+        '''
+        Accepts one condition or a list of them
+        '''
         self._add_node('conditions', condition)
+
+    def _add_node(self, branch_name, node):
+        branch = self._nodes.setdefault(branch_name, [])
+        nodes = node if isinstance(node, list) else [node]
+        for node in nodes:
+            branch.append(node)
 
     @property
     def grammar(self):
@@ -86,7 +101,16 @@ class Root(IDefined, INamed):
 
     @classmethod
     def build(cls, grammar, objects=None):
+        '''
+        Builds all objects specified in the grammar tree.
 
+        :param dict grammar: The grammar that specify the objects to build
+
+        :param dict objects: Optional, Sometimes the object grammars
+        contain references to other objects. This dict, with the form
+        {name: instance}, is used as a container for already built
+        objects available to be referenced.
+        '''
         nodes = cls._flat_grammar(grammar)
         dirty_nodes = []
         objects = {} if objects is None else objects
@@ -115,12 +139,6 @@ class Root(IDefined, INamed):
                 dirty_nodes = []
             else:
                 return build_objects
-
-
-
-    def _add_node(self, list_name, node):
-        node_list = self._nodes.setdefault(list_name, [])
-        node_list.append(node)
 
     @staticmethod
     def _flat_grammar(grammar):

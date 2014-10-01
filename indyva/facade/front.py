@@ -4,16 +4,16 @@ Created on 17/07/2013
 
 :author: jmorales
 '''
-from contextlib import closing
 
 from indyva.external.tinyrpc.dispatch import RPCDispatcher
 from .front_service import FrontService
 from .session_service import SessionService
+from .grava_service import GrammarService
 from indyva.dataset import table_service, shared_object_service
 from indyva.epubsub import hub_service
 from indyva.dynamics import condition_service, dselect_service, dfilter_service
 from indyva.IO import io_service
-from indyva.core.context import SessionSingleton, Context
+from indyva.core.context import SessionSingleton
 
 
 class Front(RPCDispatcher, SessionSingleton):
@@ -33,6 +33,8 @@ class Front(RPCDispatcher, SessionSingleton):
         self.add_service(dselect_service.DynSelectService('DynSelectSrv', 'ConditionSrv'))
         self.add_service(dfilter_service.DynFilterService('DynFilterSrv', 'ConditionSrv'))
         self.add_service(io_service.IOService('IOSrv', 'TableSrv'))
+        self.add_service(GrammarService('GrammarSrv'))
+
 
     def add_service(self, service):
         subdispatcher = RPCDispatcher()
