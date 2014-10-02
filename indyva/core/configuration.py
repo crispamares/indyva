@@ -3,6 +3,9 @@ import ConfigParser
 import socket
 import random
 
+from indyva.external.lru_cache import lru_cache
+
+
 default_options = [
     ("zmq_server", dict(default=False, action='store_true', help="Run the ZMQ Server")),
     ("zmq_port", dict(type=int, default=18000, help="The port number of the ZMQ server")),
@@ -17,12 +20,14 @@ default_options = [
     ("max_port", dict(type=int, default=20000, help="The upper port of the range"))
 ]
 
+
+@lru_cache(1)
 def parse_args_and_config(options=None, description=None):
     '''
     This function reads the configuration from three sources. If the
     user specify a ``config_file`` the config file is read. Then the
     rest of argv is parsed overwriting the previous
-    configuration. 
+    configuration.
 
     The configuration options accepted by this function are described
     in :data:`default_options`. You can change these options by
@@ -31,7 +36,7 @@ def parse_args_and_config(options=None, description=None):
     :param options: List of options like arguments are specified in argparse
     :param str description: A description of what the program does, printed in the help prompt
 
-    :returns: The parsed arguments as an object (Namespace) 
+    :returns: The parsed arguments as an object (Namespace)
     '''
     if options is None:
         options = default_options
@@ -41,16 +46,16 @@ def parse_args_and_config(options=None, description=None):
     config_parser.add_argument("-c", "--config_file",
                                help="Specify configuration file", metavar="FILE")
     args, remaining_argv = config_parser.parse_known_args()
-    
+
     defaults = { k:v['default'] for k, v in options }
-        
+
     if args.config_file:
         config = ConfigParser.SafeConfigParser()
         config.read([args.config_file])
         config_defaults = dict(config.items("Core"))
-        
+
         defaults.update(config_defaults)
-            
+
     # Don't surpress add_help here so it will handle -h
     parser = argparse.ArgumentParser(
         description=description,
@@ -62,7 +67,7 @@ def parse_args_and_config(options=None, description=None):
 
     parser.add_argument('--version', action='version', version='PROGRAM VERSION')
     for option in options:
-        parser.add_argument("--"+option[0], **option[1])
+        parser.add_argument("--" + option[0], **option[1])
 
     parser.set_defaults(**defaults)
 
@@ -72,14 +77,20 @@ def parse_args_and_config(options=None, description=None):
 
 
 
-def get_random_port(port_range, max_tries):
+def get_random_port(port_range=None, max_tries=None):
     '''
     Return a free port in a range
-    
+
     :param port_range: (int,int) The min and max port numbers
     :param max_tries: The maximum number of bind attempts to make
     :return port: int, the port ready to use
     '''
+    if port_range is None or max_tries is None:
+        config = parse_args_and_config()
+
+    port_range = (config.min_port, config.max_port) if port_range is None else port_range
+    max_tries = config.port_max_tries if max_tries is None else max_tries
+
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     for i in range(max_tries):
         try:
@@ -92,5 +103,3 @@ def get_random_port(port_range, max_tries):
             s.close()
             return port
     raise Exception("Could not find a free random port.")
-    
-
