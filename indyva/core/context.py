@@ -70,6 +70,10 @@ class Context(Singleton):
     def pop_active_session(self):
         self._active_session_queue.pop()
 
+    def __str__(self):
+        return "  - Active Session: {}\n  - Open Sessions: {}".format(self.active_session,
+                                                                      self._open_sessions)
+
 
 
 class Session(object):
