@@ -39,10 +39,9 @@ class Dispatcher(RPCDispatcher, Singleton):
         try:
             _context = self.handle_request(request)
 
+            front = None
             if self.context_free_front.has_method(request.method):
                 front = self.context_free_front
-            else:
-                front = Front.instance()
 
             return self.dipatch_in_contex(request, _context, front)
         except Exception:
@@ -57,6 +56,7 @@ class Dispatcher(RPCDispatcher, Singleton):
             print "----------------------------------->"
             print "**", _context
             print "** active session:", Context.instance().active_session
+            front = Front.instance() if front is None else front
             response = front._dispatch(request)
             print "<-----------------------------------"
         return response

@@ -13,7 +13,7 @@ class inside indyva.
 
 from indyva.core import Singleton
 
-
+import gc
 
 class Context(Singleton):
 
@@ -55,7 +55,9 @@ class Context(Singleton):
         if name in self._active_session_queue[:-1]:
             raise ValueError("The session '{}' can't be removed because is currently in use"
                              .format(name))
-        self._open_sessions.pop(name)
+        s = self._open_sessions.pop(name)
+        print '***** removed', s, 'of', self._open_sessions
+        print 'referrers', gc.get_referrers(s)
 
     @property
     def active_session(self):
