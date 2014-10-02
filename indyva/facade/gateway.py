@@ -10,6 +10,7 @@ from geventwebsocket.resource import WebSocketApplication, Resource
 import gevent
 
 from indyva.core.names import INamed
+from indyva.core.configuration import get_random_port
 from indyva.epubsub.bus import Bus
 from indyva import for_json_bridge
 
@@ -19,9 +20,9 @@ class Gateway(INamed):
     Is the facade for the Pub/Sub system to external clients
     Acts as the bridge between the hub and clients in other transports
     '''
-    def __init__(self, name, port):
+    def __init__(self, name, port=None):
         self._bus = Bus(prefix='')
-        self.port = port
+        self.port = port if port is not None else get_random_port()
         INamed.__init__(self, name)
 
     def publish(self, topic, msg):
@@ -41,15 +42,14 @@ class Gateway(INamed):
 
 
 class ZMQGateway(Gateway):
-    def __init__(self, name, port):
+    def __init__(self, name, port=None):
         Gateway.__init__(self, name, port)
 
         ctx = zmq.Context.instance()
         self.socket = ctx.socket(zmq.PUB)
-        self.socket.bind('tcp://*:' + str(port))
+        self.socket.bind('tcp://*:' + str(self.port))
 
     def publish(self, topic, msg):
-        print self.name + " ---- publishing --- "
         msg_json = json.dumps(msg, default=for_json_bridge)
         self.socket.send_multipart([str(topic), msg_json])
 
@@ -57,11 +57,11 @@ class ZMQGateway(Gateway):
 
 class WSGateway(Gateway):
 
-    def __init__(self, name, port):
+    def __init__(self, name, port=None):
         Gateway.__init__(self, name, port)
         self._sockets = []
         self._msg_queue = []
-        self.ws_server = WebSocketServer(('', port),
+        self.ws_server = WebSocketServer(('',self.port),
                                          Resource({'/ws': WSApplicationFactory(self)}))
         gevent.spawn(self.ws_server.serve_forever)
 
