@@ -21,7 +21,7 @@ class Dispatcher(RPCDispatcher, Singleton):
     def __init__(self):
         RPCDispatcher.__init__(self)
 
-        self.context_free_front = ContextFreeFront()
+        self.context_free_front = ContextFreeFront.instance()
 
         self._middlewares = []
 
@@ -41,8 +41,6 @@ class Dispatcher(RPCDispatcher, Singleton):
 
             if self.context_free_front.has_method(request.method):
                 front = self.context_free_front
-                if _context:
-                    _context['session'] = '_default'
             else:
                 front = Front.instance()
 
