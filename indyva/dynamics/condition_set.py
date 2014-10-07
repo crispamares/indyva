@@ -130,6 +130,12 @@ class ConditionSet(IPublisher, INamed, IDefined):
         '''
         return self._conditions.get(oid, default)
 
+    def get_conditions(self):
+        '''
+        :returns list: The list of conditions already in the `ConditionSet`
+        '''
+        return self._conditions.values()
+
     def clear(self):
         '''
         Remove all conditions in the condition set

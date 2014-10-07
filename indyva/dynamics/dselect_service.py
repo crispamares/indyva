@@ -42,6 +42,7 @@ class DynSelectService(INamed):
         dispatcher.add_method(partial(self._proxy, 'remove_condition'), 'remove_condition')
         dispatcher.add_method(partial(self._proxy, 'has_condition'), 'has_condition')
         dispatcher.add_method(partial(self._proxy, 'get_condition'), 'get_condition')
+        dispatcher.add_method(partial(self._proxy, 'get_conditions'), 'get_conditions')
         # ConditionSet Properties
         dispatcher.add_method(partial(self._proxy_property, 'name'), 'name')
         dispatcher.add_method(partial(self._proxy_property, 'grammar'), 'grammar')
