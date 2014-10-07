@@ -122,6 +122,8 @@ class Root(IDefined, INamed):
             any_progress = False
             while nodes:
                 node = nodes.pop(0)
+                if node["name"] in objects:
+                    continue
                 try:
                     debug('building:\t{0}\t{1}', node["type"], node["name"])
                     all_objects = dict(build_objects.items() + objects.items())
