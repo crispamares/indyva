@@ -27,6 +27,7 @@ class SharedObjectService(INamed):
         dispatcher.add_method(self.new_shared_object)
         dispatcher.add_method(self.expose_shared_object)
         dispatcher.add_method(self.del_shared_object)
+        dispatcher.add_method(self.clear)
         dispatcher.add_method(self.push)
         # SharedObject properties
         dispatcher.add_method(partial(self._proxy_property, 'name'), 'name')
@@ -82,6 +83,9 @@ class SharedObjectService(INamed):
 
     def del_shared_object(self, oid):
         self._shared_objects.pop(oid)
+
+    def clear(self):
+        self._shared_objects.clear()
 
     def __getattr__(self, method):
         if method in ['name', 'grammar']:
