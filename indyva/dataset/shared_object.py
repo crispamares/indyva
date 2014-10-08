@@ -90,7 +90,8 @@ class SharedObject(INamed, IPublisher, IDefined):
         :param data: list or dict. The updated data.
         :param version: This should be the returned by pull or push methods.
 
-        :returns: The version generated after the modification.
+        :returns: (data, version)
+                  The version generated after the modification.
                   Becomes the current one.
         '''
         self._check_data(data)
@@ -101,7 +102,7 @@ class SharedObject(INamed, IPublisher, IDefined):
         self._data = data
         self._version += 1
 
-        return copy(self._version)
+        return (copy(self._data), copy(self._version))
 
     @property
     def grammar(self):

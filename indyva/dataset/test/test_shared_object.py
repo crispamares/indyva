@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
 
         data1, version1 = so.pull()
         data1['b'] = 24
-        version2 = so.push(data1, version1)
+        _, version2 = so.push(data1, version1)
         self.assertEqual(so._data, {'a':42, 'b': 24})
 
         data2, version2_again = so.pull()
