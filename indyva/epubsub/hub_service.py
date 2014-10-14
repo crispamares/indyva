@@ -21,6 +21,8 @@ class HubService(INamed):
         '''
         self._gateways = {}
         self.hub = None
+        WSGateway.gateways = self._gateways
+
         INamed.__init__(self, name)
 
     def register_in(self, dispatcher):
@@ -69,7 +71,7 @@ class HubService(INamed):
                 self._gateways[name] = WSGateway(name, port)
             else:
                 raise ValueError('{0} Transport not identified. Supported: "zmq", "ws"'
-                    .format(transport))
+                                 .format(transport))
         return self._gateways[name].port
 
     def del_gateway(self, name):

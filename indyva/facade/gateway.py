@@ -6,7 +6,7 @@ Created on Nov 5, 2013
 import json
 import zmq.green as zmq
 from geventwebsocket.server import WebSocketServer
-from geventwebsocket.resource import WebSocketApplication, Resource
+from geventwebsocket.resource import WebSocketApplication
 import gevent
 
 from indyva.core.names import INamed
@@ -57,12 +57,19 @@ class ZMQGateway(Gateway):
 
 class WSGateway(Gateway):
 
+    ws_server = None
+    gateways = None
+
     def __init__(self, name, port=None):
         Gateway.__init__(self, name, port)
         self._sockets = []
         self._msg_queue = []
-        self.ws_server = WebSocketServer(('',self.port),
-                                         Resource({'/ws': WSApplicationFactory(self)}))
+        if self.ws_server is None:
+            self._new_server()
+
+    def _new_server(self):
+        cls = self.__class__
+        cls.ws_server = WebSocketServer(('',self.port), self.bundler_app)
         gevent.spawn(self.ws_server.serve_forever)
 
     def publish(self, topic, msg):
@@ -78,6 +85,30 @@ class WSGateway(Gateway):
             for ws in self._sockets:
                 ws.send(msg_json)
         self._msg_queue = []
+
+    @classmethod
+    def bundler_app(cls, environ, start_response):
+        '''
+        This WSGI application bundles the gateway specified in the path of
+        the url ("/hub/<gateway>") with the WSApplication.
+
+        So at the end, a Gateway will have several WebSockets, one per
+        associated WSApplication.
+        '''
+
+        if 'wsgi.websocket' not in environ:
+            raise Exception("Only WebSocket connections are allowed")
+
+        path = environ["PATH_INFO"]
+        if not path.startswith("/hub/"):
+            raise Exception("The connection MUST has a path of the from: '/hub/<gateway>'")
+        name = [s for s in path.split('/') if s][-1]
+        gateway = cls.gateways[name]
+
+        ws = environ['wsgi.websocket']
+        current_app = WSApplication(ws)
+        current_app._gateway = gateway
+        current_app.handle()
 
 
 class WSApplication(WebSocketApplication):
@@ -100,21 +131,3 @@ class WSApplication(WebSocketApplication):
         self._gateway._sockets.remove(self.ws)
 
 
-class WSApplicationFactory(object):
-    '''
-    Creates WebSocketApplications that can communicates with the gateway.
-    '''
-    def __init__(self, gateway):
-        self._gateway = gateway
-
-    def __call__(self, ws):
-        '''
-        The fake __init__ for the WSApplication
-        '''
-        app = WSApplication(ws)
-        app._gateway = self._gateway
-        return app
-
-    @classmethod
-    def protocol(cls):
-        return WebSocketApplication.protocol()
