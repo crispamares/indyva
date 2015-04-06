@@ -11,7 +11,7 @@ import os
 from indyva.dataset.table import Table
 
 
-def read_csv(table_name, filepath, schema=None, *args, **kwargs):
+def read_csv(table_name, filepath, schema=None, fillna="NaN", *args, **kwargs):
     '''
     This function creates a table with the data from a CSV file.
     The schema is inferred from data.
@@ -63,6 +63,7 @@ def read_csv(table_name, filepath, schema=None, *args, **kwargs):
             schema = json.loads(schema)
 
     df = pd.read_csv(filepath, *args, **kwargs)
+    df.fillna(fillna, inplace=True)
     table = Table(name=table_name, schema=schema)
     table.data(df)
     return table
