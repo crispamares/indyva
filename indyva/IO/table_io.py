@@ -7,6 +7,7 @@ This module provides functions to read and write Table datasets.
 import pandas as pd
 import json
 import os
+import collections
 
 from indyva.dataset.table import Table
 
@@ -58,9 +59,9 @@ def read_csv(table_name, filepath, schema=None, fillna="NaN", *args, **kwargs):
     if schema is not None:
         if os.path.exists(schema):
             with open(schema) as f:
-                schema = json.load(f)
+                schema = json.load(f, object_pairs_hook=collections.OrderedDict)
         else:  # Assume the string is the json representation
-            schema = json.loads(schema)
+            schema = json.loads(schema, object_pairs_hook=collections.OrderedDict)
 
     df = pd.read_csv(filepath, *args, **kwargs)
     df.fillna(fillna, inplace=True)
