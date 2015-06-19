@@ -270,6 +270,8 @@ class AttributeCondition(Condition):
 class RangeCondition(Condition):
     def __init__(self, data, attr, range=None, domain=None, name=None, enabled=True, prefix=''):
         '''
+        This Condition handles NaN values.
+
         :param data: The dataset that will be queried
         :param attr: The attribute that will compared with range values.
         :param range: {min: val, max: val} The maximum and minimum values
@@ -289,7 +291,8 @@ class RangeCondition(Condition):
         #=======================================================================
         if domain == None:
             # TODO: Use the max/min of the new schema
-            domain = data.aggregate([{'$group':
+            domain = data.aggregate([{'$match': {attr: {'$type': 1}}},  # Only numbers
+                                     {'$group':
                                       {'_id': {},
                                        'min': {'$min': "$"+attr},
                                        'max': {'$max': "$"+attr}}}]).get_data()[0]
