@@ -126,6 +126,11 @@ class TableSchema(DataSetSchema):
         '''
         return any( (a.is_spatial() for a in self.attributes) )
 
+    def rename_attribute(self, old_name, new_name):
+        '''Renames the attribute'''
+        self._schema['attributes'][new_name] = self._schema['attributes'][old_name]
+        del self._schema['attributes'][old_name]
+
     def add_attribute(self, name, attribute_schema):
         '''
         Add a new attribute to the schema of the table
@@ -191,6 +196,9 @@ class AttributeSchema(object):
         :param shape: tuple - The shape ala numpy if multidimensional. () if Scalar
         :param continuous: bool - The opposite is discrete
 
+        :param meta: dict - More information related to the attribute
+           For example, ORDINAL attributes should have {order: String or List}
+           The order must be "ascending", "descending" or explicit [val1, val2, ...]
         :param infered: bool - True if the schema is infered from data
         '''
         self._schema = OrderedDict()
@@ -202,6 +210,7 @@ class AttributeSchema(object):
         self._schema['shape'] = kwargs.get('shape', ())                     # Shape of dimensions
         self._schema['continuous'] = kwargs.get('continuous', False)        # Vs Discrete
 
+        self._schema['meta'] = kwargs.get('meta', {})
         self._infered = kwargs.get('infered', False)
 
     def for_json(self):
@@ -263,6 +272,14 @@ class AttributeSchema(object):
     def infered(self, value):
         self._infered = value
 
+    @property
+    def meta(self):
+        return self._schema['meta']
+
+    @meta.setter
+    def meta(self, value):
+        self._schema['meta'] = value
+
     def __repr__(self):
         return 'AttributeSchema({0})'.format(self._schema)
 
@@ -307,6 +324,7 @@ class AttributeSchema(object):
                                            spatial = False,
                                            shape = tuple(),
                                            continuous = True,
+                                           meta = {},
                                            infered = True)
         return attribute_schema
 
@@ -317,6 +335,7 @@ class AttributeSchema(object):
                       spatial = False,
                       shape = tuple(),
                       continuous = False,
+                      meta = {},
                       infered = True)
 
         if series.nunique() <= series.size * 0.25:
@@ -324,7 +343,8 @@ class AttributeSchema(object):
         elif (series.nunique() == series.size and
               series.max() - series.min() == series.size - 1):
             schema.update(attribute_type= AttributeTypes.ORDINAL,
-                          key= True)
+                          key= True,
+                          meta= {'order':'ascending'})
 
         return AttributeSchema(**schema)
 
@@ -335,6 +355,7 @@ class AttributeSchema(object):
                       spatial = False,
                       shape = tuple(),
                       continuous = False,
+                      meta = {},
                       infered = True)
 
         if series.nunique() == series.size:
@@ -351,5 +372,6 @@ class AttributeSchema(object):
                                            spatial = True,
                                            shape = shape,
                                            continuous = True,
+                                           meta = {},
                                            infered = True)
         return attribute_schema

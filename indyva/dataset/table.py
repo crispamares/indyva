@@ -139,6 +139,18 @@ class Table(ITable, TableView, INamed, IDefined):
         '''
         self._schema.add_attribute(name, attribute_schema)
 
+
+    @pub_result('update')
+    def rename_columns(self, changes):
+        ''''Renames a column in the table and in the schema
+        @param changes: dict The changes in the format {old_name: new_name}
+        '''
+        msg = self._backend.rename(changes)
+        for old_name, new_name in changes.items():
+            self._schema.rename_attribute(old_name, new_name)
+        return msg
+
+
     def add_derived_column(self, name, attribute_schema, inputs, function):
         '''
         @param name: str The name of the new column. Two columns with the same
