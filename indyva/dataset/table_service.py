@@ -51,6 +51,7 @@ class TableService(INamed):
         dispatcher.add_method(partial(self._proxy, 'remove'), 'remove')
         dispatcher.add_method(partial(self._proxy, 'add_column'), 'add_column')
         dispatcher.add_method(partial(self._proxy, 'add_derived_column'), 'add_derived_column')
+        dispatcher.add_method(partial(self._proxy, 'rename_columns'), 'rename_columns')
 
     def _proxy(self, method, table_oid, *args, **kwargs):
         table = self._tables[table_oid]
