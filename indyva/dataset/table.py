@@ -145,7 +145,7 @@ class Table(ITable, TableView, INamed, IDefined):
         ''''Renames a column in the table and in the schema
         @param changes: dict The changes in the format {old_name: new_name}
         '''
-        msg = self._backend.rename(changes)
+        msg = self._backend.rename_columns(changes)
         for old_name, new_name in changes.items():
             self._schema.rename_attribute(old_name, new_name)
         return msg
