@@ -170,7 +170,7 @@ class MongoTable(ITable):
             reference.append(row[self.index])
         attributes = update.get('$set', update).keys()
 
-        self._col.update(query, update, multi, upsert)
+        self._col.update(query, update, multi=multi, upsert=upsert)
         return {'items':reference, 'attributes': attributes}
 
     def remove(self, query):
@@ -184,5 +184,5 @@ class MongoTable(ITable):
         return {'items':reference, 'attributes': list(attributes)}
 
     def rename_columns(self, changes):
-        self._col.update({}, {'$rename': changes}, True, False)
+        self._col.update({}, {'$rename': changes}, multi=True, upsert=False)
         return {'items': [], 'attributes': changes.values()}
