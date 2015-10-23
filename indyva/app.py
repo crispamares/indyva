@@ -18,7 +18,7 @@ except:
     sys.path.append('..')
 from indyva.core.kernel import Kernel
 from indyva.facade.server import WSServer, ZMQServer
-from indyva.core.configuration import get_random_port, parse_args_and_config
+from indyva.core.configuration import (get_random_port, parse_args_and_config, default_options)
 
 
 class App(object):
@@ -29,7 +29,7 @@ class App(object):
         app = App()         # Default configuration
         app.run()           # This is blocking
     '''
-    def __init__(self, config=None):
+    def __init__(self, argv_options=None, config=None):
         '''You can provide a configuration if you don't want to parse the
         invocation args or a config file.
 
@@ -37,9 +37,13 @@ class App(object):
         kernel configuration
         '''
         self.kernel = Kernel()
+        options = default_options
+        if argv_options is not None:
+            options += argv_options
         if config is None:
-            config = parse_args_and_config()
+            config = parse_args_and_config(options)
         self.config_services(config)
+        self.config = config
 
 
     def config_services(self, config):

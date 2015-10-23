@@ -21,7 +21,6 @@ default_options = [
 ]
 
 
-@lru_cache(1)
 def parse_args_and_config(options=None, description=None):
     '''
     This function reads the configuration from three sources. If the
