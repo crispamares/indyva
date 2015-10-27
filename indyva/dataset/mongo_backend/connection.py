@@ -1,8 +1,5 @@
 import pymongo
 
-# TODO: Needed in pymongo 2.1
-pymongo.MongoClient = pymongo.Connection
-
 
 class Connection(object):
     '''Borg pattern in order to have a single MongoClient'''

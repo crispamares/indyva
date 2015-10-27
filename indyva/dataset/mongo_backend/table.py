@@ -103,12 +103,12 @@ class MongoTable(ITable):
 
     def aggregate(self, pipeline):
         print 'PIPELINE:', pipeline
-        return self._col.aggregate(pipeline)['result']
+        return list(self._col.aggregate(pipeline))
 
     def find(self, query=None, projection=None, skip=0, limit=0, sort=None):
         projection = projection if isinstance(projection, DictType) else {}
         projection.update({'_id':False})
-        return self._col.find(query, fields=projection, skip=skip, limit=limit, sort=sort)
+        return self._col.find(query, projection=projection, skip=skip, limit=limit, sort=sort)
 
     def find_one(self, view_args):
         return self.get_view_data(view_args)[0]
