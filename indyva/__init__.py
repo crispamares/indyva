@@ -15,7 +15,8 @@ from indyva.core import grava
 from indyva.core import kernel
 
 import logbook
-logbook.default_handler.level = logbook.INFO
+logbook.compat.redirect_logging()
+logbook.Logger().level = logbook.INFO
 
 
 # Some auxiliary functions that should be provided by external
