@@ -7,7 +7,7 @@ Created on 11/12/2013
 Indyva (Interactive Dynamics for Visual Analytics) project
 '''
 
-__version__ = '0.2'
+__version__ = '0.3'
 __all__ = ['names', 'grava', 'kernel', 'for_json_bridge']
 
 from indyva.core import names
