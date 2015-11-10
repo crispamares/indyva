@@ -304,16 +304,18 @@ class AttributeSchema(object):
 
         attribute_schema = None
 
-        if s.dtype == float:
-            attribute_schema = AttributeSchema._infer_from_float(s)
-        elif s.dtype == int:
-            attribute_schema = AttributeSchema._infer_from_int(s)
-        elif s.dtype == object:
-            if s.valid().apply(lambda x: isinstance(x, types.StringTypes)).all():
-                attribute_schema = AttributeSchema._infer_from_str(s)
-            elif (s.valid().apply(type) == list).all():
-                attribute_schema = AttributeSchema._infer_from_list(s)
-
+        try:
+            if s.dtype == float:
+                attribute_schema = AttributeSchema._infer_from_float(s)
+            elif s.dtype == int:
+                attribute_schema = AttributeSchema._infer_from_int(s)
+            elif s.dtype == object:
+                if s.valid().apply(lambda x: isinstance(x, types.StringTypes)).all():
+                    attribute_schema = AttributeSchema._infer_from_str(s)
+                elif (s.valid().apply(type) == list).all():
+                    attribute_schema = AttributeSchema._infer_from_list(s)
+        except:
+            attribute_schema = AttributeSchema('UNKNOWN')
         return attribute_schema if attribute_schema else AttributeSchema('UNKNOWN')
 
 
