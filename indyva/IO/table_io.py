@@ -10,7 +10,7 @@ import os
 import collections
 
 from indyva.dataset.table import Table
-
+from indyva import for_json_bridge
 
 def read_csv(table_name, filepath, schema=None, fillna="NaN", *args, **kwargs):
     '''
@@ -68,3 +68,34 @@ def read_csv(table_name, filepath, schema=None, fillna="NaN", *args, **kwargs):
     table = Table(name=table_name, schema=schema)
     table.data(df)
     return table
+
+
+
+def write_csv(table, filepath, schema=None, *args, **kwargs):
+    '''
+    This function writes the data of the provided table into a CSV file. If a
+    schema is also provided then it is written in the same directory, ussing the
+    same name of the file but with "_schema.json" suffix.
+
+    :param Table table: The table you want to write to csv
+
+    :param str filepath: The path where the csv file is going to be located.
+    The string could be a URL. Valid URL schemes include http, ftp, s3,
+    and file. For file URLs, a host is expected. For instance, a local
+    file could be file://localhost/path/to/table.csv
+
+    :param Schema schema: The schema associated with the table. You usually
+    use table.schema as this argument. If None then no schema is written.
+
+    :return: None
+
+    This functions is a simple wrapper for `pandas.DataFrame.to_csv` function,
+    and so any optional provided arguments are going to be bypassed to
+    `pandas.DataFrame.to_csv` function.
+    '''
+    data = table.get_data()
+    pd.DataFrame(data).to_csv(filepath, index=False, *args, **kwargs)
+    if schema is not None:
+        with open(filepath.replace(".csv", "_schema.json"), "w") as fd:
+            fd.write(json.dumps(schema, default=for_json_bridge))
+    return None

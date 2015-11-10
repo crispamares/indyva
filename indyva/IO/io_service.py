@@ -2,7 +2,7 @@
 '''
 
 from indyva.core.names import INamed
-from .table_io import read_csv
+from .table_io import read_csv, write_csv
 from indyva.facade.showcase import Showcase
 
 
@@ -20,9 +20,15 @@ class IOService(INamed):
 
     def register_in(self, dispatcher):
         dispatcher.add_method(self.read_csv)
+        dispatcher.add_method(self.write_csv)
 
     def read_csv(self, table_name, filepath, schema=None, *args, **kwargs):
         table = read_csv(table_name, filepath, schema, *args, **kwargs)
-        case = Showcase.instance().get_case(table.__class__.__name__)
+        case = Showcase.instance().get_case(self._table_srv_name)
         case[table.oid] = table
         return table
+
+    def write_csv(self, table_name, filepath, *args, **kwargs):
+        case = Showcase.instance().get_case(self._table_srv_name)
+        table = case[table_name]
+        return write_csv(table, filepath, table.schema, *args, **kwargs)
