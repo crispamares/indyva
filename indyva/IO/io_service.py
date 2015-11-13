@@ -28,7 +28,8 @@ class IOService(INamed):
         case[table.oid] = table
         return table
 
-    def write_csv(self, table_name, filepath, *args, **kwargs):
+    def write_csv(self, table_name, filepath, schema=None, *args, **kwargs):
         case = Showcase.instance().get_case(self._table_srv_name)
         table = case[table_name]
-        return write_csv(table, filepath, table.schema, *args, **kwargs)
+        schema = schema if schema is not None else table.schema
+        return write_csv(table, filepath, schema, *args, **kwargs)

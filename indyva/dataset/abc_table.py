@@ -117,7 +117,7 @@ class ITable(ITableView):
             self._schema = None
 
         if isinstance(schema, dict):
-            self._schema = schemas.TableSchema(schema['attributes'], schema['index'])
+            self._schema = schemas.TableSchema(schema['attributes'], schema['index'], schema.get('order'))
         elif isinstance(schema, schemas.TableSchema):
             self._schema = schema
 

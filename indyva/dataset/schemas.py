@@ -105,18 +105,24 @@ class TableSchema(DataSetSchema):
     Adds a field called attributes which is an ordered dict of
     AttributeSchemas
     '''
-    def __init__(self, attributes, index):
+    def __init__(self, attributes, index, order=None):
         super(TableSchema, self).__init__(index)
 
         self._schema['dataset_type'] = DataSetTypes.TABLE
         self._schema['attributes'] = OrderedDict()
-        for name in attributes:
+        self._schema['order'] = []
+        for name in attributes if order is None else order:
             self.add_attribute(name, attributes[name])
 
     @property
     def attributes(self):
         '''This is an OrededDict with the form - name:AttributeSchema'''
         return self._schema['attributes']
+
+    @property
+    def order(self):
+        '''This is a List of AttributeSchema.name'''
+        return self._schema['order']
 
     def is_spatial(self):
         '''
@@ -130,6 +136,7 @@ class TableSchema(DataSetSchema):
         '''Renames the attribute'''
         self._schema['attributes'][new_name] = self._schema['attributes'][old_name]
         del self._schema['attributes'][old_name]
+        self._schema[self._schema['order'].index(old_name)] = new_name
 
     def add_attribute(self, name, attribute_schema):
         '''
@@ -146,6 +153,7 @@ class TableSchema(DataSetSchema):
         if isinstance(attribute_schema, dict):
             attribute_schema = AttributeSchema(**attribute_schema)
         self._schema['attributes'][name] = attribute_schema
+        self._schema['order'].append(name)
 
     @staticmethod
     def infer_from_data(data):
