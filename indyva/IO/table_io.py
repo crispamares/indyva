@@ -94,7 +94,7 @@ def write_csv(table, filepath, schema=None, *args, **kwargs):
     `pandas.DataFrame.to_csv` function.
     '''
     data = table.get_data()
-    pd.DataFrame(data).to_csv(filepath, index=False, *args, **kwargs)
+    pd.DataFrame(data).to_csv(filepath, index=False, encoding='utf-8', *args, **kwargs)
     if schema is not None:
         with open(filepath.replace(".csv", "_schema.json"), "w") as fd:
             fd.write(json.dumps(schema, default=for_json_bridge))
