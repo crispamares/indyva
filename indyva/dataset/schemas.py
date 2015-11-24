@@ -184,6 +184,12 @@ class TableSchema(DataSetSchema):
             if index is None:
                 index = column if schemas[column].is_key() else None
 
+        # Generate an index so the DataSetSchema can be created
+        if index is None:
+            df['row_id'] = df.index
+            schemas['row_id'] = AttributeSchema.infer_from_data(df['row_id'])
+            index = 'row_id'
+
         return TableSchema(schemas, index)
 
 
@@ -306,9 +312,9 @@ class AttributeSchema(object):
         '''
 
         if isinstance(data, pd.Series):
-            s = data
+            s = data.replace("NaN", pd.np.NAN)
         elif isinstance(data, list):
-            s = pd.Series(data)
+            s = pd.Series(data).replace("NaN", pd.np.NAN)
 
         attribute_schema = None
 
@@ -322,7 +328,7 @@ class AttributeSchema(object):
                     attribute_schema = AttributeSchema._infer_from_str(s)
                 elif (s.valid().apply(type) == list).all():
                     attribute_schema = AttributeSchema._infer_from_list(s)
-        except:
+        except Exception, e:
             attribute_schema = AttributeSchema('UNKNOWN')
         return attribute_schema if attribute_schema else AttributeSchema('UNKNOWN')
 
