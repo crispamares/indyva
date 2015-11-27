@@ -126,7 +126,7 @@ class CategoricalCondition(Condition):
         self._attr = attr
         self._bins = bins
 
-        if data.schema.attributes[attr].attribute_type != 'CATEGORICAL':
+        if data.schema.attributes[attr].attribute_type not in ['CATEGORICAL', 'ORDINAL']:
             raise NotImplementedError('Bins not yet implemented')
         if bins is not None:
             raise NotImplementedError('Bins not yet implemented')
